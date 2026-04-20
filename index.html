@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindConnect - Đăng nhập</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* --- CẤU HÌNH CHUNG --- */
+        body {
+            font-family: 'Work Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: url('background.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 1. NAVIGATION BAR */
+        .landing-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 50px;
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            box-sizing: border-box; /* Đảm bảo padding không làm vỡ khung */
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-brand img {
+            height: 50px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .brand-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #D42E70;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color 0.3s ease;
+            position: relative;
+            font-family: 'Work Sans', sans-serif;
+        }
+
+        .nav-item:hover { color: var(--deep-rose); }
+
+        .btn-login-nav {
+            padding: 10px 25px;
+            background: #ffebee;
+            color: #D42E70;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .btn-login-nav:hover { background: #ffcdd2; }
+
+        /* 2. MAIN LOGIN AREA (Đã chỉnh sửa vị trí) */
+        .main-container {
+            flex: 1;
+            width: 100%; /* Chiếm toàn bộ chiều rộng màn hình */
+            box-sizing: border-box; /* Tính cả padding vào chiều rộng */
+            
+            display: flex;
+            justify-content: flex-end; /* Đẩy nội dung sang phải */
+            align-items: center; /* Căn giữa theo chiều dọc */
+            
+            /* ĐIỀU CHỈNH VỊ TRÍ TẠI ĐÂY */
+            padding-right: 10%; /* Cách lề phải 10% màn hình -> Đẩy box vào vị trí đẹp */
+            padding-bottom: 50px;
+        }
+
+        /* KHUNG ĐĂNG NHẬP */
+        .login-card-glass {
+            width: 350px; /* Thu nhỏ chiều rộng một chút cho thanh thoát */
+            padding: 40px;
+            border-radius: 30px;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Toggle Role Switch */
+        .role-switch-container {
+            background: #e0e0e0;
+            border-radius: 25px;
+            padding: 4px;
+            display: flex;
+            margin-bottom: 30px;
+        }
+
+        .role-btn {
+            flex: 1; text-align: center; padding: 10px; border-radius: 22px;
+            cursor: pointer; font-weight: 600; color: #666; transition: 0.3s;
+        }
+
+        .role-btn.active {
+            background: white; color: var(--deep-rose); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Inputs */
+        .input-group { margin-bottom: 20px; }
+        .input-label { display: block; font-weight: 700; font-size: 14px; margin-bottom: 8px; color: #333; }
+        .custom-input {
+            width: 100%; padding: 15px; background: #f0f2f5; border: none;
+            border-radius: 12px; font-size: 14px; color: #333; outline: none; transition: 0.2s;
+            box-sizing: border-box;
+        }
+        .custom-input:focus { background: #e8eaf6; box-shadow: 0 0 0 2px var(--primary-pink); }
+
+        /* Submit Button */
+        .btn-submit-gradient {
+            width: 100%; padding: 15px; border: none; border-radius: 25px;
+            background: linear-gradient(90deg, #ff9a9e 0%, #ffc3a0 100%);
+            color: white; font-weight: 700; font-size: 16px; cursor: pointer;
+            margin-top: 10px; transition: transform 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 154, 158, 0.4);
+        }
+        .btn-submit-gradient:hover { transform: translateY(-2px); }
+
+        .footer-text { text-align: center; font-size: 12px; color: #999; margin-top: 20px; }
+        #presentation-frame { display: none; }
+    </style>
+</head>
+<body>
+
+    <nav class="landing-nav">
+        <div class="nav-brand">
+            <img src="logonoword.png" alt="MindConnect Logo">
+            <span class="brand-text">MindConnect</span>
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-item">Trang chủ</a>
+            <a href="#" class="nav-item">Dịch vụ</a>
+            <a href="#" class="nav-item">Về chúng tôi</a>
+            <a href="#" class="nav-item">Liên hệ</a>
+            <a href="#" class="btn-login-nav">Đăng nhập</a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="login-card-glass">
+            <div class="role-switch-container">
+                <div class="role-btn active" id="tab-student" onclick="switchRole('student')">Sinh viên</div>
+                <div class="role-btn" id="tab-school" onclick="switchRole('school')">Nhà trường</div>
+            </div>
+
+            <form onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label class="input-label">Tên đăng nhập</label>
+                    <input type="text" class="custom-input" placeholder="Email / MSSV" required>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Mật khẩu</label>
+                    <input type="password" class="custom-input" placeholder="Mật khẩu" required>
+                </div>
+
+                <button class="btn-submit-gradient">Truy cập</button>
+            </form>
+
+            <p class="footer-text">Dữ liệu được mã hóa & Bảo mật tuyệt đối</p>
+        </div>
+    </div>
+
+    <script>
+        let currentRole = 'student';
+
+        function switchRole(role) {
+            currentRole = role;
+            document.getElementById('tab-student').classList.remove('active');
+            document.getElementById('tab-school').classList.remove('active');
+            document.getElementById('tab-' + role).classList.add('active');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            if(currentRole === 'student') {
+                window.location.href = 'student.html';
+            } else {
+                window.location.href = 'school.html';
+            }
+        }
+    </script>
+</body>
+</html>

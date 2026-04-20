@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindConnect - School Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="presentation-frame">
+        <div id="view-school" class="view-section">
+            <div class="dashboard-layout">
+                <div class="sidebar">
+                    <h2 style="font-family: var(--font-heading); color: var(--deep-rose); margin-bottom: 30px;">Admin Portal</h2>
+                    <div class="dash-menu-item active">📊 Tổng quan Dashboard</div>
+                    <div class="dash-menu-item">⚠️ Cảnh báo Rủi ro</div>
+                    <div class="dash-menu-item">❤️ Hiệu quả Can thiệp</div>
+                    <div class="dash-menu-item">📩 Báo cáo & Feedback</div>
+                    <div style="margin-top: auto; border-top: 1px solid #eee; padding-top: 20px;">
+                        <div class="dash-menu-item" onclick="logout()">🚪 Đăng xuất</div>
+                    </div>
+                </div>
+
+                <div class="dash-content">
+                    
+                    <div class="dash-header">
+                        <div>
+                            <h2 style="color: var(--deep-rose);">Tổng quan Sức khỏe Tâm thần</h2>
+                            <span style="color: #666; font-size: 14px;">Dữ liệu thời gian thực</span>
+                        </div>
+                        <select class="time-filter" id="timeSelect" onchange="updateDashboardData()">
+                            <option value="today">Hôm nay</option>
+                            <option value="7" selected>7 ngày qua</option>
+                            <option value="14">14 ngày qua</option>
+                            <option value="30">30 ngày qua</option>
+                            <option value="60">60 ngày qua</option>
+                            <option value="custom">Tùy chỉnh...</option>
+                        </select>
+                    </div>
+
+                    <div id="red-alert-box" class="alert-banner hidden">
+                        <div style="font-size: 24px;">🚨</div>
+                        <div style="flex:1">
+                            <strong>PHÁT HIỆN RỦI RO CAO: Lớp CNTT_K48</strong>
+                            <p style="font-size: 13px; margin-top: 2px;">Có 02 sinh viên báo cáo ý định tự hại. Cần kích hoạt quy trình hỗ trợ khẩn cấp.</p>
+                        </div>
+                        <button class="btn btn-primary" style="background: #d32f2f; font-size: 13px;" onclick="alert('Đã gửi thông báo đến GVCN và Tổ tham vấn!')">Kích hoạt Hỗ trợ</button>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div style="color: #888; font-size: 13px;">Chỉ số Cảm xúc (Sentiment)</div>
+                            <div class="stat-num" style="color: var(--success);">7.8/10</div>
+                            <div style="font-size: 12px;">
+                                Ổn định <span class="trend-badge trend-good-up">▬ 0%</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div style="color: #888; font-size: 13px;">Tỷ lệ SV Rủi ro Cao</div>
+                            <div class="stat-num" style="color: var(--danger);">4.2%</div>
+                            <div style="font-size: 12px;">
+                                So với tuần trước <span class="trend-badge trend-up">▲ 1.2%</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div style="color: #888; font-size: 13px;">Gắn kết Hàng ngày</div>
+                            <div class="stat-num" style="color: var(--accent-pink);">1,250</div>
+                            <div style="font-size: 12px;">
+                                Tương tác App <span class="trend-badge trend-good-up">▲ 15%</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div style="color: #888; font-size: 13px;">Giảm Stress sau Can thiệp</div>
+                            <div class="stat-num" style="color: var(--primary-pink);">-35%</div>
+                            <div style="font-size: 12px;">Dựa trên post-survey</div>
+                        </div>
+                        <div class="stat-box" style="grid-column: span 2;">
+                            <h4 style="margin-bottom: 15px;">🏷️ Phân tích Tag Nhật ký (AI Report)</h4>
+                            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                Dữ liệu được tổng hợp từ các nhật ký được gắn thẻ bởi sinh viên.
+                            </p>
+                            <table style="width:100%; font-size: 13px; border-collapse: collapse;">
+                                <tr style="background: #f9f9f9; text-align: left;">
+                                    <th style="padding:10px;">Tag hành vi</th>
+                                    <th style="padding:10px;">Số lượng</th>
+                                    <th style="padding:10px;">Xu hướng</th>
+                                    <th style="padding:10px;">Đề xuất can thiệp</th>
+                                </tr>
+                                <tr>
+                                    <td style="padding:10px;">#Áp lực học tập</td>
+                                    <td style="padding:10px; font-weight:bold;">142</td>
+                                    <td style="padding:10px; color:red;">▲ Tăng mạnh</td>
+                                    <td style="padding:10px;">Tổ chức workshop quản lý thời gian</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:10px;">#Mất ngủ</td>
+                                    <td style="padding:10px; font-weight:bold;">89</td>
+                                    <td style="padding:10px; color:orange;">▬ Ổn định</td>
+                                    <td style="padding:10px;">Gửi thông báo về vệ sinh giấc ngủ</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:10px;">#Cô đơn</td>
+                                    <td style="padding:10px; font-weight:bold;">34</td>
+                                    <td style="padding:10px; color:green;">▼ Giảm</td>
+                                    <td style="padding:10px;">Duy trì CLB kết nối</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="analysis-section">
+                        <div class="stat-box">
+                            <h4 style="margin-bottom: 15px;">🔥 Bản đồ Nhiệt Căng thẳng theo Đơn vị (Hotspot)</h4>
+                            <table class="heatmap-table">
+                                <thead>
+                                    <tr>
+                                        <th>Khoa / Viện</th>
+                                        <th>Lo âu</th>
+                                        <th>Stress</th>
+                                        <th>Trầm cảm</th>
+                                        <th>Kiệt sức</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight:600;">CNTT</td>
+                                        <td><div class="hm-cell hm-4">Cao</div></td>
+                                        <td><div class="hm-cell hm-5">Rất Cao</div></td>
+                                        <td><div class="hm-cell hm-2">Thấp</div></td>
+                                        <td><div class="hm-cell hm-4">Cao</div></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:600;">Kinh tế</td>
+                                        <td><div class="hm-cell hm-3">TB</div></td>
+                                        <td><div class="hm-cell hm-3">TB</div></td>
+                                        <td><div class="hm-cell hm-1">Ổn</div></td>
+                                        <td><div class="hm-cell hm-2">Thấp</div></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-weight:600;">Ngoại ngữ</td>
+                                        <td><div class="hm-cell hm-2">Thấp</div></td>
+                                        <td><div class="hm-cell hm-4">Cao</div></td>
+                                        <td><div class="hm-cell hm-1">Ổn</div></td>
+                                        <td><div class="hm-cell hm-1">Ổn</div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="stat-box">
+                            <h4 style="margin-bottom: 15px;">💬 Top 5 Chủ đề Nổi bật</h4>
+                            <ul style="padding-left: 20px; line-height: 1.8;">
+                                <li><strong>1. Áp lực thi cử</strong> (45%) <span style="color:red;">▲</span></li>
+                                <li><strong>2. Hướng nghiệp</strong> (20%) <span style="color:green;">▼</span></li>
+                                <li><strong>3. Mâu thuẫn bạn bè</strong> (15%) ▬</li>
+                                <li><strong>4. Tài chính cá nhân</strong> (10%) <span style="color:red;">▲</span></li>
+                                <li><strong>5. Mất ngủ</strong> (10%) <span style="color:red;">▲</span></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h3 style="color: var(--deep-rose); margin-bottom: 15px;">Hiệu quả Can thiệp & Điều hướng</h3>
+                    <div class="roi-grid">
+                        <div class="stat-box">
+                            <div style="margin-bottom: 15px;">
+                                <div style="display:flex; justify-content:space-between; font-size: 13px; margin-bottom:5px;">
+                                    <span>Tỷ lệ Điều hướng Thành công (Vào xem tài liệu)</span>
+                                    <strong>78%</strong>
+                                </div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: 78%; background: var(--success);"></div></div>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <div style="display:flex; justify-content:space-between; font-size: 13px; margin-bottom:5px;">
+                                    <span>Tỷ lệ Chuyển đổi Tư vấn (Book lịch)</span>
+                                    <strong>12%</strong>
+                                </div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: 12%; background: var(--warning);"></div></div>
+                            </div>
+                            <div>
+                                <div style="display:flex; justify-content:space-between; font-size: 13px; margin-bottom:5px;">
+                                    <span>Phản hồi tích cực về Nguồn lực</span>
+                                    <strong>4.5/5 ⭐</strong>
+                                </div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: 90%; background: var(--accent-pink);"></div></div>
+                            </div>
+                        </div>
+
+                        <div class="stat-box">
+                            <h4 style="margin-bottom: 10px;">📋 Quản lý Ca Tư vấn (Cần xử lý)</h4>
+                            <table style="width:100%; font-size: 13px; border-collapse: collapse;">
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <th style="text-align:left; padding:5px;">Case ID</th>
+                                    <th style="text-align:left; padding:5px;">Đơn vị</th>
+                                    <th style="text-align:left; padding:5px;">Trạng thái</th>
+                                    <th style="text-align:right; padding:5px;">Xử lý</th>
+                                </tr>
+                                <tr id="case-821">
+                                    <td style="padding:8px;">#SV_821</td>
+                                    <td>Lớp KT_02</td>
+                                    <td><span class="badge bg-high">Nguy cơ cao</span></td>
+                                    <td style="text-align:right;">
+                                        <button class="btn-action-sm btn-success" onclick="handleConsultation('success', 'case-821')">✔ Xong</button>
+                                        <button class="btn-action-sm btn-warn" onclick="handleConsultation('fail', 'case-821')">📅 Hẹn lại</button>
+                                    </td>
+                                </tr>
+                                <tr id="case-105">
+                                    <td style="padding:8px;">#SV_105</td>
+                                    <td>Lớp NN_01</td>
+                                    <td><span class="badge bg-med">Stress</span></td>
+                                    <td style="text-align:right;">
+                                        <button class="btn-action-sm btn-success" onclick="handleConsultation('success', 'case-105')">✔ Xong</button>
+                                        <button class="btn-action-sm btn-warn" onclick="handleConsultation('fail', 'case-105')">📅 Hẹn lại</button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logout() {
+            window.location.href = 'index.html';
+        }
+
+        // --- LOGIC CẬP NHẬT DỮ LIỆU (MOCK DATA) ---
+        function updateDashboardData() {
+            const timeRange = document.getElementById('timeSelect').value;
+            
+            // Giả lập hiệu ứng loading
+            document.querySelector('.metrics-grid').style.opacity = '0.5';
+            setTimeout(() => {
+                document.querySelector('.metrics-grid').style.opacity = '1';
+                
+                // Logic giả lập thay đổi số liệu theo thời gian
+                if(timeRange === 'today' || timeRange === '7') {
+                    document.getElementById('red-alert-box').classList.remove('hidden'); // Hiện cảnh báo nếu là dữ liệu gần
+                } else {
+                    document.getElementById('red-alert-box').classList.add('hidden');
+                }
+            }, 300);
+        }
+
+        // --- LOGIC XỬ LÝ SAU TƯ VẤN ---
+        function handleConsultation(status, rowId) {
+            const row = document.getElementById(rowId);
+            
+            if (status === 'success') {
+                // 1. Điều hướng khảo sát
+                const confirmSurvey = confirm("Xác nhận ca tư vấn THÀNH CÔNG?\nHệ thống sẽ tự động gửi Khảo sát đánh giá (Survey) cho sinh viên.");
+                if(confirmSurvey) {
+                    row.style.backgroundColor = "#e8f5e9";
+                    row.querySelector('td:last-child').innerHTML = `<span style="color:green; font-size:12px;">⏳ Đã gửi Survey (Hạn 3 ngày)</span>`;
+                    
+                    // Giả lập nhắc nhở hệ thống
+                    setTimeout(() => {
+                        alert("✅ Hệ thống đã lên lịch nhắc nhở phản hồi tự động sau 24h và 48h.");
+                    }, 500);
+                }
+            } else {
+                // 2. Đặt lịch lại
+                const newDate = prompt("Tư vấn chưa hoàn tất. Vui lòng nhập ngày hẹn lại (DD/MM/YYYY):", "25/11/2025");
+                if(newDate) {
+                    row.style.backgroundColor = "#fff3e0";
+                    row.querySelector('td:last-child').innerHTML = `<span style="color:#ef6c00; font-size:12px;">📅 Đã hẹn lại: ${newDate}</span>`;
+                }
+            }
+        }
+
+        // Khởi chạy mặc định
+        window.onload = function() {
+            updateDashboardData();
+        }
+    </script>
+</body>
+</html>

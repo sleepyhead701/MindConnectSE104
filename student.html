@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindConnect - Student Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* --- GHI ĐÈ CSS ĐỂ CHUYỂN TỪ MOBILE -> DESKTOP (NOTION STYLE) --- */
+        
+        /* Reset body để full màn hình web */
+        body {
+            display: block;
+            height: auto;
+            min-height: 100vh;
+            background-color: white; /* Nền trắng sạch kiểu Notion */
+            overflow-y: auto;
+        }
+
+        /* Ẩn khung trình chiếu 16:9 cũ nhưng không xóa logic bên trong */
+        #presentation-frame {
+            width: 100% !important;
+            height: auto !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            display: block !important;
+            position: static !important;
+        }
+
+        /* Ẩn các thành phần Mobile cũ (nhưng không xóa HTML để tránh lỗi) */
+        .view-section { position: static; width: 100%; height: auto; animation: none; }
+        .student-container { background: transparent; height: auto; display: block; padding-top: 0; }
+        .mobile-frame { width: 100%; height: auto; border-radius: 0; box-shadow: none; overflow: visible; }
+        .mobile-header { display: none; } /* Ẩn header mobile */
+        .mobile-nav { display: none; }    /* Ẩn footer mobile */
+
+        /* --- 3. GIAO DIỆN MỚI: THANH ĐIỀU HƯỚNG TRÊN CÙNG (TOP NAV) --- */
+        .desktop-nav {
+            position: sticky; top: 0; left: 0; right: 0;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15%; /* Căn lề 2 bên giống Notion */
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-brand {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 24px;
+            color: var(--deep-rose); /* Giữ màu thương hiệu cũ */
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Tùy chỉnh lại class .nav-icon thành dạng Text Link */
+        .nav-menu .nav-icon {
+            font-family: var(--font-body);
+            font-size: 14px !important;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: 0.2s;
+            opacity: 1; /* Reset độ mờ cũ */
+        }
+
+        .nav-menu .nav-icon:hover {
+            background: #f5f5f5;
+            color: var(--text-dark);
+        }
+
+        /* Trạng thái Active: Dùng màu hồng cũ */
+        .nav-menu .nav-icon.active {
+            background: var(--primary-pink); /* Màu hồng phấn cũ */
+            color: var(--deep-rose);      /* Chữ màu hồng đậm cũ */
+            font-weight: 600;
+            transform: none; /* Bỏ hiệu ứng phóng to cũ */
+        }
+
+        .user-profile-badge {
+            width: 32px; height: 32px;
+            background: var(--accent-pink); /* Màu điểm nhấn cũ */
+            color: white;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* --- 4. CONTAINER NỘI DUNG CHÍNH (CANVAS) --- */
+        .notion-layout {
+            max-width: 900px; /* Độ rộng chuẩn bài viết Notion */
+            margin: 0 auto;
+            padding: 40px 20px 100px 20px;
+        }
+
+        /* Tiêu đề trang chào mừng */
+        .page-greeting {
+            margin-bottom: 30px;
+        }
+        .page-greeting h1 {
+            font-family: var(--font-heading);
+            font-size: 42px;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        /* --- 5. TÙY CHỈNH CÁC THÀNH PHẦN JS RENDER RA --- */
+        /* Chỉnh lại thẻ chứa nội dung chính để không bị bó hẹp */
+        #student-main-content {
+            background: transparent !important;
+            padding: 0 !important;
+            overflow: visible !important;
+        }
+        
+        /* Feed Card & Resource Card: Thêm viền nhẹ và đổ bóng kiểu web */
+        .feed-card, .res-card {
+            border: 1px solid #e0e0e0 !important;
+            box-shadow: none !important;
+            transition: 0.2s;
+        }
+        .feed-card:hover, .res-card:hover {
+            border-color: #ccc !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+        }
+
+        /* Resource Grid: Chuyển thành 2-3 cột trên màn hình rộng */
+        .resource-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+        }
+
+        /* Nút Logout */
+        .btn-logout-text {
+            font-size: 13px; color: #888; cursor: pointer; margin-right: 15px; text-decoration: underline;
+        }
+        .btn-logout-text:hover { color: var(--danger); }
+
+    </style>
+</head>
+<body>
+
+    <div class="desktop-nav">
+        <div class="nav-brand">
+            <img src="Mind_Connect_Project/Mind_Connect/logo.png" alt="MindConnect Logo" style="height: 50px; width: auto; object-fit: contain;">
+        </div>
+        
+        <div class="nav-menu">
+            <div class="nav-icon active" onclick="renderStudentHome()">Home</div>
+            <div class="nav-icon" onclick="renderStudentDiary()">Diary</div>
+            <div class="nav-icon" onclick="renderResources()">Resources</div>
+            <div class="nav-icon" onclick="renderStudentStats()">Stats</div>
+            <div class="nav-icon" onclick="renderChat()">Chat</div>
+        </div>
+
+        <div style="display: flex; align-items: center;">
+            <span class="btn-logout-text" onclick="logout()">Log out</span>
+            <div class="user-profile-badge" title="Student Profile">S</div>
+        </div>
+    </div>
+
+    <div id="presentation-frame">
+        <div id="view-student" class="view-section">
+            <div class="student-container">
+                <div class="mobile-frame">
+                    
+                    <div class="notion-layout">
+                        <div class="page-greeting">
+                            <h1>For you</h1>
+                        </div>
+
+                        <div id="student-main-content">
+                            </div>
+                    </div>
+
+                    <div class="mobile-nav"></div> 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="student.js"></script>
+
+</body>
+</html>
