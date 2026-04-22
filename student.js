@@ -289,7 +289,7 @@ function renderChat() {
                     <div style="align-self: ${msg.sender === 'user' ? 'flex-end' : 'flex-start'}; max-width: 80%;">
                         <div style="
                             background: ${msg.sender === 'ai' ? 'var(--primary-pink)' : '#f3f3f3'};
-                            color: ${msg.sender === 'user' ? 'white' : '#333'};
+                            color: #333;
                             padding: 12px 16px;
                             border-radius: 15px;
                             border-bottom-${msg.sender === 'ai' ? 'right' : 'left'}-radius: 4px;
