@@ -281,10 +281,26 @@ function renderChat() {
     let msgsHtml = chatHistory.map(msg => 
         `<div class="msg ${msg.sender === 'ai' ? 'msg-ai' : 'msg-user'}">${msg.text}</div>`
     ).join('');
-
+    
     container.innerHTML = `
-        <div class="chat-interface">
-            <div class="chat-messages" id="chat-box">${msgsHtml}</div>
+        <div class="chat-container" style="display:flex; flex-direction:column; height: 80vh;">
+            <div class="chat-box" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
+                ${chatHistory.map(msg => `
+                    <div style="align-self: ${msg.sender === 'user' ? 'flex-end' : 'flex-start'}; max-width: 80%;">
+                        <div style="
+                            background: ${msg.sender === 'ai' ? 'var(--primary-pink)' : '#f3f3f3'};
+                            color: ${msg.sender === 'user' ? 'white' : '#333'};
+                            padding: 12px 16px;
+                            border-radius: 15px;
+                            border-bottom-${msg.sender === 'ai' ? 'right' : 'left'}-radius: 4px;
+                            font-size: 15px;
+                            line-height: 1.5;
+                        ">
+                            ${msg.text}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
             <div style="padding: 15px; background: white; border-top: 1px solid #eee; display:flex; gap: 10px;">
                 <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." style="margin:0;" onkeypress="handleEnter(event)">
                 <button class="btn-primary" style="border-radius: 50%; width: 45px; height: 45px; display:flex; justify-content:center; align-items:center; flex-shrink: 0;" onclick="sendMsg()">➤</button>
@@ -299,7 +315,7 @@ function renderChat() {
 
 function handleEnter(e) { if (e.key === 'Enter') sendMsg(); }
 
-function sendMsg() {
+async function sendMsg() {
     const input = document.getElementById('chat-input');
     const txt = input.value.trim();
     if(!txt) return;
@@ -308,6 +324,41 @@ function sendMsg() {
     renderChat();
     input.value = '';
     input.focus();
+
+    const chatBox = document.querySelector('.chat-box');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'ai-typing-indicator';
+    typingDiv.style.display = 'flex';
+    typingDiv.style.flexDirection = 'column';
+    typingDiv.innerHTML = `
+        <div class="typing-bubble">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    `;
+    chatBox.appendChild(typingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // ------------------------------------------
+    // Uncomment phần này nếu đã có API chatbot
+    // -----------------------------------------
+    // try {
+    //     const aiResponse = await callChatBotAPI(txt);
+        
+    //     // 4. Xóa hiệu ứng Typing và cập nhật tin nhắn thật của AI
+    //     const indicator = document.getElementById('ai-typing-indicator');
+    //     if (indicator) indicator.remove();
+
+    //     chatHistory.push({ sender: 'ai', text: aiResponse });
+    //     renderChat();
+        
+    //     if (typeof saveData === "function") saveData();
+    // } catch (error) {
+    //     document.getElementById('ai-typing-indicator').remove();
+    //     chatHistory.push({ sender: 'ai', text: "Lỗi kết nối rồi, bạn thử lại nhé!" });
+    //     renderChat();
+    // }
 
     // Logic phân tích từ khóa (Đã khôi phục)
     setTimeout(() => {
