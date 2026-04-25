@@ -19,10 +19,34 @@ let userFeed = [
 ];
 
 const resourcesDB = [
-    { type: 'Video', title: 'Thiền 5 phút giảm lo âu', img: 'https://img.youtube.com/vi/inpok4MKVLM/mqdefault.jpg', url: 'https://www.youtube.com/watch?v=inpok4MKVLM' },
-    { type: 'Blog', title: 'Cách vượt qua Burnout mùa thi', img: '', url: '#' },
-    { type: 'Book', title: 'Hiểu về trái tim - Minh Niệm', img: '', url: '#' },
-    { type: 'Podcast', title: 'Radio Cảm Xúc #12 - Chữa lành', img: '', url: '#' }
+    { 
+        type: 'Video', 
+        title: 'Thiền 5 phút giảm lo âu', 
+        img: 'https://img.youtube.com/vi/inpok4MKVLM/mqdefault.jpg', 
+        url: 'https://www.youtube.com/watch?v=inpok4MKVLM' 
+    },
+    { 
+        type: 'Blog', 
+        title: 'Cách vượt qua Burnout mùa thi', 
+        img: 'https://suckhoedoisong.qltns.mediacdn.vn/thumb_w/640/324455921873985536/2023/4/26/cang-thang-truoc-ky-thi-16824842727412019885995.png', 
+        url: '#' 
+    },
+    { 
+        type: 'Book', 
+        title: 'Hiểu về trái tim - Minh Niệm', 
+        img: 'https://tramsach.vn/wp-content/uploads/2024/11/gioi-thieu-sach.jpg', 
+        url: 'https://thuvienhoasen.org/images/file/y5sBQGYE1QgQAHou/hieu-ve-trai-tim.pdf' },
+    { 
+        type: 'Podcast', 
+        title: 'Radio Cảm Xúc #12 - Chữa lành', 
+        img: 'https://i.scdn.co/image/ab67656300005f1ff6bed7462a8b94b0fb452114', 
+        url: 'https://open.spotify.com/episode/63VvDWyELyutySrZSRU1Hq' },
+    { 
+        type: 'Công cụ', 
+        title: 'Bài tập thở giảm Stress', 
+        img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlg1wCwbYTPH8TCqBnzGjRLEhlmNuhdWy44A&s', 
+        action: 'renderBreathingSpace'
+    }
 ];
 
 // --- 2. KHỞI TẠO (INIT) ---
@@ -195,32 +219,86 @@ function confirmAndPost() {
 // ==============================================
 // 5. RESOURCES (TÀI NGUYÊN)
 // ==============================================
-function renderResources() {
+function renderResources(filterType = 'Tất cả') {
     const container = document.getElementById('student-main-content');
     updateNav(2);
 
-    let html = resourcesDB.map(res => `
-        <a href="${res.url}" target="_blank" style="text-decoration:none; color:inherit;">
-            <div class="res-card">
-                <div class="res-img" style="background: url('${res.img || 'https://via.placeholder.com/150'}') center/cover;">
-                    <span class="res-type">${res.type}</span>
-                </div>
-                <div class="res-content">
-                    <div class="res-title">${res.title}</div>
-                </div>
-            </div>
-        </a>
+    // Lọc dữ liệu dựa trên tab được chọn
+    const filteredDB = filterType === 'Tất cả' 
+        ? resourcesDB 
+        : resourcesDB.filter(res => res.type === filterType);
+
+    const types = ['Tất cả', ...new Set(resourcesDB.map(r => r.type))];
+
+    const filterHtml = types.map(t => `
+        <button class="filter-btn ${t === filterType ? 'active' : ''}" 
+                onclick="renderResources('${t}')">${t}</button>
     `).join('');
 
+    const cardsHtml = filteredDB.map(res => {
+        const actionAttr = res.action 
+            ? `onclick="${res.action}(); return false;" href="#"` 
+            : `href="${res.url}" target="_blank"`;
+
+        return `
+            <a ${actionAttr} class="res-link">
+                <div class="res-card">
+                    <div class="res-img-container" style="background-image: url('${res.img || 'https://via.placeholder.com/150'}')">
+                        <span class="res-type-tag">${res.type}</span>
+                    </div>
+                    <div class="res-info">
+                        <div class="res-title-main">${res.title}</div>
+                        <div class="res-footer">Xem thêm →</div>
+                    </div>
+                </div>
+            </a>
+        `;
+    }).join('');
+
     container.innerHTML = `
-        <div style="padding: 20px;">
-            <h2 style="color: var(--deep-rose); margin-bottom: 15px;">Kho Tài nguyên</h2>
+        <div style="padding: 20px 0;">
+            <h2 style="font-family: var(--font-heading); font-size: 32px; margin-bottom: 10px;">Kho Tài nguyên</h2>
+            <div class="filter-bar">${filterHtml}</div>
             <div class="resource-grid">
-                ${html}
+                ${cardsHtml}
             </div>
         </div>
     `;
 }
+
+function renderBreathingSpace() {
+    const container = document.getElementById('student-main-content');
+    container.innerHTML = `
+        <div style="text-align:center; padding: 40px;">
+            <h2 style="font-family: var(--font-heading);">Bài tập thở giảm Stress</h2>
+            <p id="breath-text" style="color: #666; height: 30px;">Chuẩn bị...</p>
+            <div id="breath-circle" class="breathing-circle"></div>
+            <button class="btn-primary" onclick="startBreathing()">Bắt đầu</button>
+        </div>
+    `;
+}
+
+function startBreathing() {
+    const circle = document.getElementById('breath-circle');
+    const text = document.getElementById('breath-text');
+    let phase = 0; // 0: Hít, 1: Giữ, 2: Thở
+
+    setInterval(() => {
+        if(phase === 0) {
+            circle.style.transform = "scale(1.5)";
+            text.innerText = "Hít vào thật sâu...";
+            phase = 1;
+        } else if(phase === 1) {
+            text.innerText = "Giữ hơi thở...";
+            phase = 2;
+        } else {
+            circle.style.transform = "scale(1)";
+            text.innerText = "Thở ra nhẹ nhàng...";
+            phase = 0;
+        }
+    }, 4000);
+}
+
 
 // ==============================================
 // 6. STATS (THỐNG KÊ DYNAMIC)
