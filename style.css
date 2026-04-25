@@ -305,6 +305,7 @@ input {
 .feed-card { border: none; border-bottom: 1px solid #f0f0f0; border-radius: 0; box-shadow: none; padding: 20px 0; margin: 0; }
 .mobile-content { background: white !important; } /* Nền trắng sạch kiểu Threads */
 
+
 /* ------------------------------------------*/
 /* --- Resource Library (Responsive Grid) ---*/
 /* ------------------------------------------*/
@@ -440,4 +441,34 @@ input {
     color: var(--deep-rose);
     margin-top: 20px;
     min-height: 24px;
+/* ------------------------------- */
+/* --- Giao diện chat AI ---*/
+/* ------------------------------- */
+/* Hiệu ứng bong bóng đang gõ */
+.typing-bubble {
+    background-color: #f0f0f0;
+    padding: 12px 16px;
+    border-radius: 18px;
+    border-bottom-left-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    background-color: #aaa;
+    border-radius: 50%;
+    animation: typing 1.4s infinite both;
+}
+
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1.2); opacity: 1; }
 }
