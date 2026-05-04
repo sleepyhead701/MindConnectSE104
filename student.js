@@ -1,78 +1,109 @@
-const API_BASE = "http://localhost:5000/api";
-const defaultChatHistory = [{ sender: "ai", text: "Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?" }];
-const defaultUserFeed = [];
-const resourcesDB = [];
+// student.js - FULL VERSION (MERGED)
 
-let chatHistory = defaultChatHistory;
-let userFeed = defaultUserFeed;
-let currentResources = resourcesDB;
+// --- 1. DỮ LIỆU & TRẠNG THÁI (STATE) ---
+let chatHistory = [
+    { sender: 'ai', text: 'Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?' }
+];
 
-async function api(path, options = {}) {
-    const res = await fetch(`${API_BASE}${path}`, {
-        headers: { "Content-Type": "application/json" },
-        ...options
-    });
-    if (!res.ok) throw new Error(`API failed: ${path}`);
-    return res.json();
-}
-
-function relativeTimeFrom(dateInput) {
-    const date = new Date(dateInput);
-    const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (diff < 60) return "Vừa xong";
-    if (diff < 3600) return `${Math.floor(diff / 60)}p trước`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
-    return `${Math.floor(diff / 86400)} ngày trước`;
-}
-
-window.onload = async function () {
-    try {
-        await api("/seed", { method: "POST" });
-        userFeed = await api("/feed");
-        chatHistory = await api("/chat");
-        currentResources = await api("/resources");
-    } catch (error) {
-        console.warn("Backend unavailable, fallback to local mode:", error.message);
+let userFeed = [
+    { 
+        id: 1, 
+        author: 'User #992', 
+        time: '10p trước', 
+        content: 'Cảm thấy áp lực deadline quá... Có ai biết cách quản lý thời gian hiệu quả không?', 
+        tags: ['Áp lực học tập', 'Cần lời khuyên'], 
+        likes: 5, 
+        comments: 2, 
+        isUser: false 
     }
-    renderStudentHome();
-    setTimeout(() => showNotification("📅 Đừng quên làm Quick Test cảm xúc hôm nay nhé!"), 1000);
+];
+
+const resourcesDB = [
+    { 
+        type: 'Video', 
+        title: 'Thiền 5 phút giảm lo âu', 
+        img: 'https://img.youtube.com/vi/inpok4MKVLM/mqdefault.jpg', 
+        url: 'https://www.youtube.com/watch?v=inpok4MKVLM' 
+    },
+    { 
+        type: 'Blog', 
+        title: 'Cách vượt qua Burnout mùa thi', 
+        img: 'https://suckhoedoisong.qltns.mediacdn.vn/thumb_w/640/324455921873985536/2023/4/26/cang-thang-truoc-ky-thi-16824842727412019885995.png', 
+        url: '#' 
+    },
+    { 
+        type: 'Book', 
+        title: 'Hiểu về trái tim - Minh Niệm', 
+        img: 'https://tramsach.vn/wp-content/uploads/2024/11/gioi-thieu-sach.jpg', 
+        url: 'https://thuvienhoasen.org/images/file/y5sBQGYE1QgQAHou/hieu-ve-trai-tim.pdf' },
+    { 
+        type: 'Podcast', 
+        title: 'Radio Cảm Xúc #12 - Chữa lành', 
+        img: 'https://i.scdn.co/image/ab67656300005f1ff6bed7462a8b94b0fb452114', 
+        url: 'https://open.spotify.com/episode/63VvDWyELyutySrZSRU1Hq' },
+    { 
+        type: 'Công cụ', 
+        title: 'Bài tập thở giảm Stress', 
+        img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlg1wCwbYTPH8TCqBnzGjRLEhlmNuhdWy44A&s', 
+        action: 'renderBreathingSpace'
+    }
+];
+
+// --- 2. KHỞI TẠO (INIT) ---
+window.onload = function() {
+    renderStudentHome(); // Mặc định vào trang chủ
+    setTimeout(() => {
+        showNotification("📅 Đừng quên làm Quick Test cảm xúc hôm nay nhé!");
+    }, 1000);
 };
 
-function logout() { window.location.href = "index.html"; }
+function logout() {
+    window.location.href = 'index.html';
+}
 
 function showNotification(text) {
-    const notif = document.createElement("div");
-    notif.className = "notification-toast";
+    const notif = document.createElement('div');
+    notif.className = 'notification-toast';
     notif.innerText = text;
-    const frame = document.querySelector(".mobile-frame");
-    if (frame) {
+    // Tìm mobile-frame để gắn vào, tránh lỗi nếu chưa load DOM
+    const frame = document.querySelector('.mobile-frame');
+    if(frame) {
         frame.appendChild(notif);
         setTimeout(() => notif.remove(), 4000);
     }
 }
 
 function updateNav(idx) {
-    document.querySelectorAll(".nav-icon").forEach((el, i) => el.classList.toggle("active", i === idx));
+    // 0:Home, 1:Diary, 2:Resources, 3:Stats, 4:Chat
+    document.querySelectorAll('.nav-icon').forEach((el, i) => el.classList.toggle('active', i === idx));
 }
 
+// ==============================================
+// 3. HOME (GIAO DIỆN LAI THREADS)
+// ==============================================
 function renderStudentHome() {
-    const container = document.getElementById("student-main-content");
+    const container = document.getElementById('student-main-content');
     updateNav(0);
-    const feedHtml = userFeed.map((post) => `
+
+    let feedHtml = userFeed.map(post => `
         <div class="feed-card">
             <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
                 <div style="font-weight:700; font-size: 14px; color: var(--deep-rose);">${post.author}</div>
-                <div style="font-size: 12px; color:#999;">${post.time || relativeTimeFrom(post.createdAt || Date.now())}</div>
+                <div style="font-size: 12px; color:#999;">${post.time}</div>
             </div>
             <p style="font-size: 15px; line-height: 1.5; margin-bottom: 10px; color: #1a1a1a;">${post.content}</p>
-            ${post.tags && post.tags.length > 0 ? `<div style="margin-bottom:10px;">${post.tags.map((t) => `<span style="background:#f0f0f0; font-size:11px; padding:3px 8px; border-radius:4px; margin-right:5px; color:#666;">#${t}</span>`).join("")}</div>` : ""}
+            
+            ${post.tags && post.tags.length > 0 ? 
+                `<div style="margin-bottom:10px;">${post.tags.map(t => `<span style="background:#f0f0f0; font-size:11px; padding:3px 8px; border-radius:4px; margin-right:5px; color:#666;">#${t}</span>`).join('')}</div>` 
+                : ''}
+
             <div style="display:flex; gap: 20px; font-size: 18px; color: #666;">
-                <span>❤️ <span style="font-size:13px;">${post.likes || 0}</span></span>
-                <span>💬 <span style="font-size:13px;">${post.comments || 0}</span></span>
+                <span>❤️ <span style="font-size:13px;">${post.likes}</span></span>
+                <span>💬 <span style="font-size:13px;">${post.comments}</span></span>
                 <span>🚀</span>
             </div>
         </div>
-    `).join("");
+    `).join('');
 
     container.innerHTML = `
         <div style="padding: 0 20px;">
@@ -85,9 +116,13 @@ function renderStudentHome() {
     `;
 }
 
+// ==============================================
+// 4. DIARY (QUICK TEST + NOTION EDITOR + AI TAG)
+// ==============================================
 function renderStudentDiary() {
-    const container = document.getElementById("student-main-content");
+    const container = document.getElementById('student-main-content');
     updateNav(1);
+
     container.innerHTML = `
         <div style="padding: 20px;">
             <div class="quick-test-section">
@@ -101,15 +136,18 @@ function renderStudentDiary() {
                 </div>
                 <div id="quick-test-msg" style="font-size:12px; color:var(--accent-pink); margin-top:10px; min-height:20px;"></div>
             </div>
+
             <h3 style="margin: 20px 0 10px 0; color: var(--deep-rose);">Nhật ký chuyên sâu</h3>
             <div class="notion-editor-container">
                 <input type="text" id="diary-title" class="notion-title" placeholder="Tiêu đề...">
                 <textarea id="diary-content" class="notion-body" placeholder="Viết những suy nghĩ của bạn, nhấn '/' để AI gợi ý..."></textarea>
+                
                 <div id="ai-suggestion-area" class="ai-tag-box hidden">
                     <div style="font-size:12px; font-weight:600; margin-bottom:5px;">🤖 AI đề xuất Tag:</div>
                     <div id="tag-container"></div>
                     <button class="btn-primary" style="width:100%; margin-top:10px; font-size:13px;" onclick="confirmAndPost()">Xác nhận & Đăng</button>
                 </div>
+
                 <div style="text-align:right; margin-top:10px;" id="action-area">
                     <button class="btn-primary" onclick="analyzeDiary()">✨ Phân tích AI</button>
                 </div>
@@ -118,93 +156,168 @@ function renderStudentDiary() {
     `;
 }
 
-async function selectMood(score, elem) {
-    document.querySelectorAll(".emoji-btn").forEach((e) => e.classList.remove("active"));
-    elem.classList.add("active");
-    const msg = document.getElementById("quick-test-msg");
-    try { await api("/mood", { method: "POST", body: JSON.stringify({ score }) }); } catch (_) {}
-    if (score <= 2) {
+function selectMood(score, elem) {
+    document.querySelectorAll('.emoji-btn').forEach(e => e.classList.remove('active'));
+    elem.classList.add('active');
+    
+    const msg = document.getElementById('quick-test-msg');
+    if(score <= 2) {
         msg.innerHTML = `Bạn ổn không? <u onclick="renderStudentStats()" style="cursor:pointer; font-weight:bold;">Xem thống kê</u> hoặc <u onclick="renderResources()" style="cursor:pointer; font-weight:bold;">nghe nhạc</u> nhé.`;
     } else {
-        msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score === 5 ? "Rất tốt" : "Bình thường");
+        msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score==5?"Rất tốt":"Bình thường");
     }
 }
 
-async function analyzeDiary() {
-    const content = document.getElementById("diary-content").value;
-    if (content.length < 5) return alert("Hãy viết dài hơn một chút nhé!");
-    const btn = document.querySelector("#action-area button");
-    btn.innerText = "⏳ Đang đọc...";
+function analyzeDiary() {
+    const content = document.getElementById('diary-content').value;
+    if(content.length < 5) return alert("Hãy viết dài hơn một chút nhé!");
+
+    const btn = document.querySelector('#action-area button');
+    btn.innerText = "⏳ Đang đọc..."; 
     btn.disabled = true;
 
-    let suggestedTags = ["Tâm sự", "Suy nghĩ"];
-    try {
-        const data = await api("/diary/analyze", { method: "POST", body: JSON.stringify({ content }) });
-        suggestedTags = data.tags || suggestedTags;
-    } catch (_) {}
+    // Giả lập API Call
+    setTimeout(() => {
+        let suggestedTags = [];
+        if(content.includes("thi") || content.includes("điểm") || content.includes("học")) suggestedTags.push("Học tập");
+        if(content.includes("buồn") || content.includes("khóc")) suggestedTags.push("Lo âu");
+        if(content.includes("bạn") || content.includes("cãi")) suggestedTags.push("Mối quan hệ");
+        if(suggestedTags.length === 0) suggestedTags.push("Tâm sự");
 
-    document.getElementById("action-area").classList.add("hidden");
-    const tagBox = document.getElementById("ai-suggestion-area");
-    tagBox.classList.remove("hidden");
-    const tagContainer = document.getElementById("tag-container");
-    tagContainer.innerHTML = suggestedTags.map((tag) => `<span class="tag-chip selected" onclick="toggleTag(this)">${tag}</span>`).join("") + `<span class="tag-chip" onclick="toggleTag(this)">+ Khác</span>`;
+        document.getElementById('action-area').classList.add('hidden');
+        const tagBox = document.getElementById('ai-suggestion-area');
+        tagBox.classList.remove('hidden');
+        
+        const tagContainer = document.getElementById('tag-container');
+        tagContainer.innerHTML = suggestedTags.map(tag => 
+            `<span class="tag-chip selected" onclick="toggleTag(this)">${tag}</span>`
+        ).join('') + `<span class="tag-chip" onclick="toggleTag(this)">+ Khác</span>`;
+    }, 1000);
 }
 
-function toggleTag(el) { el.classList.toggle("selected"); }
+function toggleTag(el) { el.classList.toggle('selected'); }
 
-async function confirmAndPost() {
-    const title = document.getElementById("diary-title").value;
-    const content = document.getElementById("diary-content").value;
+function confirmAndPost() {
+    const title = document.getElementById('diary-title').value;
+    const content = document.getElementById('diary-content').value;
     const finalTags = [];
-    document.querySelectorAll(".tag-chip.selected").forEach((el) => finalTags.push(el.innerText));
-    try {
-        await api("/diary", { method: "POST", body: JSON.stringify({ title, content, tags: finalTags }) });
-        userFeed = await api("/feed");
-    } catch (_) {
-        userFeed.unshift({ author: "Tôi", content: `<strong>${title}</strong><br>${content}`, tags: finalTags, likes: 0, comments: 0, createdAt: new Date().toISOString() });
-    }
+    document.querySelectorAll('.tag-chip.selected').forEach(el => finalTags.push(el.innerText));
+
+    userFeed.unshift({
+        id: Date.now(),
+        author: 'Tôi',
+        time: 'Vừa xong',
+        content: `<strong>${title}</strong><br>${content}`,
+        tags: finalTags,
+        likes: 0, comments: 0, isUser: true
+    });
+
     alert("✅ Đã lưu nhật ký & Gửi dữ liệu ẩn danh về trường!");
     renderStudentHome();
 }
 
-function renderResources() {
-    const container = document.getElementById("student-main-content");
+// ==============================================
+// 5. RESOURCES (TÀI NGUYÊN)
+// ==============================================
+function renderResources(filterType = 'Tất cả') {
+    const container = document.getElementById('student-main-content');
     updateNav(2);
-    const html = currentResources.map((res) => `
-        <a href="${res.url}" target="_blank" style="text-decoration:none; color:inherit;">
-            <div class="res-card">
-                <div class="res-img" style="background: url('${res.img || "https://via.placeholder.com/150"}') center/cover;">
-                    <span class="res-type">${res.type}</span>
+
+    // Lọc dữ liệu dựa trên tab được chọn
+    const filteredDB = filterType === 'Tất cả' 
+        ? resourcesDB 
+        : resourcesDB.filter(res => res.type === filterType);
+
+    const types = ['Tất cả', ...new Set(resourcesDB.map(r => r.type))];
+
+    const filterHtml = types.map(t => `
+        <button class="filter-btn ${t === filterType ? 'active' : ''}" 
+                onclick="renderResources('${t}')">${t}</button>
+    `).join('');
+
+    const cardsHtml = filteredDB.map(res => {
+        const actionAttr = res.action 
+            ? `onclick="${res.action}(); return false;" href="#"` 
+            : `href="${res.url}" target="_blank"`;
+
+        return `
+            <a ${actionAttr} class="res-link">
+                <div class="res-card">
+                    <div class="res-img-container" style="background-image: url('${res.img || 'https://via.placeholder.com/150'}')">
+                        <span class="res-type-tag">${res.type}</span>
+                    </div>
+                    <div class="res-info">
+                        <div class="res-title-main">${res.title}</div>
+                        <div class="res-footer">Xem thêm →</div>
+                    </div>
                 </div>
-                <div class="res-content"><div class="res-title">${res.title}</div></div>
+            </a>
+        `;
+    }).join('');
+
+    container.innerHTML = `
+        <div style="padding: 20px 0;">
+            <h2 style="font-family: var(--font-heading); font-size: 32px; margin-bottom: 10px;">Kho Tài nguyên</h2>
+            <div class="filter-bar">${filterHtml}</div>
+            <div class="resource-grid">
+                ${cardsHtml}
             </div>
-        </a>
-    `).join("");
-    container.innerHTML = `<div style="padding: 20px;"><h2 style="color: var(--deep-rose); margin-bottom: 15px;">Kho Tài nguyên</h2><div class="resource-grid">${html}</div></div>`;
+        </div>
+    `;
 }
 
-async function renderStudentStats() {
-    const container = document.getElementById("student-main-content");
-    updateNav(3);
-    let riskLevel = "medium";
-    let barHeight = 80;
-    let trendBars = [40, 60, 30, 80, 20];
-    try {
-        const stats = await api("/stats");
-        riskLevel = stats.riskLevel;
-        const trend = stats.moodTrend || [];
-        trendBars = (trend.length ? trend : [2, 3, 2, 4, 3]).slice(-5).map((score) => Math.max(20, score * 20));
-        barHeight = trendBars[trendBars.length - 1];
-    } catch (_) {}
+function renderBreathingSpace() {
+    const container = document.getElementById('student-main-content');
+    container.innerHTML = `
+        <div style="text-align:center; padding: 40px;">
+            <h2 style="font-family: var(--font-heading);">Bài tập thở giảm Stress</h2>
+            <p id="breath-text" style="color: #666; height: 30px;">Chuẩn bị...</p>
+            <div id="breath-circle" class="breathing-circle"></div>
+            <button class="btn-primary" onclick="startBreathing()">Bắt đầu</button>
+        </div>
+    `;
+}
 
+function startBreathing() {
+    const circle = document.getElementById('breath-circle');
+    const text = document.getElementById('breath-text');
+    let phase = 0; // 0: Hít, 1: Giữ, 2: Thở
+
+    setInterval(() => {
+        if(phase === 0) {
+            circle.style.transform = "scale(1.5)";
+            text.innerText = "Hít vào thật sâu...";
+            phase = 1;
+        } else if(phase === 1) {
+            text.innerText = "Giữ hơi thở...";
+            phase = 2;
+        } else {
+            circle.style.transform = "scale(1)";
+            text.innerText = "Thở ra nhẹ nhàng...";
+            phase = 0;
+        }
+    }, 4000);
+}
+
+
+// ==============================================
+// 6. STATS (THỐNG KÊ DYNAMIC)
+// ==============================================
+function renderStudentStats() {
+    const container = document.getElementById('student-main-content');
+    updateNav(3);
+
+    // Logic cũ: Risk Level
+    const riskLevel = 'medium'; // Bạn đổi thành 'low' hoặc 'high' để test
     let alertColor = "var(--warning)";
     let aiMessage = "Có vẻ bạn đang hơi căng thẳng. Hãy nghỉ ngơi một chút nhé.";
     let barColor = "var(--warning)";
-    if (riskLevel === "high") {
+
+    if(riskLevel === 'high') {
         alertColor = "#FF6961";
         aiMessage = "Mức độ lo âu CAO. Chúng tôi khuyến nghị bạn đặt lịch tham vấn ngay.";
         barColor = "var(--deep-rose)";
-    } else if (riskLevel === "low") {
+    } else if (riskLevel === 'low') {
         alertColor = "var(--success)";
         aiMessage = "Trạng thái cảm xúc ổn định. Hãy duy trì nhé!";
         barColor = "var(--success)";
@@ -213,104 +326,176 @@ async function renderStudentStats() {
     container.innerHTML = `
         <div style="padding: 20px;">
             <h2 style="color: var(--deep-rose); margin-bottom: 20px;">Thống kê Cảm xúc</h2>
+            
             <div style="display:flex; align-items:flex-end; justify-content:space-between; height: 150px; padding: 0 10px 10px 10px; border-bottom: 1px solid #ccc;">
-                <div style="width:30px; height:${trendBars[0]}%; background: #ddd; border-radius: 4px;"></div>
-                <div style="width:30px; height:${trendBars[1]}%; background: var(--accent-pink); border-radius: 4px;"></div>
-                <div style="width:30px; height:${trendBars[2]}%; background: #ddd; border-radius: 4px;"></div>
-                <div style="width:30px; height:${barHeight}%; background: ${barColor}; border-radius: 4px;"></div>
-                <div style="width:30px; height:${trendBars[4]}%; background: #eee; border-radius: 4px; border:1px dashed #999;"></div>
+                <div style="width:30px; height:40%; background: #ddd; border-radius: 4px;"></div>
+                <div style="width:30px; height:60%; background: var(--accent-pink); border-radius: 4px;"></div>
+                <div style="width:30px; height:30%; background: #ddd; border-radius: 4px;"></div>
+                <div style="width:30px; height:80%; background: ${barColor}; border-radius: 4px;"></div>
+                <div style="width:30px; height:20%; background: #eee; border-radius: 4px; border:1px dashed #999;"></div>
             </div>
             <p style="text-align:center; font-size: 12px; color: #888; margin-top: 5px;">T2 - T3 - T4 - T5 (Hôm nay)</p>
+
             <div class="feed-card" style="margin: 20px 0; border-left: 4px solid ${alertColor};">
                 <h4 style="display:flex; align-items:center; gap:5px;">🤖 Phân tích AI</h4>
                 <p style="font-size: 13px; margin-top: 5px;">${aiMessage}</p>
             </div>
+
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <button class="btn-outline" onclick="renderResources()" style="font-size:13px;">📺 Xem Tài nguyên</button>
-                ${riskLevel !== "low" ? `<button class="btn-primary" onclick="openBookingModal()" style="font-size:13px;">📅 Đặt lịch ngay</button>` : ""}
+                ${riskLevel !== 'low' ? `<button class="btn-primary" onclick="openBookingModal()" style="font-size:13px;">📅 Đặt lịch ngay</button>` : ''}
             </div>
         </div>
     `;
 }
 
+// ==============================================
+// 7. CHATBOT (LOGIC CŨ ĐÃ KHÔI PHỤC)
+// ==============================================
 function renderChat() {
-    const container = document.getElementById("student-main-content");
+    const container = document.getElementById('student-main-content');
     updateNav(4);
-    const msgsHtml = chatHistory.map((msg) => `<div class="msg ${msg.sender === "ai" ? "msg-ai" : "msg-user"}">${msg.text}</div>`).join("");
+    
+    let msgsHtml = chatHistory.map(msg => 
+        `<div class="msg ${msg.sender === 'ai' ? 'msg-ai' : 'msg-user'}">${msg.text}</div>`
+    ).join('');
+    
     container.innerHTML = `
-        <div class="chat-interface">
-            <div class="chat-messages" id="chat-box">${msgsHtml}</div>
+        <div class="chat-container" style="display:flex; flex-direction:column; height: 80vh;">
+            <div class="chat-box" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
+                ${chatHistory.map(msg => `
+                    <div style="align-self: ${msg.sender === 'user' ? 'flex-end' : 'flex-start'}; max-width: 80%;">
+                        <div style="
+                            background: ${msg.sender === 'ai' ? 'var(--primary-pink)' : '#f3f3f3'};
+                            color: #333;
+                            padding: 12px 16px;
+                            border-radius: 15px;
+                            border-bottom-${msg.sender === 'ai' ? 'right' : 'left'}-radius: 4px;
+                            font-size: 15px;
+                            line-height: 1.5;
+                        ">
+                            ${msg.text}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
             <div style="padding: 15px; background: white; border-top: 1px solid #eee; display:flex; gap: 10px;">
                 <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." style="margin:0;" onkeypress="handleEnter(event)">
                 <button class="btn-primary" style="border-radius: 50%; width: 45px; height: 45px; display:flex; justify-content:center; align-items:center; flex-shrink: 0;" onclick="sendMsg()">➤</button>
             </div>
         </div>
     `;
-    setTimeout(() => {
-        const box = document.getElementById("chat-box");
-        if (box) box.scrollTop = box.scrollHeight;
+    setTimeout(() => { 
+        const box = document.getElementById('chat-box');
+        if(box) box.scrollTop = box.scrollHeight; 
     }, 50);
 }
 
-function handleEnter(e) { if (e.key === "Enter") sendMsg(); }
+function handleEnter(e) { if (e.key === 'Enter') sendMsg(); }
 
 async function sendMsg() {
-    const input = document.getElementById("chat-input");
+    const input = document.getElementById('chat-input');
     const txt = input.value.trim();
-    if (!txt) return;
-    input.value = "";
-    try {
-        const data = await api("/chat", { method: "POST", body: JSON.stringify({ text: txt }) });
-        chatHistory.push(data.userMsg, data.aiMsg);
-    } catch (_) {
-        chatHistory.push({ sender: "user", text: txt }, { sender: "ai", text: "Cảm ơn bạn đã chia sẻ. Mình luôn ở đây lắng nghe bạn. Hãy kể thêm nhé." });
-    }
+    if(!txt) return;
+
+    chatHistory.push({ sender: 'user', text: txt });
     renderChat();
+    input.value = '';
     input.focus();
+
+    const chatBox = document.querySelector('.chat-box');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'ai-typing-indicator';
+    typingDiv.style.display = 'flex';
+    typingDiv.style.flexDirection = 'column';
+    typingDiv.innerHTML = `
+        <div class="typing-bubble">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    `;
+    chatBox.appendChild(typingDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // ------------------------------------------
+    // Uncomment phần này nếu đã có API chatbot
+    // -----------------------------------------
+    // try {
+    //     const aiResponse = await callChatBotAPI(txt);
+        
+    //     // 4. Xóa hiệu ứng Typing và cập nhật tin nhắn thật của AI
+    //     const indicator = document.getElementById('ai-typing-indicator');
+    //     if (indicator) indicator.remove();
+
+    //     chatHistory.push({ sender: 'ai', text: aiResponse });
+    //     renderChat();
+        
+    //     if (typeof saveData === "function") saveData();
+    // } catch (error) {
+    //     document.getElementById('ai-typing-indicator').remove();
+    //     chatHistory.push({ sender: 'ai', text: "Lỗi kết nối rồi, bạn thử lại nhé!" });
+    //     renderChat();
+    // }
+
+    // Logic phân tích từ khóa (Đã khôi phục)
+    setTimeout(() => {
+        let aiRes = "";
+        const lowerTxt = txt.toLowerCase();
+        if(lowerTxt.includes("buồn") || lowerTxt.includes("khóc") || lowerTxt.includes("mệt") || lowerTxt.includes("stress")) {
+            aiRes = "Mình cảm nhận được bạn đang có tâm trạng không tốt. Bạn có muốn thực hiện bài kiểm tra nhanh hoặc nghe nhạc thư giãn không?";
+        } else if (lowerTxt.includes("chết") || lowerTxt.includes("tự tử") || lowerTxt.includes("kết thúc")) {
+            aiRes = "⚠️ CẢNH BÁO: Mình rất lo lắng cho bạn. Xin hãy bình tĩnh. Mình sẽ kết nối bạn với chuyên gia tâm lý ngay lập tức. Hotline: 1900.1267";
+        } else {
+            aiRes = "Cảm ơn bạn đã chia sẻ. Mình luôn ở đây lắng nghe bạn. Hãy kể thêm nhé.";
+        }
+        chatHistory.push({ sender: 'ai', text: aiRes });
+        renderChat();
+    }, 1500);
 }
 
+// ==============================================
+// 8. BOOKING MODAL (LOGIC CŨ ĐÃ KHÔI PHỤC)
+// ==============================================
 function openBookingModal() {
-    const modal = document.createElement("div");
-    modal.id = "booking-modal";
-    modal.className = "modal-overlay";
-    modal.onclick = function (e) { if (e.target === modal) closeBookingModal(); };
+    const modal = document.createElement('div');
+    modal.id = 'booking-modal';
+    modal.className = 'modal-overlay';
+    
+    modal.onclick = function(e) { if(e.target === modal) closeBookingModal(); }
+
     modal.innerHTML = `
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
                 <h3 style="color: var(--deep-rose); font-family: var(--font-heading);">Đặt lịch tham vấn</h3>
                 <span onclick="closeBookingModal()" style="font-size: 24px; cursor:pointer; color: #999;">&times;</span>
             </div>
+
             <div class="info-row"><span class="label">📞 Hotline hỗ trợ:</span><a href="tel:19001234" class="val" style="text-decoration:none;">1900.1234</a></div>
             <div class="info-row"><span class="label">📍 Địa điểm:</span><span class="val" style="font-size: 14px;">Phòng 102 - Khu B</span></div>
+
             <div style="margin-bottom: 15px;">
                 <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Chọn thời gian mong muốn:</label>
-                <input id="booking-time" type="datetime-local" style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                <input type="datetime-local" style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
             </div>
             <div style="margin-bottom: 20px;">
                 <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Ghi chú (Không bắt buộc):</label>
-                <input id="booking-note" type="text" placeholder="Ví dụ: Mình muốn tư vấn về..." style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                <input type="text" placeholder="Ví dụ: Mình muốn tư vấn về..." style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
             </div>
             <button class="btn-primary" style="width:100%; padding: 12px;" onclick="handleConfirmBooking()">Xác nhận đặt lịch</button>
         </div>
     `;
-    document.querySelector(".mobile-frame").appendChild(modal);
+    document.querySelector('.mobile-frame').appendChild(modal);
 }
 
 function closeBookingModal() {
-    const modal = document.getElementById("booking-modal");
-    if (modal) modal.remove();
+    const modal = document.getElementById('booking-modal');
+    if(modal) modal.remove();
 }
 
-async function handleConfirmBooking() {
-    const desiredTime = document.getElementById("booking-time")?.value;
-    const note = document.getElementById("booking-note")?.value || "";
-    if (!desiredTime) return alert("Bạn cần chọn thời gian trước khi đặt lịch.");
-    try {
-        await api("/booking", {
-            method: "POST",
-            body: JSON.stringify({ desiredTime, note, phone: "1900.1234", location: "Phòng 102 - Khu B" })
-        });
-    } catch (_) {}
+function handleConfirmBooking() {
     closeBookingModal();
-    setTimeout(() => alert("✅ Đã gửi yêu cầu thành công!\nCán bộ tham vấn sẽ liên hệ lại với bạn qua SĐT hoặc Email trong vòng 24h."), 300);
+    setTimeout(() => {
+        alert("✅ Đã gửi yêu cầu thành công!\nCán bộ tham vấn sẽ liên hệ lại với bạn qua SĐT hoặc Email trong vòng 24h.");
+    }, 300);
 }

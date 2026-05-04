@@ -148,11 +148,6 @@
         .btn-submit-gradient:hover { transform: translateY(-2px); }
 
         .footer-text { text-align: center; font-size: 12px; color: #999; margin-top: 20px; }
-        .auth-toggle-text { text-align: center; font-size: 13px; color: #666; margin-top: 12px; }
-        .auth-toggle-link { color: var(--deep-rose); cursor: pointer; font-weight: 600; }
-        .auth-msg { margin-top: 12px; font-size: 13px; text-align: center; min-height: 18px; }
-        .auth-msg.error { color: #c62828; }
-        .auth-msg.success { color: #2e7d32; }
         #presentation-frame { display: none; }
     </style>
 </head>
@@ -179,38 +174,26 @@
                 <div class="role-btn" id="tab-school" onclick="switchRole('school')">Nhà trường</div>
             </div>
 
-            <form onsubmit="handleAuth(event)">
+            <form onsubmit="handleLogin(event)">
                 <div class="input-group">
                     <label class="input-label">Tên đăng nhập</label>
-                    <input id="username-input" type="text" class="custom-input" placeholder="Email / MSSV" required>
+                    <input type="text" class="custom-input" placeholder="Email / MSSV" required>
                 </div>
                 
                 <div class="input-group">
                     <label class="input-label">Mật khẩu</label>
-                    <input id="password-input" type="password" class="custom-input" placeholder="Mật khẩu" required>
+                    <input type="password" class="custom-input" placeholder="Mật khẩu" required>
                 </div>
 
-                <div class="input-group" id="confirm-password-group" style="display: none;">
-                    <label class="input-label">Xác nhận mật khẩu</label>
-                    <input id="confirm-password-input" type="password" class="custom-input" placeholder="Nhập lại mật khẩu">
-                </div>
-
-                <button id="auth-submit-btn" class="btn-submit-gradient">Truy cập</button>
+                <button class="btn-submit-gradient">Truy cập</button>
             </form>
 
-            <div class="auth-toggle-text">
-                <span id="auth-toggle-label">Chưa có tài khoản?</span>
-                <span class="auth-toggle-link" onclick="toggleAuthMode()" id="auth-toggle-link">Đăng ký</span>
-            </div>
-            <div id="auth-msg" class="auth-msg"></div>
             <p class="footer-text">Dữ liệu được mã hóa & Bảo mật tuyệt đối</p>
         </div>
     </div>
 
     <script>
         let currentRole = 'student';
-        let isRegisterMode = false;
-        const API_BASE = 'http://localhost:5000/api';
 
         function switchRole(role) {
             currentRole = role;
@@ -219,63 +202,12 @@
             document.getElementById('tab-' + role).classList.add('active');
         }
 
-        function setAuthMessage(text, type = '') {
-            const msgEl = document.getElementById('auth-msg');
-            msgEl.className = 'auth-msg';
-            if (type) msgEl.classList.add(type);
-            msgEl.innerText = text;
-        }
-
-        function toggleAuthMode() {
-            isRegisterMode = !isRegisterMode;
-            document.getElementById('confirm-password-group').style.display = isRegisterMode ? 'block' : 'none';
-            document.getElementById('auth-submit-btn').innerText = isRegisterMode ? 'Đăng ký' : 'Truy cập';
-            document.getElementById('auth-toggle-label').innerText = isRegisterMode ? 'Đã có tài khoản?' : 'Chưa có tài khoản?';
-            document.getElementById('auth-toggle-link').innerText = isRegisterMode ? 'Đăng nhập' : 'Đăng ký';
-            setAuthMessage('');
-        }
-
-        async function handleAuth(e) {
+        function handleLogin(e) {
             e.preventDefault();
-            const username = document.getElementById('username-input').value.trim();
-            const password = document.getElementById('password-input').value;
-            const confirmPassword = document.getElementById('confirm-password-input').value;
-
-            if (isRegisterMode) {
-                if (password.length < 6) {
-                    return setAuthMessage('Mật khẩu phải từ 6 ký tự', 'error');
-                }
-                if (password !== confirmPassword) {
-                    return setAuthMessage('Mật khẩu xác nhận không khớp', 'error');
-                }
-            }
-
-            try {
-                const endpoint = isRegisterMode ? '/auth/register' : '/auth/login';
-                const response = await fetch(`${API_BASE}${endpoint}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, role: currentRole })
-                });
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.message || 'Có lỗi xảy ra');
-                }
-
-                if (isRegisterMode) {
-                    setAuthMessage('Đăng ký thành công, bạn có thể đăng nhập ngay!', 'success');
-                    toggleAuthMode();
-                    return;
-                }
-
-                localStorage.setItem('mindconnect_user', JSON.stringify(data.user));
-                if (currentRole === 'student') {
-                    window.location.href = 'student.html';
-                } else {
-                    window.location.href = 'school.html';
-                }
-            } catch (error) {
-                setAuthMessage(error.message || 'Không thể kết nối backend', 'error');
+            if(currentRole === 'student') {
+                window.location.href = 'student.html';
+            } else {
+                window.location.href = 'school.html';
             }
         }
     </script>
