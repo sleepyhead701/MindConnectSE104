@@ -1,4 +1,17 @@
 # Mind_Connect
-Hey, this is how to use:
-Run the index.html or directly open it from visual studio code via Server Host
-that's the end. Goodbye
+
+## Run frontend + backend (MongoDB)
+
+1. Install dependencies:
+   - `npm install`
+2. Create env file:
+   - copy `.env.example` to `.env`
+3. Start MongoDB:
+   - local: run MongoDB Community on default port `27017`
+   - or use MongoDB Atlas and set `MONGODB_URI` in `.env`
+4. Start backend:
+   - `npm run dev`
+5. Open app:
+   - `http://localhost:5000/student.html`
+
+Backend APIs are under `/api` and data is stored in MongoDB.
