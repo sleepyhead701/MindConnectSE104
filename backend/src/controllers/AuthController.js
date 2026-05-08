@@ -9,9 +9,13 @@ const validatePassword = (password) => {
   return password && password.length >= 6;
 };
 
+const validateRole = (role) => {
+  return !role || ['student', 'school', 'admin'].includes(role);
+};
+
 const register = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     if (!email) {
       return res.status(400).json({
@@ -41,7 +45,14 @@ const register = async (req, res, next) => {
       });
     }
 
-    const result = await authService.register(email, password);
+    if (!validateRole(role)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Role must be student, school, or admin'
+      });
+    }
+
+    const result = await authService.register(email, password, role);
 
     res.status(201).json({
       success: true,

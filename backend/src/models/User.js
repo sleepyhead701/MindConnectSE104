@@ -17,6 +17,11 @@ const userSchema = new mongoose.Schema({
     maxlength: [128, 'Password must be at most 128 characters long'],
     select: false
   },
+  role: {
+    type: String,
+    enum: ['student', 'school', 'admin'],
+    default: 'student'
+  },
   reset_token: {
     type: String,
     select: false,

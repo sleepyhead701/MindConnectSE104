@@ -43,37 +43,48 @@
                     <div id="red-alert-box" class="alert-banner hidden">
                         <div style="font-size: 24px;">🚨</div>
                         <div style="flex:1">
-                            <strong>PHÁT HIỆN RỦI RO CAO: Lớp CNTT_K48</strong>
-                            <p style="font-size: 13px; margin-top: 2px;">Có 02 sinh viên báo cáo ý định tự hại. Cần kích hoạt quy trình hỗ trợ khẩn cấp.</p>
+                            <strong id="red-alert-title">PHÁT HIỆN RỦI RO CAO: Lớp CNTT_K48</strong>
+                            <p id="red-alert-summary" style="font-size: 13px; margin-top: 2px;">Có 02 sinh viên báo cáo ý định tự hại. Cần kích hoạt quy trình hỗ trợ khẩn cấp.</p>
                         </div>
-                        <button class="btn btn-primary" style="background: #d32f2f; font-size: 13px;" onclick="alert('Đã gửi thông báo đến GVCN và Tổ tham vấn!')">Kích hoạt Hỗ trợ</button>
+                        <button class="btn btn-primary" style="background: #d32f2f; font-size: 13px;" onclick="activateSupportForLatestAlert()">Kích hoạt Hỗ trợ</button>
+                    </div>
+
+                    <div id="risk-alert-panel" class="risk-alert-panel hidden">
+                        <div class="risk-alert-header">
+                            <div>
+                                <h3>Luồng cảnh báo rủi ro từ sinh viên</h3>
+                                <p>Cảnh báo được tạo tự động từ Diary, Chat AI hoặc Quick Test và được ẩn danh trước khi gửi sang nhà trường.</p>
+                            </div>
+                            <span id="risk-alert-count" class="badge bg-high">0 cảnh báo</span>
+                        </div>
+                        <div id="risk-alert-list"></div>
                     </div>
 
                     <div class="metrics-grid">
                         <div class="metric-card">
                             <div style="color: #888; font-size: 13px;">Chỉ số Cảm xúc (Sentiment)</div>
-                            <div class="stat-num" style="color: var(--success);">7.8/10</div>
+                            <div class="stat-num" id="metric-sentiment" style="color: var(--success);">7.8/10</div>
                             <div style="font-size: 12px;">
                                 Ổn định <span class="trend-badge trend-good-up">▬ 0%</span>
                             </div>
                         </div>
                         <div class="metric-card">
                             <div style="color: #888; font-size: 13px;">Tỷ lệ SV Rủi ro Cao</div>
-                            <div class="stat-num" style="color: var(--danger);">4.2%</div>
+                            <div class="stat-num" id="metric-risk-rate" style="color: var(--danger);">4.2%</div>
                             <div style="font-size: 12px;">
                                 So với tuần trước <span class="trend-badge trend-up">▲ 1.2%</span>
                             </div>
                         </div>
                         <div class="metric-card">
                             <div style="color: #888; font-size: 13px;">Gắn kết Hàng ngày</div>
-                            <div class="stat-num" style="color: var(--accent-pink);">1,250</div>
+                            <div class="stat-num" id="metric-engagement" style="color: var(--accent-pink);">1,250</div>
                             <div style="font-size: 12px;">
                                 Tương tác App <span class="trend-badge trend-good-up">▲ 15%</span>
                             </div>
                         </div>
                         <div class="metric-card">
                             <div style="color: #888; font-size: 13px;">Giảm Stress sau Can thiệp</div>
-                            <div class="stat-num" style="color: var(--primary-pink);">-35%</div>
+                            <div class="stat-num" id="metric-intervention" style="color: var(--primary-pink);">-35%</div>
                             <div style="font-size: 12px;">Dựa trên post-survey</div>
                         </div>
                         <div class="stat-box" style="grid-column: span 2;">
@@ -151,7 +162,7 @@
                         
                         <div class="stat-box">
                             <h4 style="margin-bottom: 15px;">💬 Top 5 Chủ đề Nổi bật</h4>
-                            <ul style="padding-left: 20px; line-height: 1.8;">
+                            <ul id="top-topic-list" style="padding-left: 20px; line-height: 1.8;">
                                 <li><strong>1. Áp lực thi cử</strong> (45%) <span style="color:red;">▲</span></li>
                                 <li><strong>2. Hướng nghiệp</strong> (20%) <span style="color:green;">▼</span></li>
                                 <li><strong>3. Mâu thuẫn bạn bè</strong> (15%) ▬</li>
@@ -189,13 +200,14 @@
 
                         <div class="stat-box">
                             <h4 style="margin-bottom: 10px;">📋 Quản lý Ca Tư vấn (Cần xử lý)</h4>
-                            <table style="width:100%; font-size: 13px; border-collapse: collapse;">
+                            <table id="consultation-case-table" style="width:100%; font-size: 13px; border-collapse: collapse;">
                                 <tr style="border-bottom: 1px solid #eee;">
                                     <th style="text-align:left; padding:5px;">Case ID</th>
                                     <th style="text-align:left; padding:5px;">Đơn vị</th>
                                     <th style="text-align:left; padding:5px;">Trạng thái</th>
                                     <th style="text-align:right; padding:5px;">Xử lý</th>
                                 </tr>
+                                <tbody id="consultation-case-body">
                                 <tr id="case-821">
                                     <td style="padding:8px;">#SV_821</td>
                                     <td>Lớp KT_02</td>
@@ -214,6 +226,7 @@
                                         <button class="btn-action-sm btn-warn" onclick="handleConsultation('fail', 'case-105')">📅 Hẹn lại</button>
                                     </td>
                                 </tr>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -224,31 +237,279 @@
     </div>
 
     <script>
+        const API_BASE_URL = 'http://localhost:3000';
+        const RISK_ALERTS_KEY = 'mindconnect:risk-alerts';
+        const DEFAULT_CONSULTATION_ROWS = document.getElementById('consultation-case-body').innerHTML;
+        let dashboardState = null;
+
         function logout() {
             window.location.href = 'index.html';
         }
 
+        function getAuthSession() {
+            try {
+                return JSON.parse(localStorage.getItem('mindconnect:auth')) || null;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function getAuthHeaders() {
+            const session = getAuthSession();
+            return session?.token ? { Authorization: `Bearer ${session.token}` } : {};
+        }
+
+        async function apiRequest(path, options = {}) {
+            const response = await fetch(`${API_BASE_URL}${path}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeaders(),
+                    ...(options.headers || {})
+                }
+            });
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok || result.success === false) {
+                throw new Error(result.error || 'API request failed');
+            }
+
+            return result.data;
+        }
+
+        function getRiskAlerts() {
+            try {
+                return JSON.parse(localStorage.getItem(RISK_ALERTS_KEY)) || [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function saveRiskAlerts(alerts) {
+            localStorage.setItem(RISK_ALERTS_KEY, JSON.stringify(alerts));
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatAlertTime(value) {
+            return new Date(value).toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit'
+            });
+        }
+
+        function filterAlertsByTime(alerts, timeRange) {
+            if (timeRange === 'custom') return alerts;
+
+            const now = new Date();
+            return alerts.filter(alert => {
+                const createdAt = new Date(alert.created_at);
+                if (Number.isNaN(createdAt.getTime())) return false;
+
+                if (timeRange === 'today') {
+                    return createdAt.toDateString() === now.toDateString();
+                }
+
+                const days = Number(timeRange);
+                if (!days) return true;
+                return createdAt >= new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+            });
+        }
+
+        function renderRiskAlertPanel(alerts) {
+            const panel = document.getElementById('risk-alert-panel');
+            const count = document.getElementById('risk-alert-count');
+            const list = document.getElementById('risk-alert-list');
+
+            if (!alerts.length) {
+                panel.classList.add('hidden');
+                list.innerHTML = '';
+                return;
+            }
+
+            panel.classList.remove('hidden');
+            count.innerText = `${alerts.length} cảnh báo`;
+            list.innerHTML = alerts.map(alert => `
+                <div class="risk-alert-item ${alert.severity === 'critical' ? 'critical' : ''}">
+                    <div>
+                        <strong>${escapeHtml(alert.label)}</strong>
+                        <p>${escapeHtml(alert.excerpt || 'Không có trích đoạn')}</p>
+                        <span>${escapeHtml(alert.source)} · ${escapeHtml(alert.class_name)} · ${formatAlertTime(alert.created_at)}</span>
+                    </div>
+                    <button class="btn-action-sm btn-success" onclick="markRiskAlert('${alert.id}', 'contacted')">Đã liên hệ</button>
+                </div>
+            `).join('');
+        }
+
+        function renderConsultationCases(alerts) {
+            const body = document.getElementById('consultation-case-body');
+            const bookings = dashboardState?.bookings || [];
+            const dynamicRows = alerts.map(alert => {
+                const rowId = `case-${alert.id}`;
+                const badgeClass = alert.severity === 'critical' ? 'bg-high' : 'bg-med';
+                return `
+                    <tr id="${rowId}" data-alert-id="${alert.id}">
+                        <td style="padding:8px;">#${escapeHtml(alert.id)}</td>
+                        <td>${escapeHtml(alert.class_name || alert.department || 'Chưa rõ')}</td>
+                        <td><span class="badge ${badgeClass}">${escapeHtml(alert.label)}</span></td>
+                        <td style="text-align:right;">
+                            <button class="btn-action-sm btn-success" onclick="handleConsultation('success', '${rowId}')">✔ Xong</button>
+                            <button class="btn-action-sm btn-warn" onclick="handleConsultation('fail', '${rowId}')">📅 Hẹn lại</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            const bookingRows = bookings
+                .filter(booking => !['completed', 'cancelled'].includes(booking.status))
+                .map(booking => {
+                    const rowId = `booking-${booking.id}`;
+                    return `
+                        <tr id="${rowId}" data-booking-id="${booking.id}">
+                            <td style="padding:8px;">#${escapeHtml(booking.id)}</td>
+                            <td>${escapeHtml(booking.class_name || booking.department || 'Chưa rõ')}</td>
+                            <td><span class="badge bg-med">Yêu cầu tham vấn</span></td>
+                            <td style="text-align:right;">
+                                <button class="btn-action-sm btn-success" onclick="handleConsultation('success', '${rowId}')">✔ Xong</button>
+                                <button class="btn-action-sm btn-warn" onclick="handleConsultation('fail', '${rowId}')">📅 Hẹn lại</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+            body.innerHTML = dynamicRows + bookingRows + DEFAULT_CONSULTATION_ROWS;
+        }
+
+        async function fetchDashboardData() {
+            const timeRange = document.getElementById('timeSelect').value;
+            dashboardState = await apiRequest(`/api/dashboard?range=${encodeURIComponent(timeRange)}`);
+            return dashboardState;
+        }
+
+        function renderMetrics() {
+            const metrics = dashboardState?.metrics;
+            if (!metrics) return;
+
+            document.getElementById('metric-sentiment').innerText = `${metrics.sentiment}/10`;
+            document.getElementById('metric-risk-rate').innerText = `${metrics.high_risk_rate}%`;
+            document.getElementById('metric-engagement').innerText = String(metrics.engagement);
+            document.getElementById('metric-intervention').innerText = `${metrics.intervention_reduction}%`;
+        }
+
+        function renderTopTopics() {
+            const topics = dashboardState?.top_topics;
+            if (!Array.isArray(topics) || topics.length === 0) return;
+
+            document.getElementById('top-topic-list').innerHTML = topics.map((topic, index) => `
+                <li><strong>${index + 1}. ${escapeHtml(topic.tag)}</strong> (${escapeHtml(topic.count)})</li>
+            `).join('');
+        }
+
+        function renderRiskDashboard() {
+            const timeRange = document.getElementById('timeSelect').value;
+            const backendAlerts = Array.isArray(dashboardState?.alerts) ? dashboardState.alerts : [];
+            const localAlerts = filterAlertsByTime(getRiskAlerts(), timeRange);
+            const mergedById = new Map([...backendAlerts, ...localAlerts].map(alert => [alert.id, alert]));
+            const alerts = Array.from(mergedById.values())
+                .filter(alert => alert.status !== 'resolved');
+            const latestAlert = alerts[0];
+            const redAlertBox = document.getElementById('red-alert-box');
+
+            if (latestAlert) {
+                const latestLabel = latestAlert.label || 'Cảnh báo rủi ro';
+                redAlertBox.classList.remove('hidden');
+                document.getElementById('red-alert-title').innerText =
+                    `${latestLabel.toUpperCase()}: ${latestAlert.class_name || latestAlert.department || 'Không rõ đơn vị'}`;
+                document.getElementById('red-alert-summary').innerText =
+                    `${alerts.length} cảnh báo đang mở. Nguồn gần nhất: ${latestAlert.source || 'Không rõ'}, từ khóa: "${latestAlert.matched_keyword || 'N/A'}". Cần kích hoạt quy trình hỗ trợ.`;
+            } else {
+                redAlertBox.classList.add('hidden');
+            }
+
+            renderMetrics();
+            renderTopTopics();
+            renderRiskAlertPanel(alerts);
+            renderConsultationCases(alerts);
+        }
+
+        async function markRiskAlert(alertId, status) {
+            const alerts = getRiskAlerts();
+            const target = alerts.find(alert => alert.id === alertId);
+            if (target) {
+                target.status = status;
+                target.updated_at = new Date().toISOString();
+                saveRiskAlerts(alerts);
+            }
+
+            try {
+                await apiRequest(`/api/risk-alerts/${alertId}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status })
+                });
+            } catch (error) {
+                // Local status update remains the offline fallback.
+            }
+
+            updateDashboardData();
+        }
+
+        async function activateSupportForLatestAlert() {
+            const alerts = getRiskAlerts();
+            const backendAlerts = Array.isArray(dashboardState?.alerts) ? dashboardState.alerts : [];
+            const latestAlert = [...backendAlerts, ...alerts].find(alert => alert.status !== 'resolved');
+
+            if (!latestAlert) {
+                alert('Không có cảnh báo động mới để kích hoạt.');
+                return;
+            }
+
+            if (alerts.some(alert => alert.id === latestAlert.id)) {
+                latestAlert.status = 'contacted';
+                latestAlert.updated_at = new Date().toISOString();
+                saveRiskAlerts(alerts);
+            }
+
+            try {
+                await apiRequest(`/api/risk-alerts/${latestAlert.id}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ status: 'contacted' })
+                });
+            } catch (error) {
+                // Backend may be unavailable in demo mode.
+            }
+
+            alert('Đã gửi thông báo đến GVCN và Tổ tham vấn.');
+            updateDashboardData();
+        }
+
         // --- LOGIC CẬP NHẬT DỮ LIỆU (MOCK DATA) ---
         function updateDashboardData() {
-            const timeRange = document.getElementById('timeSelect').value;
-            
             // Giả lập hiệu ứng loading
             document.querySelector('.metrics-grid').style.opacity = '0.5';
-            setTimeout(() => {
+            setTimeout(async () => {
                 document.querySelector('.metrics-grid').style.opacity = '1';
-                
-                // Logic giả lập thay đổi số liệu theo thời gian
-                if(timeRange === 'today' || timeRange === '7') {
-                    document.getElementById('red-alert-box').classList.remove('hidden'); // Hiện cảnh báo nếu là dữ liệu gần
-                } else {
-                    document.getElementById('red-alert-box').classList.add('hidden');
+                try {
+                    await fetchDashboardData();
+                } catch (error) {
+                    dashboardState = null;
                 }
+                renderRiskDashboard();
             }, 300);
         }
 
         // --- LOGIC XỬ LÝ SAU TƯ VẤN ---
         function handleConsultation(status, rowId) {
             const row = document.getElementById(rowId);
+            const alertId = row?.dataset.alertId;
+            const bookingId = row?.dataset.bookingId;
             
             if (status === 'success') {
                 // 1. Điều hướng khảo sát
@@ -256,6 +517,13 @@
                 if(confirmSurvey) {
                     row.style.backgroundColor = "#e8f5e9";
                     row.querySelector('td:last-child').innerHTML = `<span style="color:green; font-size:12px;">⏳ Đã gửi Survey (Hạn 3 ngày)</span>`;
+                    if (alertId) markRiskAlert(alertId, 'resolved');
+                    if (bookingId) {
+                        apiRequest(`/api/bookings/${bookingId}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({ status: 'completed' })
+                        }).catch(() => {});
+                    }
                     
                     // Giả lập nhắc nhở hệ thống
                     setTimeout(() => {
@@ -268,6 +536,13 @@
                 if(newDate) {
                     row.style.backgroundColor = "#fff3e0";
                     row.querySelector('td:last-child').innerHTML = `<span style="color:#ef6c00; font-size:12px;">📅 Đã hẹn lại: ${newDate}</span>`;
+                    if (alertId) markRiskAlert(alertId, 'rescheduled');
+                    if (bookingId) {
+                        apiRequest(`/api/bookings/${bookingId}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({ status: 'rescheduled' })
+                        }).catch(() => {});
+                    }
                 }
             }
         }
@@ -276,6 +551,10 @@
         window.onload = function() {
             updateDashboardData();
         }
+
+        window.addEventListener('storage', function(event) {
+            if (event.key === RISK_ALERTS_KEY) updateDashboardData();
+        });
     </script>
 </body>
 </html>

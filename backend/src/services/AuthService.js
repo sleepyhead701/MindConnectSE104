@@ -1,22 +1,58 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const mongoose = require('mongoose');
 const userRepository = require('../repositories/UserRepository');
 
+const memoryUsers = [];
+const isDbConnected = () => mongoose.connection.readyState === 1;
+
 class AuthService {
-  async register(email, password) {
+  async register(email, password, role = 'student') {
     const normalizedEmail = email.trim().toLowerCase();
+    const normalizedRole = ['student', 'school', 'admin'].includes(role) ? role : 'student';
 
-    try {
-      const user = await userRepository.create({
+    if (!isDbConnected()) {
+      const existingUser = memoryUsers.find(user => user.email === normalizedEmail);
+      if (existingUser) {
+        const err = new Error('User with this email already exists');
+        err.statusCode = 409;
+        throw err;
+      }
+
+      const user = {
+        _id: crypto.randomUUID(),
         email: normalizedEmail,
-        password
-      });
-
-      const token = this.generateToken(user._id);
+        password,
+        role: normalizedRole,
+        created_at: new Date()
+      };
+      memoryUsers.push(user);
 
       return {
         user: {
           id: user._id,
           email: user.email,
+          role: user.role,
+          created_at: user.created_at
+        },
+        token: this.generateToken(user._id, user.role)
+      };
+    }
+
+    try {
+      const user = await userRepository.create({
+        email: normalizedEmail,
+        password,
+        role: normalizedRole
+      });
+
+      const token = this.generateToken(user._id, user.role);
+
+      return {
+        user: {
+          id: user._id,
+          email: user.email,
+          role: user.role,
           created_at: user.created_at
         },
         token
@@ -34,6 +70,25 @@ class AuthService {
   async login(email, password) {
     const normalizedEmail = email.trim().toLowerCase();
 
+    if (!isDbConnected()) {
+      const user = memoryUsers.find(item => item.email === normalizedEmail);
+      if (!user || user.password !== password) {
+        const error = new Error('Invalid email or password');
+        error.statusCode = 401;
+        throw error;
+      }
+
+      return {
+        user: {
+          id: user._id,
+          email: user.email,
+          role: user.role,
+          created_at: user.created_at
+        },
+        token: this.generateToken(user._id, user.role)
+      };
+    }
+
     const user = await userRepository.findByEmail(normalizedEmail);
     if (!user) {
       const error = new Error('Invalid email or password');
@@ -48,21 +103,22 @@ class AuthService {
       throw error;
     }
 
-    const token = this.generateToken(user._id);
+    const token = this.generateToken(user._id, user.role);
 
     return {
       user: {
         id: user._id,
         email: user.email,
+        role: user.role,
         created_at: user.created_at
       },
       token
     };
   }
 
-  generateToken(userId) {
+  generateToken(userId, role) {
     return jwt.sign(
-      { userId },
+      { userId, role },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
