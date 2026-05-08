@@ -148,6 +148,7 @@
         .btn-submit-gradient:hover { transform: translateY(-2px); }
 
         .footer-text { text-align: center; font-size: 12px; color: #999; margin-top: 20px; }
+        .auth-status { min-height: 18px; margin-top: 12px; text-align: center; font-size: 12px; color: #D42E70; }
         #presentation-frame { display: none; }
     </style>
 </head>
@@ -177,22 +178,24 @@
             <form onsubmit="handleLogin(event)">
                 <div class="input-group">
                     <label class="input-label">Tên đăng nhập</label>
-                    <input type="text" class="custom-input" placeholder="Email / MSSV" required>
+                    <input type="text" id="login-email" class="custom-input" placeholder="Email / MSSV" required>
                 </div>
                 
                 <div class="input-group">
                     <label class="input-label">Mật khẩu</label>
-                    <input type="password" class="custom-input" placeholder="Mật khẩu" required>
+                    <input type="password" id="login-password" class="custom-input" placeholder="Mật khẩu" required>
                 </div>
 
-                <button class="btn-submit-gradient">Truy cập</button>
+                <button class="btn-submit-gradient" id="login-submit">Truy cập</button>
             </form>
 
+            <div id="auth-status" class="auth-status"></div>
             <p class="footer-text">Dữ liệu được mã hóa & Bảo mật tuyệt đối</p>
         </div>
     </div>
 
     <script>
+        const API_BASE_URL = 'http://localhost:3000';
         let currentRole = 'student';
 
         function switchRole(role) {
@@ -202,12 +205,60 @@
             document.getElementById('tab-' + role).classList.add('active');
         }
 
-        function handleLogin(e) {
+        function normalizeLoginIdentifier(value) {
+            const raw = value.trim().toLowerCase();
+            if (raw.includes('@')) return raw;
+            return `${raw}@mindconnect.local`;
+        }
+
+        async function requestAuth(path, email, password) {
+            const response = await fetch(`${API_BASE_URL}${path}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    role: currentRole === 'school' ? 'school' : 'student'
+                })
+            });
+            const result = await response.json().catch(() => ({}));
+            return { response, result };
+        }
+
+        async function handleLogin(e) {
             e.preventDefault();
-            if(currentRole === 'student') {
-                window.location.href = 'student.html';
-            } else {
-                window.location.href = 'school.html';
+            const email = normalizeLoginIdentifier(document.getElementById('login-email').value);
+            const password = document.getElementById('login-password').value;
+            const status = document.getElementById('auth-status');
+            const submit = document.getElementById('login-submit');
+
+            status.innerText = 'Đang xác thực...';
+            submit.disabled = true;
+
+            try {
+                let { response, result } = await requestAuth('/auth/login', email, password);
+
+                if (response.status === 401) {
+                    status.innerText = 'Tài khoản chưa có, đang tạo tài khoản demo...';
+                    const registered = await requestAuth('/auth/register', email, password);
+                    response = registered.response;
+                    result = registered.result;
+                }
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'Không thể đăng nhập');
+                }
+
+                localStorage.setItem('mindconnect:auth', JSON.stringify(result.data));
+                localStorage.setItem('mindconnect:role', currentRole);
+                window.location.href = currentRole === 'student' ? 'student.html' : 'school.html';
+            } catch (error) {
+                status.innerText = `${error.message}. Nếu backend chưa chạy, hệ thống sẽ vào chế độ demo.`;
+                setTimeout(() => {
+                    window.location.href = currentRole === 'student' ? 'student.html' : 'school.html';
+                }, 1200);
+            } finally {
+                submit.disabled = false;
             }
         }
     </script>

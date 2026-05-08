@@ -2,7 +2,7 @@ const User = require('../models/User');
 
 class UserRepository {
   async findByEmail(email) {
-    return await User.findOne({ email: email.toLowerCase() });
+    return await User.findOne({ email: email.toLowerCase() }).select('+password');
   }
 
   async findById(id) {

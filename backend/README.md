@@ -23,8 +23,13 @@ cp .env.example .env
 
 2. Update `.env` with your settings:
 - `MONGODB_URI`: Your MongoDB connection string
+- `SKIP_DB_CONNECT`: Set to `true` if you only want to run the OpenAI chatbot without MongoDB
+- `REQUIRE_MONGODB`: Set to `true` if the server should stop when MongoDB is unavailable
 - `JWT_SECRET`: A secure random string for token signing (change this!)
 - `JWT_EXPIRES_IN`: Token expiration time (default: 7d)
+- `OPENAI_API_KEY`: OpenAI API key used by the student support chatbot
+- `OPENAI_MODEL`: OpenAI model for chat replies (default: `gpt-5.5`)
+- `CORS_ORIGIN`: Allowed frontend origins, comma-separated
 
 ## Running the Server
 
@@ -94,6 +99,45 @@ Authenticate a user.
 
 ### Protected Routes
 Use the `Authorization: Bearer <token>` header to access protected routes.
+
+### POST /chat/support
+Generate a mental-wellness support reply for the student chatbot. This endpoint calls OpenAI from the backend so the API key is never exposed in the browser.
+
+**Request:**
+```json
+{
+  "message": "Mình đang rất căng thẳng vì thi cử",
+  "history": [
+    { "role": "user", "content": "Chào bạn" },
+    { "role": "assistant", "content": "Mình ở đây để lắng nghe bạn." }
+  ]
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "reply": "Mình nghe thấy bạn đang chịu nhiều áp lực...",
+    "model": "gpt-5.5",
+    "response_id": "resp_..."
+  }
+}
+```
+
+### App Data Endpoints
+These endpoints power the prototype use cases from the frontend. They use MongoDB when available and fall back to in-memory data while the server is running if MongoDB is skipped or unavailable.
+
+- `GET /api/feed`: latest student diary posts for the home feed
+- `POST /api/diaries`: save a diary entry
+- `POST /api/diaries/tags`: ask OpenAI to suggest diary tags
+- `GET /api/risk-alerts`: list high-risk alerts
+- `POST /api/risk-alerts`: create a risk alert from Diary, Chat AI, or Quick Test
+- `PATCH /api/risk-alerts/:id`: update alert status
+- `POST /api/bookings`: create a consultation booking request
+- `PATCH /api/bookings/:id`: update booking status
+- `GET /api/dashboard?range=7`: dashboard metrics, alerts, bookings, topics, and heatmap data
 
 ## Project Structure
 

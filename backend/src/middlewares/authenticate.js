@@ -35,6 +35,7 @@ const authenticate = async (req, res, next) => {
     req.user = {
       id: user._id,
       email: user.email,
+      role: user.role,
       created_at: user.created_at
     };
 
