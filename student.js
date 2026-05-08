@@ -1,23 +1,27 @@
-// student.js - FULL VERSION (MERGED)
-
-// --- 1. DỮ LIỆU & TRẠNG THÁI (STATE) ---
-let chatHistory = [
-    { sender: 'ai', text: 'Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?' }
-];
-
-let userFeed = [
+const API_BASE = "http://localhost:5000/api";
+const defaultChatHistory = [{ sender: "ai", text: "Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?" }];
+const defaultUserFeed = [
     { 
         id: 1, 
-        author: 'User #992', 
-        time: '10p trước', 
+        author: 'Sleepyhead', 
+        date: '2024-11-01T14:30:00Z', 
         content: 'Cảm thấy áp lực deadline quá... Có ai biết cách quản lý thời gian hiệu quả không?', 
         tags: ['Áp lực học tập', 'Cần lời khuyên'], 
         likes: 5, 
         comments: 2, 
         isUser: false 
+    },
+    { 
+        id: 2,
+        author: 'Iuriam', 
+        date: '2025-12-22T09:15:00Z', 
+        content: 'Hôm nay mình đã thử bài tập thở mà AI gợi ý, cảm giác khá ổn đấy! Ai muốn thử cùng mình không?',
+        tags: ['Thở', 'Giảm stress'], 
+        likes: 3, 
+        comments: 1, 
+        isUser: false 
     }
 ];
-
 const resourcesDB = [
     { 
         type: 'Video', 
@@ -49,13 +53,101 @@ const resourcesDB = [
     }
 ];
 
-// --- 2. KHỞI TẠO (INIT) ---
-window.onload = function() {
-    renderStudentHome(); // Mặc định vào trang chủ
-    setTimeout(() => {
-        showNotification("📅 Đừng quên làm Quick Test cảm xúc hôm nay nhé!");
-    }, 1000);
+let chatHistory = defaultChatHistory;
+let userFeed = defaultUserFeed;
+let currentResource = resourcesDB;
+let backendReady = false;
+
+function setBackendReadyState(isReady) {
+    backendReady = isReady;
+}
+
+async function api(path, options = {}) {
+    const res = await fetch(`${API_BASE}${path}`, {
+        headers: { "Content-Type": "application/json" },
+        ...options
+    });
+    if (!res.ok) throw new Error(`API failed: ${path}`);
+    return res.json();
+}
+
+function relativeTimeFrom(dateInput) {
+    const date = new Date(dateInput);
+    const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (diff < 60) return "Vừa xong";
+    if (diff < 3600) return `${Math.floor(diff / 60)}p trước`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+    if (diff < 2592000) return `${Math.floor(diff / 86400)} ngày trước`;
+    if (diff < 31536000) return `${Math.floor(diff / 2592000)} tháng trước`;
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
+
+window.onload = async function () {
+    setBackendReadyState(false);
+    showLoadingScreen();
+    try {
+        await api("/seed", { method: "POST" });
+        userFeed = await api("/feed");
+        chatHistory = await api("/chat");
+        currentResources = await api("/resources");
+        setBackendReadyState(true);
+    } catch (error) {
+        console.warn("Backend unavailable, fallback to local mode:", error.message);
+    }
+    hideLoadingScreen();
+    renderStudentHome();
+    setTimeout(() => showNotification("📅 Đừng quên làm Quick Test cảm xúc hôm nay bạn nhé!"), 1000);
 };
+
+function showLoadingScreen() {
+    const loadingScreen = document.createElement('div');
+    loadingScreen.id = 'loading-screen';
+    loadingScreen.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+    loadingScreen.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 20px; animation: pulse 1s infinite;">⏳</div>
+            <h2 style="font-family: var(--font-heading); font-size: 24px; color: #333; margin-bottom: 10px;">Đang tải...</h2>
+            <p style="font-size: 14px; color: #999;">Vui lòng chờ trong giây lát</p>
+            <div style="margin-top: 20px; display: flex; gap: 5px; justify-content: center;">
+                <div style="width: 8px; height: 8px; background: var(--accent-pink); border-radius: 50%; animation: bounce 1.4s infinite;"></div>
+                <div style="width: 8px; height: 8px; background: var(--accent-pink); border-radius: 50%; animation: bounce 1.4s infinite 0.2s;"></div>
+                <div style="width: 8px; height: 8px; background: var(--accent-pink); border-radius: 50%; animation: bounce 1.4s infinite 0.4s;"></div>
+            </div>
+        </div>
+        <style>
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+            @keyframes bounce {
+                0%, 80%, 100% { transform: translateY(0); }
+                40% { transform: translateY(-10px); }
+            }
+        </style>
+    `;
+    document.body.appendChild(loadingScreen);
+}
+
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+        loadingScreen.style.transition = 'opacity 0.3s ease';
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => loadingScreen.remove(), 300);
+    }
+}
 
 function logout() {
     window.location.href = 'index.html';
@@ -78,6 +170,12 @@ function updateNav(idx) {
     document.querySelectorAll('.nav-icon').forEach((el, i) => el.classList.toggle('active', i === idx));
 }
 
+function blockIfBackendNotReady() {
+    if (backendReady) return false;
+    setTimeout(() => showNotification('⏳ Backend chưa sẵn sàng, vui lòng chỉ xem giao diện.'), 1000 );
+    return true;
+}
+
 // ==============================================
 // 3. HOME (GIAO DIỆN LAI THREADS)
 // ==============================================
@@ -87,14 +185,14 @@ function renderStudentHome() {
 
     let feedHtml = userFeed.map(post => `
         <div class="feed-card">
-            <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 5px; margin-left: 5px;">
                 <div style="font-weight:700; font-size: 14px; color: var(--deep-rose);">${post.author}</div>
-                <div style="font-size: 12px; color:#999;">${post.time}</div>
+                <div style="font-size: 12px; color:#999; margin-right: 5px;">${relativeTimeFrom(post.date)}</div>
             </div>
-            <p style="font-size: 15px; line-height: 1.5; margin-bottom: 10px; color: #1a1a1a;">${post.content}</p>
+            <p style="font-size: 15px; line-height: 1.5; margin-bottom: 10px; margin-left: 5px; color: #1a1a1a;">${post.content}</p>
             
             ${post.tags && post.tags.length > 0 ? 
-                `<div style="margin-bottom:10px;">${post.tags.map(t => `<span style="background:#f0f0f0; font-size:11px; padding:3px 8px; border-radius:4px; margin-right:5px; color:#666;">#${t}</span>`).join('')}</div>` 
+                `<div style="margin-bottom:10px; margin-left: 5px;">${post.tags.map(t => `<span style="background:#f0f0f0; font-size:11px; padding:3px 8px; border-radius:4px; margin-right:5px; color:#666;">#${t}</span>`).join('')}</div>` 
                 : ''}
 
             <div style="display:flex; gap: 20px; font-size: 18px; color: #666;">
@@ -108,7 +206,7 @@ function renderStudentHome() {
     container.innerHTML = `
         <div style="padding: 0 20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; padding: 15px 0; border-bottom:1px solid #eee;">
-                <h2 style="font-family: var(--font-heading); font-size: 28px;">For you</h2>
+                <h2 style="font-family: var(--font-heading); font-size: 28px;">News feed</h2>
                 <button class="btn-outline" style="font-size:12px; padding: 5px 10px;" onclick="renderStudentDiary()">+ Viết Nhật ký</button>
             </div>
             ${feedHtml}
@@ -164,40 +262,35 @@ function selectMood(score, elem) {
     if(score <= 2) {
         msg.innerHTML = `Bạn ổn không? <u onclick="renderStudentStats()" style="cursor:pointer; font-weight:bold;">Xem thống kê</u> hoặc <u onclick="renderResources()" style="cursor:pointer; font-weight:bold;">nghe nhạc</u> nhé.`;
     } else {
-        msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score==5?"Rất tốt":"Bình thường");
+        msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score==5?"Rất tốt":(score==4?"Tốt":"Bình thường"));
     }
 }
 
-function analyzeDiary() {
-    const content = document.getElementById('diary-content').value;
-    if(content.length < 5) return alert("Hãy viết dài hơn một chút nhé!");
-
-    const btn = document.querySelector('#action-area button');
-    btn.innerText = "⏳ Đang đọc..."; 
+async function analyzeDiary() {
+    if (blockIfBackendNotReady()) return;
+    const content = document.getElementById("diary-content").value;
+    if (content.length < 5) return alert("Hãy viết dài hơn một chút nhé!");
+    const btn = document.querySelector("#action-area button");
+    btn.innerText = "⏳ Đang đọc...";
     btn.disabled = true;
 
-    // Giả lập API Call
-    setTimeout(() => {
-        let suggestedTags = [];
-        if(content.includes("thi") || content.includes("điểm") || content.includes("học")) suggestedTags.push("Học tập");
-        if(content.includes("buồn") || content.includes("khóc")) suggestedTags.push("Lo âu");
-        if(content.includes("bạn") || content.includes("cãi")) suggestedTags.push("Mối quan hệ");
-        if(suggestedTags.length === 0) suggestedTags.push("Tâm sự");
+    let suggestedTags = ["Tâm sự", "Suy nghĩ"];
+    try {
+        const data = await api("/diary/analyze", { method: "POST", body: JSON.stringify({ content }) });
+        suggestedTags = data.tags || suggestedTags;
+    } catch (_) {}
 
-        document.getElementById('action-area').classList.add('hidden');
-        const tagBox = document.getElementById('ai-suggestion-area');
-        tagBox.classList.remove('hidden');
-        
-        const tagContainer = document.getElementById('tag-container');
-        tagContainer.innerHTML = suggestedTags.map(tag => 
-            `<span class="tag-chip selected" onclick="toggleTag(this)">${tag}</span>`
-        ).join('') + `<span class="tag-chip" onclick="toggleTag(this)">+ Khác</span>`;
-    }, 1000);
+    document.getElementById("action-area").classList.add("hidden");
+    const tagBox = document.getElementById("ai-suggestion-area");
+    tagBox.classList.remove("hidden");
+    const tagContainer = document.getElementById("tag-container");
+    tagContainer.innerHTML = suggestedTags.map((tag) => `<span class="tag-chip selected" onclick="toggleTag(this)">${tag}</span>`).join("") + `<span class="tag-chip" onclick="toggleTag(this)">+ Khác</span>`;
 }
 
 function toggleTag(el) { el.classList.toggle('selected'); }
 
 function confirmAndPost() {
+    if (blockIfBackendNotReady()) return;
     const title = document.getElementById('diary-title').value;
     const content = document.getElementById('diary-content').value;
     const finalTags = [];
@@ -394,6 +487,7 @@ function renderChat() {
 function handleEnter(e) { if (e.key === 'Enter') sendMsg(); }
 
 async function sendMsg() {
+    if (blockIfBackendNotReady()) return;
     const input = document.getElementById('chat-input');
     const txt = input.value.trim();
     if(!txt) return;
@@ -458,6 +552,7 @@ async function sendMsg() {
 // 8. BOOKING MODAL (LOGIC CŨ ĐÃ KHÔI PHỤC)
 // ==============================================
 function openBookingModal() {
+    if (blockIfBackendNotReady()) return;
     const modal = document.createElement('div');
     modal.id = 'booking-modal';
     modal.className = 'modal-overlay';
@@ -494,6 +589,7 @@ function closeBookingModal() {
 }
 
 function handleConfirmBooking() {
+    if (blockIfBackendNotReady()) return;
     closeBookingModal();
     setTimeout(() => {
         alert("✅ Đã gửi yêu cầu thành công!\nCán bộ tham vấn sẽ liên hệ lại với bạn qua SĐT hoặc Email trong vòng 24h.");
