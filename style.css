@@ -952,3 +952,38 @@ input {
     0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
     40% { transform: scale(1.2); opacity: 1; }
 }
+
+/* --- NOTIFICATION TOAST --- */
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #333;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideInRight 0.3s ease;
+    z-index: 9999;
+}
+
+.notification-toast.notification-success {
+    background: var(--success);
+    color: white;
+}
+
+.notification-toast.notification-error {
+    background: var(--danger);
+    color: white;
+}
+
+.notification-toast.notification-info {
+    background: #333;
+    color: white;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}

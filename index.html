@@ -150,6 +150,132 @@
         .footer-text { text-align: center; font-size: 12px; color: #999; margin-top: 20px; }
         .auth-status { min-height: 18px; margin-top: 12px; text-align: center; font-size: 12px; color: #D42E70; }
         #presentation-frame { display: none; }
+
+        /* --- REGISTER FORM STYLES --- */
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn-back {
+            background: #f0f2f5;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #666;
+        }
+        .btn-back:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .form-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #D42E70;
+            margin: 0;
+        }
+
+        .link-register {
+            color: #D42E70;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .link-register:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #d32f2f;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            text-align: left;
+            border: 1px solid #ffcdd2;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            text-align: left;
+            border: 1px solid #c8e6c9;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Input validation states */
+        .input-error {
+            border: 2px solid #ffcdd2 !important;
+            background: #fff5f5 !important;
+        }
+
+        .input-success {
+            border: 2px solid #c8e6c9 !important;
+            background: #f5fff5 !important;
+        }
+
+        /* Smooth transitions between forms */
+        .form-transition {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Forgot Password Styles */
+        .forgot-password-link {
+            text-align: right;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        .link-forgot {
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        .link-forgot:hover {
+            color: #D42E70;
+            text-decoration: underline;
+        }
+
+        .forgot-description {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -164,12 +290,12 @@
             <a href="#" class="nav-item">Dịch vụ</a>
             <a href="#" class="nav-item">Về chúng tôi</a>
             <a href="#" class="nav-item">Liên hệ</a>
-            <a href="#" class="btn-login-nav">Đăng nhập</a>
+            <a href="#" class="btn-login-nav" onclick="showLoginForm(); return false;">Đăng nhập</a>
         </div>
     </nav>
 
     <div class="main-container">
-        <div class="login-card-glass">
+        <div class="login-card-glass" id="login-form">
             <div class="role-switch-container">
                 <div class="role-btn active" id="tab-student" onclick="switchRole('student')">Sinh viên</div>
                 <div class="role-btn" id="tab-school" onclick="switchRole('school')">Nhà trường</div>
@@ -186,11 +312,96 @@
                     <input type="password" id="login-password" class="custom-input" placeholder="Mật khẩu" required>
                 </div>
 
+                <div class="forgot-password-link">
+                    <a href="#" class="link-forgot" onclick="showForgotPasswordForm(); return false;">Quên mật khẩu?</a>
+                </div>
+
                 <button class="btn-submit-gradient" id="login-submit">Truy cập</button>
             </form>
 
             <div id="auth-status" class="auth-status"></div>
-            <p class="footer-text">Dữ liệu được mã hóa & Bảo mật tuyệt đối</p>
+            <p class="footer-text">
+                Chưa có tài khoản? <a href="#" class="link-register" onclick="showRegisterForm(); return false;">Đăng ký ngay</a>
+            </p>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="login-card-glass hidden" id="register-form">
+            <div class="form-header">
+                <button class="btn-back" onclick="showLoginForm()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <h2 class="form-title">Tạo tài khoản</h2>
+            </div>
+
+            <form onsubmit="handleRegister(event)">
+                <div class="input-group">
+                    <label class="input-label">Tên người dùng</label>
+                    <input type="text" id="reg-username" class="custom-input" placeholder="Nhập tên của bạn" required>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Email</label>
+                    <input type="email" id="reg-email" class="custom-input" placeholder="email@example.com" required>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Mật khẩu</label>
+                    <input type="password" id="reg-password" class="custom-input" placeholder="Ít nhất 6 ký tự" required minlength="6">
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">Xác nhận mật khẩu</label>
+                    <input type="password" id="reg-confirm-password" class="custom-input" placeholder="Nhập lại mật khẩu" required>
+                </div>
+
+                <div class="error-message hidden" id="reg-error"></div>
+                <div class="success-message hidden" id="reg-success"></div>
+
+                <button class="btn-submit-gradient" id="register-submit">
+                    <span id="register-btn-text">Đăng ký</span>
+                    <span id="register-loading" class="loading-spinner hidden"></span>
+                </button>
+            </form>
+
+            <p class="footer-text">
+                Đã có tài khoản? <a href="#" class="link-register" onclick="showLoginForm(); return false;">Đăng nhập</a>
+            </p>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div class="login-card-glass hidden" id="forgot-form">
+            <div class="form-header">
+                <button class="btn-back" onclick="showLoginForm()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <h2 class="form-title">Quên mật khẩu</h2>
+            </div>
+
+            <p class="forgot-description">Nhập địa chỉ email của bạn. Chúng tôi sẽ gửi link đặt lại mật khẩu.</p>
+
+            <form onsubmit="handleForgotPassword(event)">
+                <div class="input-group">
+                    <label class="input-label">Email</label>
+                    <input type="email" id="forgot-email" class="custom-input" placeholder="email@example.com" required>
+                </div>
+
+                <div class="error-message hidden" id="forgot-error"></div>
+                <div class="success-message hidden" id="forgot-success"></div>
+
+                <button class="btn-submit-gradient" id="forgot-submit">
+                    <span id="forgot-btn-text">Gửi link đặt lại</span>
+                    <span id="forgot-loading" class="loading-spinner hidden"></span>
+                </button>
+            </form>
+
+            <p class="footer-text">
+                Nhớ mật khẩu rồi? <a href="#" class="link-register" onclick="showLoginForm(); return false;">Đăng nhập</a>
+            </p>
         </div>
     </div>
 
@@ -203,6 +414,233 @@
             document.getElementById('tab-student').classList.remove('active');
             document.getElementById('tab-school').classList.remove('active');
             document.getElementById('tab-' + role).classList.add('active');
+        }
+
+        function showLoginForm() {
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('forgot-form').classList.add('hidden');
+            clearAuthMessages();
+        }
+
+        function showRegisterForm() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.remove('hidden');
+            document.getElementById('forgot-form').classList.add('hidden');
+            clearAuthMessages();
+        }
+
+        function showForgotPasswordForm() {
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('register-form').classList.add('hidden');
+            document.getElementById('forgot-form').classList.remove('hidden');
+            clearAuthMessages();
+        }
+
+        function clearAuthMessages() {
+            const errorEl = document.getElementById('reg-error');
+            const successEl = document.getElementById('reg-success');
+            if (errorEl) errorEl.classList.add('hidden');
+            if (successEl) successEl.classList.add('hidden');
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('reg-error');
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.classList.remove('hidden');
+            }
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('reg-success');
+            if (successEl) {
+                successEl.textContent = message;
+                successEl.classList.remove('hidden');
+            }
+        }
+
+        function setRegisterLoading(loading) {
+            const btn = document.getElementById('register-submit');
+            const btnText = document.getElementById('register-btn-text');
+            const spinner = document.getElementById('register-loading');
+            if (btn) btn.disabled = loading;
+            if (btnText) btnText.classList.toggle('hidden', loading);
+            if (spinner) spinner.classList.toggle('hidden', !loading);
+        }
+
+        function setForgotLoading(loading) {
+            const btn = document.getElementById('forgot-submit');
+            const btnText = document.getElementById('forgot-btn-text');
+            const spinner = document.getElementById('forgot-loading');
+            if (btn) btn.disabled = loading;
+            if (btnText) btnText.classList.toggle('hidden', loading);
+            if (spinner) spinner.classList.toggle('hidden', !loading);
+        }
+
+        function showForgotError(message) {
+            const errorEl = document.getElementById('forgot-error');
+            const successEl = document.getElementById('forgot-success');
+            if (errorEl) {
+                errorEl.textContent = message;
+                errorEl.classList.remove('hidden');
+            }
+            if (successEl) successEl.classList.add('hidden');
+        }
+
+        function showForgotSuccess(message) {
+            const successEl = document.getElementById('forgot-success');
+            const errorEl = document.getElementById('forgot-error');
+            if (successEl) {
+                successEl.textContent = message;
+                successEl.classList.remove('hidden');
+            }
+            if (errorEl) errorEl.classList.add('hidden');
+        }
+
+        function validateEmail(email) {
+            const emailRegex = /^\S+@\S+\.\S+$/;
+            return emailRegex.test(email);
+        }
+
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('forgot-email').value.trim();
+            const errorEl = document.getElementById('forgot-error');
+            const successEl = document.getElementById('forgot-success');
+
+            if (errorEl) errorEl.classList.add('hidden');
+            if (successEl) successEl.classList.add('hidden');
+
+            if (!email) {
+                showForgotError('Vui lòng nhập địa chỉ email');
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                showForgotError('Vui lòng nhập địa chỉ email hợp lệ');
+                return;
+            }
+
+            setForgotLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const result = await response.json().catch(() => ({}));
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'Không thể gửi email đặt lại mật khẩu');
+                }
+
+                showForgotSuccess('Đã gửi link đặt lại mật khẩu đến email của bạn. Vui lòng kiểm tra hộp thư.');
+
+                setTimeout(() => {
+                    showLoginForm();
+                }, 3000);
+
+            } catch (error) {
+                showForgotError(error.message);
+            } finally {
+                setForgotLoading(false);
+            }
+        }
+
+        function validateRegistrationForm() {
+            const username = document.getElementById('reg-username')?.value.trim() || '';
+            const email = document.getElementById('reg-email')?.value.trim() || '';
+            const password = document.getElementById('reg-password')?.value || '';
+            const confirmPassword = document.getElementById('reg-confirm-password')?.value || '';
+
+            if (!username) {
+                showError('Vui lòng nhập tên người dùng');
+                return false;
+            }
+            if (username.length < 2) {
+                showError('Tên người dùng phải có ít nhất 2 ký tự');
+                return false;
+            }
+
+            const emailRegex = /^\S+@\S+\.\S+$/;
+            if (!email) {
+                showError('Vui lòng nhập email');
+                return false;
+            }
+            if (!emailRegex.test(email)) {
+                showError('Vui lòng nhập địa chỉ email hợp lệ');
+                return false;
+            }
+
+            if (!password) {
+                showError('Vui lòng nhập mật khẩu');
+                return false;
+            }
+            if (password.length < 6) {
+                showError('Mật khẩu phải có ít nhất 6 ký tự');
+                return false;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Mật khẩu xác nhận không khớp');
+                return false;
+            }
+
+            return true;
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+
+            if (!validateRegistrationForm()) {
+                return;
+            }
+
+            const username = document.getElementById('reg-username').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const status = document.getElementById('reg-error');
+            const successStatus = document.getElementById('reg-success');
+
+            if (status) status.classList.add('hidden');
+            if (successStatus) successStatus.classList.add('hidden');
+            setRegisterLoading(true);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username,
+                        email,
+                        password,
+                        role: currentRole
+                    })
+                });
+
+                const result = await response.json().catch(() => ({}));
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.error || 'Đăng ký thất bại. Vui lòng thử lại.');
+                }
+
+                showSuccess('Đăng ký thành công! Đang chuyển hướng...');
+
+                setTimeout(() => {
+                    showLoginForm();
+                    document.getElementById('login-email').value = email;
+                    document.getElementById('login-email').focus();
+                }, 1500);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                setRegisterLoading(false);
+            }
         }
 
         function normalizeLoginIdentifier(value) {
