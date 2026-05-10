@@ -5,6 +5,31 @@ const defaultChatHistory = [
     { sender: 'ai', text: 'Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?' }
 ];
 
+class Comment {
+    constructor(id, author, date, content, likes = 0, replies = []) {
+        this.id = id;
+        this.author = author;
+        this.date = date;
+        this.content = content;
+        this.likes = likes;
+        this.replies = replies;
+    }
+}
+
+class FeedUser {
+    constructor(id, author, date, content, tags = [], likes = 0, comments = 0, isUser = false) {
+        this.id = id;
+        this.author = author;
+        this.date = date;
+        this.content = content;
+        this.tags = tags;
+        this.likes = likes;
+        this.comments = comments;
+        this.isUser = isUser;
+        this.commentObjects = [];
+    }
+}
+
 const defaultUserFeed = [
     { 
         id: 1, 
@@ -14,7 +39,11 @@ const defaultUserFeed = [
         tags: ['Áp lực học tập', 'Cần lời khuyên'], 
         likes: 5, 
         comments: 2, 
-        isUser: false 
+        isUser: false,
+            commentObjects: [
+                new Comment(1, 'Corn Candy', '2024-11-01T15:00:00Z', 'Mình cũng đang gặp vấn đề tương tự. Mình thường chia nhỏ công việc ra và đặt deadline ảo cho từng phần.', 2),
+                new Comment(2, 'MindConnect AI', '2024-11-01T15:05:00Z', 'Bạn có thể thử phương pháp Pomodoro: làm việc 25 phút, nghỉ 5 phút. Sau 4 lần, nghỉ dài hơn. Mình cũng có thể gợi ý một số công cụ quản lý thời gian nếu bạn muốn!', 3)
+            ]
     },
     { 
         id: 2,
@@ -24,7 +53,10 @@ const defaultUserFeed = [
         tags: ['Thở', 'Giảm stress'], 
         likes: 3, 
         comments: 1, 
-        isUser: false 
+        isUser: false,
+        commentObjects: [
+            new Comment(3, 'MindConnect AI', '2025-12-22T09:30:00Z', 'Chúc bạn có một ngày tốt lành!', 1)
+        ]
     }
 ];
 
@@ -390,25 +422,48 @@ function renderStudentHome() {
     const container = document.getElementById('student-main-content');
     updateNav(0);
 
-    let feedHtml = userFeed.map(post => `
-        <div class="feed-card">
-            <div style="display:flex; justify-content:space-between; margin-bottom: 5px; margin-left: 5px;">
-                <div style="font-weight:700; font-size: 14px; color: var(--deep-rose);">${post.author}</div>
-                <div style="font-size: 12px; color:#999; margin-right: 5px;">${relativeTimeFrom(post.date)}</div>
-            </div>
-            <p style="font-size: 15px; line-height: 1.5; margin-bottom: 10px; margin-left: 5px; color: #1a1a1a;">${post.content}</p>
-            
-            ${post.tags && post.tags.length > 0 ? 
-                `<div style="margin-bottom:10px; margin-left: 5px;">${post.tags.map(t => `<span style="background:#f0f0f0; font-size:11px; padding:3px 8px; border-radius:4px; margin-right:5px; color:#666;">#${t}</span>`).join('')}</div>` 
-                : ''}
+    let feedHtml = userFeed.map(post => {
+        const postDate = post.date || post.time;
+        const comments = Array.isArray(post.commentObjects) ? post.commentObjects : [];
 
-            <div style="display:flex; gap: 20px; font-size: 18px; color: #666;">
-                <span>❤️ <span style="font-size:13px;">${post.likes}</span></span>
-                <span>💬 <span style="font-size:13px;">${post.comments}</span></span>
-                <span>🚀</span>
+        const commentsHtml = comments.length > 0
+            ? `
+                <div style="margin-top:12px; border-top:1px solid #f1f1f1; padding-top:10px;">
+                    ${comments.map(c => `
+                        <div style="background:#fafafa; border:1px solid #f0f0f0; border-radius:8px; padding:8px 10px; margin-bottom:8px;">
+                            <div style="display:flex; justify-content:space-between; gap:8px; margin-bottom:4px;">
+                                <strong style="font-size:12px; color: var(--deep-rose);">${escapeHtml(c.author)}</strong>
+                                <span style="font-size:11px; color:#999;">${relativeTimeFrom(c.date)}</span>
+                            </div>
+                            <div style="font-size:13px; color:#333; line-height:1.45;">${escapeHtml(c.content)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `
+            : `<div style="margin-top:10px; font-size:12px; color:#999;">Chưa có bình luận nào.</div>`;
+
+        return `
+            <div class="feed-card">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 5px; margin-left: 5px;">
+                    <div style="font-weight:700; font-size: 14px; color: var(--deep-rose);">${post.author}</div>
+                    <div style="font-size: 12px; color:#999; margin-right: 5px;">${relativeTimeFrom(postDate)}</div>
+                </div>
+                <p style="font-size: 15px; line-height: 1.5; margin-bottom: 10px; margin-left: 5px; color: #1a1a1a;">${post.content}</p>
+                
+                ${post.tags && post.tags.length > 0 ? 
+                    `<div style="margin-bottom:10px; margin-left: 5px;">${post.tags.map(t => `<span style="background:#f0f0f0; font-size:11px; padding:3px 8px; border-radius:4px; margin-right:5px; color:#666;">#${t}</span>`).join('')}</div>` 
+                    : ''}
+
+                <div style="display:flex; gap: 20px; font-size: 18px; color: #666;">
+                    <span>❤️ <span style="font-size:13px;">${post.likes}</span></span>
+                    <span>💬 <span style="font-size:13px;">${post.comments}</span></span>
+                    <span>🚀</span>
+                </div>
+
+                ${commentsHtml}
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     container.innerHTML = `
         <div style="padding: 0 20px;">
@@ -431,6 +486,7 @@ function renderStudentDiary() {
     container.innerHTML = `
         <div style="padding: 20px;">
             <div class="quick-test-section">
+                <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">Chào bạn!</h1>
                 <h3 style="font-size: 16px; color: #666;">Hôm nay bạn cảm thấy thế nào?</h3>
                 <div class="emoji-scale">
                     <div class="emoji-btn" onclick="selectMood(1, this)">😭</div>
@@ -439,7 +495,7 @@ function renderStudentDiary() {
                     <div class="emoji-btn" onclick="selectMood(4, this)">🙂</div>
                     <div class="emoji-btn" onclick="selectMood(5, this)">😁</div>
                 </div>
-                <div id="quick-test-msg" style="font-size:12px; color:var(--accent-pink); margin-top:10px; min-height:20px;"></div>
+                <div id="quick-test-msg" style="font-size:13px; color:var(--accent-pink); margin-top:10px; min-height:20px;"></div>
             </div>
 
             <h3 style="margin: 20px 0 10px 0; color: var(--deep-rose);">Nhật ký chuyên sâu</h3>
@@ -453,8 +509,8 @@ function renderStudentDiary() {
                     <button class="btn-primary" style="width:100%; margin-top:10px; font-size:13px;" onclick="confirmAndPost()">Xác nhận & Đăng</button>
                 </div>
 
-                <div style="text-align:right; margin-top:10px;" id="action-area">
-                    <button class="btn-primary" onclick="analyzeDiary()">✨ Phân tích AI</button>
+                <div style="text-align:right; margin-top:16px;" id="action-area">
+                    <button class="btn-primary" onclick="analyzeDiary()" style="font-size:16px;">✨ Phân tích AI</button>
                 </div>
             </div>
         </div>
