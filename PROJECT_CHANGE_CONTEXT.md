@@ -35,32 +35,36 @@ Nguoi dung dua Use Case Diagram va yeu cau:
 
 ### Student use cases
 
-| Use case | Trang thai sau thay doi |
-|---|---|
-| Login | Da noi UI login voi backend auth. Neu tai khoan chua co, tu tao tai khoan demo theo role. |
-| Home / Feed bai viet | Co UI va da co API `/api/feed` de load diary feed tu backend. Van co fallback mock khi backend khong chay. |
-| Viet nhat ky | Co UI va da luu qua `POST /api/diaries`. |
-| AI Tag Suggest | Da them endpoint `POST /api/diaries/tags`, co goi OpenAI neu co API key, fallback rule-based neu khong co. |
-| Resource Library | Co san danh sach Video, Blog, Book, Podcast, Cong cu tho. |
-| Breathing Exercise | Co trong frontend. |
-| Emotion Stats | Co UI, van con mot phan mock, nhung da lien ket voi risk alerts local/backend de hien thi risk gan nhat. |
-| Chat AI | Da noi OpenAI qua backend `POST /chat/support`; frontend khong goi OpenAI truc tiep de tranh lo API key. |
+
+| Use case                          | Trang thai sau thay doi                                                                                         |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Login                             | Da noi UI login voi backend auth. Neu tai khoan chua co, tu tao tai khoan demo theo role.                       |
+| Home / Feed bai viet              | Co UI va da co API `/api/feed` de load diary feed tu backend. Van co fallback mock khi backend khong chay.      |
+| Viet nhat ky                      | Co UI va da luu qua `POST /api/diaries`.                                                                        |
+| AI Tag Suggest                    | Da them endpoint `POST /api/diaries/tags`, co goi OpenAI neu co API key, fallback rule-based neu khong co.      |
+| Resource Library                  | Co san danh sach Video, Blog, Book, Podcast, Cong cu tho.                                                       |
+| Breathing Exercise                | Co trong frontend.                                                                                              |
+| Emotion Stats                     | Co UI, van con mot phan mock, nhung da lien ket voi risk alerts local/backend de hien thi risk gan nhat.        |
+| Chat AI                           | Da noi OpenAI qua backend `POST /chat/support`; frontend khong goi OpenAI truc tiep de tranh lo API key.        |
 | Phat hien rui ro / canh bao tu tu | Da co logic detect keyword tu Chat, Diary, Quick Test; luu localStorage va sync len backend `/api/risk-alerts`. |
-| Book Consult | Da co modal dat lich va goi backend `POST /api/bookings`. |
-| Logout | Co redirect ve `index.html`. |
+| Book Consult                      | Da co modal dat lich va goi backend `POST /api/bookings`.                                                       |
+| Logout                            | Co redirect ve `index.html`.                                                                                    |
+
 
 ### Admin use cases
 
-| Use case | Trang thai sau thay doi |
-|---|---|
-| Admin Login | Da dung chung UI login role School va backend auth. |
-| Dashboard Metrics | Da them endpoint `/api/dashboard`; frontend doc metrics tu backend khi co. |
-| High Risk Alerts | Da hien thi risk alerts tu backend + localStorage fallback. |
-| Heatmap by Department | Van chu yeu la UI/static demo, backend co tra heatmap data co ban. |
-| Trending Topics | Da cap nhat tu tags cua diaries trong `/api/dashboard`, fallback data neu chua co diary. |
-| Consultation Management | Da nhan risk alerts va booking requests, co action completed/rescheduled. |
-| Intervention Effect | Van la chi so demo, backend tra gia tri prototype. |
-| Filter by Time | Da dung `range` khi goi `/api/dashboard?range=...`; local alerts cung co filter theo thoi gian. |
+
+| Use case                | Trang thai sau thay doi                                                                         |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| Admin Login             | Da dung chung UI login role School va backend auth.                                             |
+| Dashboard Metrics       | Da them endpoint `/api/dashboard`; frontend doc metrics tu backend khi co.                      |
+| High Risk Alerts        | Da hien thi risk alerts tu backend + localStorage fallback.                                     |
+| Heatmap by Department   | Van chu yeu la UI/static demo, backend co tra heatmap data co ban.                              |
+| Trending Topics         | Da cap nhat tu tags cua diaries trong `/api/dashboard`, fallback data neu chua co diary.        |
+| Consultation Management | Da nhan risk alerts va booking requests, co action completed/rescheduled.                       |
+| Intervention Effect     | Van la chi so demo, backend tra gia tri prototype.                                              |
+| Filter by Time          | Da dung `range` khi goi `/api/dashboard?range=...`; local alerts cung co filter theo thoi gian. |
+
 
 ## 4. Cac thay doi frontend
 
@@ -320,3 +324,4 @@ Thay doi nay bien MindConnect tu prototype UI tinh thanh prototype end-to-end:
 - Admin Dashboard doc du lieu tong hop tu backend thay vi chi mock/localStorage.
 - OpenAI API duoc goi an toan tu backend, khong expose key tren browser.
 - Van giu fallback local/mock de demo khong bi vo khi backend, MongoDB hoac OpenAI API chua san sang.
+
