@@ -9,17 +9,18 @@
     <link rel="stylesheet" href="style.css">
     <style>
         /* --- GHI ĐÈ CSS ĐỂ CHUYỂN TỪ MOBILE -> DESKTOP (NOTION STYLE) --- */
-        
+
         /* Reset body để full màn hình web */
         body {
             display: block;
             height: auto;
             min-height: 100vh;
-            background-color: white; /* Nền trắng sạch kiểu Notion */
+            background-color: white;
             overflow-y: auto;
+            padding-top: 70px;
         }
 
-        /* Ẩn khung trình chiếu 16:9 cũ nhưng không xóa logic bên trong */
+        /* Ẩn khung trình chiếu 16:9 cũ */
         #presentation-frame {
             width: 100% !important;
             height: auto !important;
@@ -29,79 +30,341 @@
             position: static !important;
         }
 
-        /* Ẩn các thành phần Mobile cũ (nhưng không xóa HTML để tránh lỗi) */
+        /* Ẩn các thành phần Mobile cũ */
         .view-section { position: static; width: 100%; height: auto; animation: none; }
         .student-container { background: transparent; height: auto; display: block; padding-top: 0; }
         .mobile-frame { width: 100%; height: auto; border-radius: 0; box-shadow: none; overflow: visible; }
-        .mobile-header { display: none; } /* Ẩn header mobile */
-        .mobile-nav { display: none; }    /* Ẩn footer mobile */
+        .mobile-header { display: none; }
+        .mobile-nav { display: none; }
 
-        /* --- 3. GIAO DIỆN MỚI: THANH ĐIỀU HƯỚNG TRÊN CÙNG (TOP NAV) --- */
+        /* --- 3. GIAO DIỆN MỚI: THANH ĐIỀU HƯỚNG TRÊN CÙNG (MODERN TOP NAV) --- */
         .desktop-nav {
-            position: sticky; top: 0; left: 0; right: 0;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.95);
-            border-bottom: 1px solid #eee;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(0, 0, 0, 0.06);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 15%; /* Căn lề 2 bên giống Notion */
+            padding: 0 clamp(20px, 5vw, 60px);
             z-index: 1000;
-            backdrop-filter: blur(5px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .nav-brand {
             font-family: var(--font-heading);
             font-weight: 700;
             font-size: 24px;
-            color: var(--deep-rose); /* Giữ màu thương hiệu cũ */
-            display: flex; align-items: center; gap: 8px;
+            color: var(--deep-rose);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .nav-brand img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
         }
 
         .nav-menu {
             display: flex;
-            gap: 20px;
+            gap: 6px;
+            align-items: center;
         }
 
-        /* Tùy chỉnh lại class .nav-icon thành dạng Text Link */
         .nav-menu .nav-icon {
+            position: relative;
             font-family: var(--font-body);
             font-size: 14px !important;
             font-weight: 500;
-            color: #666;
+            color: var(--text-dark);
             cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: 0.2s;
-            opacity: 1; /* Reset độ mờ cũ */
+            padding: 10px 18px;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+            background: transparent;
+            border: none;
+        }
+
+        .nav-menu .nav-icon::after {
+            content: '';
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: calc(100% - 36px);
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-pink), var(--deep-rose));
+            border-radius: 2px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .nav-menu .nav-icon:hover {
-            background: #f5f5f5;
-            color: var(--text-dark);
+            background: rgba(212, 46, 112, 0.06);
+            color: var(--deep-rose);
+            transform: translateY(-1px);
         }
 
-        /* Trạng thái Active: Dùng màu hồng cũ */
+        .nav-menu .nav-icon:hover::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+
         .nav-menu .nav-icon.active {
-            background: var(--primary-pink); /* Màu hồng phấn cũ */
-            color: var(--deep-rose);      /* Chữ màu hồng đậm cũ */
+            background: rgba(212, 46, 112, 0.1);
+            color: var(--deep-rose);
             font-weight: 600;
-            transform: none; /* Bỏ hiệu ứng phóng to cũ */
+            transform: none;
+        }
+
+        .nav-menu .nav-icon.active::after {
+            transform: translateX(-50%) scaleX(1);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .user-profile-badge {
-            width: 32px; height: 32px;
-            background: var(--accent-pink); /* Màu điểm nhấn cũ */
+            position: relative;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-pink), var(--deep-rose));
             color: white;
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 15px;
             cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+
+        .user-profile-badge:hover {
+            border-color: var(--deep-rose);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(212, 46, 112, 0.3);
+        }
+
+        /* Profile Dropdown */
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            min-width: 200px;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 14px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            z-index: 1001;
+        }
+
+        .profile-dropdown:hover .profile-dropdown-menu,
+        .profile-dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--text-dark);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(212, 46, 112, 0.06);
+        }
+
+        .dropdown-item.danger {
+            color: var(--danger);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.06);
+            margin: 4px 0;
+        }
+
+        /* Logout Button */
+        .btn-logout {
+            padding: 8px 16px;
+            font-size: 13px;
+            color: var(--text-light);
+            background: transparent;
+            border: 1.5px solid rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: var(--font-body);
+            font-weight: 500;
+        }
+
+        .btn-logout:hover {
+            color: var(--danger);
+            border-color: var(--danger);
+            background: rgba(255, 105, 97, 0.06);
+        }
+
+        /* Mobile Hamburger */
+        .hamburger-btn {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            width: 40px;
+            height: 40px;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .hamburger-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .hamburger-btn span {
+            display: block;
+            width: 100%;
+            height: 2px;
+            background: var(--text-dark);
+            border-radius: 2px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hamburger-btn.active span:nth-child(1) {
+            transform: translateY(7px) rotate(45deg);
+        }
+
+        .hamburger-btn.active span:nth-child(2) {
+            opacity: 0;
+            transform: scaleX(0);
+        }
+
+        .hamburger-btn.active span:nth-child(3) {
+            transform: translateY(-7px) rotate(-45deg);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+        }
+
+        .mobile-menu-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 20px;
+            transform: translateY(-20px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-menu-overlay.show .mobile-menu-content {
+            transform: translateY(0);
+        }
+
+        .mobile-menu-content .nav-icon {
+            display: block;
+            padding: 14px 16px;
+            font-size: 16px !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 0;
+        }
+
+        .mobile-menu-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 60px;
+            }
+
+            .desktop-nav {
+                height: 60px;
+                padding: 0 16px;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .nav-actions .btn-logout {
+                display: none;
+            }
+
+            .hamburger-btn {
+                display: flex;
+            }
+
+            .mobile-menu-overlay {
+                display: block;
+            }
+
+            .nav-brand {
+                font-size: 20px;
+            }
+
+            .nav-brand img {
+                height: 32px;
+            }
         }
 
         /* --- 4. CONTAINER NỘI DUNG CHÍNH (CANVAS) --- */
         .notion-layout {
-            max-width: 900px; /* Độ rộng chuẩn bài viết Notion */
+            max-width: 900px;
             margin: 0 auto;
             padding: 40px 20px 100px 20px;
         }
@@ -118,14 +381,12 @@
         }
 
         /* --- 5. TÙY CHỈNH CÁC THÀNH PHẦN JS RENDER RA --- */
-        /* Chỉnh lại thẻ chứa nội dung chính để không bị bó hẹp */
         #student-main-content {
             background: transparent !important;
             padding: 0 !important;
             overflow: visible !important;
         }
-        
-        /* Feed Card & Resource Card: Thêm viền nhẹ và đổ bóng kiểu web */
+
         .feed-card, .res-card {
             border: 1px solid #e0e0e0 !important;
             box-shadow: none !important;
@@ -136,26 +397,15 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
         }
 
-        /* Resource Grid: Chuyển thành 2-3 cột trên màn hình rộng */
-        .resource-grid {
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
-        }
-
-        /* Nút Logout */
-        .btn-logout-text {
-            font-size: 13px; color: #888; cursor: pointer; margin-right: 15px; text-decoration: underline;
-        }
-        .btn-logout-text:hover { color: var(--danger); }
-
     </style>
 </head>
 <body>
 
     <div class="desktop-nav">
-        <div class="nav-brand">
-            <img src="logo.png" alt="MindConnect Logo" style="height: 50px; width: auto; object-fit: contain;">
-        </div>
-        
+        <a href="#" class="nav-brand">
+            <img src="logo.png" alt="MindConnect Logo">
+        </a>
+
         <div class="nav-menu">
             <div class="nav-icon active" onclick="renderStudentHome()">Home</div>
             <div class="nav-icon" onclick="renderStudentDiary()">Diary</div>
@@ -164,9 +414,39 @@
             <div class="nav-icon" onclick="renderChat()">Chat</div>
         </div>
 
-        <div style="display: flex; align-items: center;">
-            <span class="btn-logout-text" onclick="logout()">Log out</span>
-            <div class="user-profile-badge" title="Student Profile">S</div>
+        <div class="nav-actions">
+            <button class="btn-logout" onclick="logout()">Log out</button>
+            <div class="profile-dropdown">
+                <div class="user-profile-badge" id="profileAvatar">S</div>
+                <div class="profile-dropdown-menu">
+                    <div class="dropdown-item">
+                        <span>Student</span>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <div class="dropdown-item" onclick="logout()">
+                        <span>Log out</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <div class="mobile-menu-content">
+            <div class="nav-icon" onclick="renderStudentHome(); closeMobileMenu();">Home</div>
+            <div class="nav-icon" onclick="renderStudentDiary(); closeMobileMenu();">Diary</div>
+            <div class="nav-icon" onclick="renderResources(); closeMobileMenu();">Resources</div>
+            <div class="nav-icon" onclick="renderStudentStats(); closeMobileMenu();">Stats</div>
+            <div class="nav-icon" onclick="renderChat(); closeMobileMenu();">Chat</div>
+            <div class="mobile-menu-actions">
+                <button class="btn-logout" onclick="logout()">Log out</button>
+            </div>
         </div>
     </div>
 
