@@ -1,20 +1,62 @@
 // student.js - FULL VERSION (MERGED)
 
 // --- 1. DỮ LIỆU & TRẠNG THÁI (STATE) ---
-let chatHistory = [
+const defaultChatHistory = [
     { sender: 'ai', text: 'Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?' }
 ];
 
-let userFeed = [
+class Comment {
+    constructor(id, author, date, content, likes = 0, replies = []) {
+        this.id = id;
+        this.author = author;
+        this.date = date;
+        this.content = content;
+        this.likes = likes;
+        this.replies = replies;
+    }
+}
+
+class FeedUser {
+    constructor(id, author, date, content, tags = [], likes = 0, comments = 0, isUser = false) {
+        this.id = id;
+        this.author = author;
+        this.date = date;
+        this.content = content;
+        this.tags = tags;
+        this.likes = likes;
+        this.comments = comments;
+        this.isUser = isUser;
+        this.commentObjects = [];
+    }
+}
+
+const defaultUserFeed = [
     { 
         id: 1, 
-        author: 'User #992', 
-        time: '10p trước', 
+        author: 'Sleepyhead', 
+        date: '2024-11-01T14:30:00Z', 
         content: 'Cảm thấy áp lực deadline quá... Có ai biết cách quản lý thời gian hiệu quả không?', 
         tags: ['Áp lực học tập', 'Cần lời khuyên'], 
         likes: 5, 
         comments: 2, 
-        isUser: false 
+        isUser: false,
+            commentObjects: [
+                new Comment(1, 'Corn Candy', '2024-11-01T15:00:00Z', 'Mình cũng đang gặp vấn đề tương tự. Mình thường chia nhỏ công việc ra và đặt deadline ảo cho từng phần.', 2),
+                new Comment(2, 'MindConnect AI', '2024-11-01T15:05:00Z', 'Bạn có thể thử phương pháp Pomodoro: làm việc 25 phút, nghỉ 5 phút. Sau 4 lần, nghỉ dài hơn. Mình cũng có thể gợi ý một số công cụ quản lý thời gian nếu bạn muốn!', 3)
+            ]
+    },
+    { 
+        id: 2,
+        author: 'Iuriam', 
+        date: '2025-12-22T09:15:00Z', 
+        content: 'Hôm nay mình đã thử bài tập thở mà AI gợi ý, cảm giác khá ổn đấy! Ai muốn thử cùng mình không?',
+        tags: ['Thở', 'Giảm stress'], 
+        likes: 3, 
+        comments: 1, 
+        isUser: false,
+        commentObjects: [
+            new Comment(3, 'MindConnect AI', '2025-12-22T09:30:00Z', 'Chúc bạn có một ngày tốt lành!', 1)
+        ]
     }
 ];
 
@@ -52,6 +94,26 @@ const resourcesDB = [
 const RISK_ALERTS_KEY = 'mindconnect:risk-alerts';
 const API_BASE_URL = 'http://localhost:3000';
 const CHAT_API_URL = `${API_BASE_URL}/chat/support`;
+
+let chatHistory = defaultChatHistory;
+let userFeed = defaultUserFeed;
+let currentResource = resourcesDB;
+let backendReady = false;
+
+function setBackendReadyState(isReady) {
+    backendReady = isReady;
+}
+
+function relativeTimeFrom(dateInput) {
+    const date = new Date(dateInput);
+    const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (diff < 60) return "Vừa xong";
+    if (diff < 3600) return `${Math.floor(diff / 60)}p trước`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+    if (diff < 2592000) return `${Math.floor(diff / 86400)} ngày trước`;
+    if (diff < 31536000) return `${Math.floor(diff / 2592000)} tháng trước`;
+    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+}
 
 function getAuthSession() {
     try {
@@ -196,12 +258,71 @@ function renderCrisisSupportNotice(alert) {
 
 // --- 2. KHỞI TẠO (INIT) ---
 window.onload = function() {
-    renderStudentHome(); // Mặc định vào trang chủ
+    setBackendReadyState(false);
+    showLoadingScreen(); // Hiển thị màn hình
     loadFeedFromBackend();
+    hideLoadingScreen();
+    renderStudentHome(); // Mặc định vào trang chủ
     setTimeout(() => {
         showNotification("📅 Đừng quên làm Quick Test cảm xúc hôm nay nhé!");
     }, 1000);
 };
+
+function showLoadingScreen() {
+    const loadingScreen = document.createElement('div');
+    loadingScreen.id = 'loading-screen';
+    loadingScreen.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    `;
+    loadingScreen.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 20px; animation: pulse 1s infinite;">⏳</div>
+            <h2 style="font-family: var(--font-heading); font-size: 24px; color: #333; margin-bottom: 10px;">Đang tải...</h2>
+            <p style="font-size: 14px; color: #999;">Vui lòng chờ trong giây lát</p>
+            <div style="margin-top: 20px; display: flex; gap: 5px; justify-content: center;">
+                <div style="width: 8px; height: 8px; background: var(--accent-pink); border-radius: 50%; animation: bounce 1.4s infinite;"></div>
+                <div style="width: 8px; height: 8px; background: var(--accent-pink); border-radius: 50%; animation: bounce 1.4s infinite 0.2s;"></div>
+                <div style="width: 8px; height: 8px; background: var(--accent-pink); border-radius: 50%; animation: bounce 1.4s infinite 0.4s;"></div>
+            </div>
+        </div>
+        <style>
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+            @keyframes bounce {
+                0%, 80%, 100% { transform: translateY(0); }
+                40% { transform: translateY(-10px); }
+            }
+        </style>
+    `;
+    document.body.appendChild(loadingScreen);
+}
+
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+        loadingScreen.style.transition = 'opacity 0.3s ease';
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => loadingScreen.remove(), 300);
+    }
+}
+
+function blockIfBackendNotReady() {
+    if (backendReady) return false;
+    setTimeout(() => showNotification('⏳ Backend chưa sẵn sàng, vui lòng chỉ xem giao diện.'), 1000 );
+    return true;
+}
 
 function logout() {
     window.location.href = 'index.html';
@@ -265,8 +386,10 @@ async function loadFeedFromBackend() {
         }));
 
         renderStudentHome();
+        setBackendReadyState(true);
     } catch (error) {
         // Keep built-in demo feed when backend is unavailable.
+        setBackendReadyState(true); // Temporarily allow user to interact with the interface in demo mode.
     }
 }
 
@@ -299,34 +422,54 @@ function renderStudentHome() {
     const container = document.getElementById('student-main-content');
     updateNav(0);
 
-    let feedHtml = userFeed.map(post => `
-        <div class="feed-card">
-            <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                <div style="font-weight:700; font-size: 14px; color: var(--deep-rose);">${post.author}</div>
-                <div style="font-size: 12px; color:#999;">${post.time}</div>
-            </div>
-            <p style="font-size: 15px; line-height: 1.5; margin-bottom: 10px; color: #1a1a1a;">${post.content}</p>
-            
-            ${post.tags && post.tags.length > 0 ? 
-                `<div style="margin-bottom:10px;">${post.tags.map(t => `<span style="background:#f0f0f0; font-size:11px; padding:3px 8px; border-radius:4px; margin-right:5px; color:#666;">#${t}</span>`).join('')}</div>` 
-                : ''}
+    let feedHtml = userFeed.map(post => {
+        const postDate = post.date || post.time;
+        const comments = Array.isArray(post.commentObjects) ? post.commentObjects : [];
 
-            <div style="display:flex; gap: 20px; font-size: 18px; color: #666;">
-                <span>❤️ <span style="font-size:13px;">${post.likes}</span></span>
-                <span>💬 <span style="font-size:13px;">${post.comments}</span></span>
-                <span>🚀</span>
+        const commentsHtml = comments.length > 0
+            ? `
+                <div style="margin-top:12px; border-top:1px solid #f1f1f1; padding-top:10px;">
+                    ${comments.map(c => `
+                        <div style="background:#fafafa; border:1px solid #f0f0f0; border-radius:8px; padding:8px 10px; margin-bottom:8px;">
+                            <div style="display:flex; justify-content:space-between; gap:8px; margin-bottom:4px;">
+                                <strong style="font-size:12px; color: var(--deep-rose);">${escapeHtml(c.author)}</strong>
+                                <span style="font-size:11px; color:#999;">${relativeTimeFrom(c.date)}</span>
+                            </div>
+                            <div style="font-size:13px; color:#333; line-height:1.45;">${escapeHtml(c.content)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `
+            : `<div style="margin-top:10px; font-size:12px; color:#999;">Chưa có bình luận nào.</div>`;
+
+        return `
+            <div class="feed-card">
+                <div style="display:flex; justify-content:space-between; margin-bottom: 5px; margin-left: 5px;">
+                    <div style="font-weight:700; font-size: 14px; color: var(--deep-rose);">${post.author}</div>
+                    <div style="font-size: 12px; color:#999; margin-right: 5px;">${relativeTimeFrom(postDate)}</div>
+                </div>
+                <p style="font-size: 15px; line-height: 1.5; margin-bottom: 10px; margin-left: 5px; color: #1a1a1a;">${post.content}</p>
+                
+                ${post.tags && post.tags.length > 0 ? 
+                    `<div style="margin-bottom:10px; margin-left: 5px;">${post.tags.map(t => `<span style="background:#f0f0f0; font-size:11px; padding:3px 8px; border-radius:4px; margin-right:5px; color:#666;">#${t}</span>`).join('')}</div>` 
+                    : ''}
+
+                <div style="display:flex; gap: 20px; font-size: 18px; color: #666;">
+                    <span>❤️ <span style="font-size:13px;">${post.likes}</span></span>
+                    <span>💬 <span style="font-size:13px;">${post.comments}</span></span>
+                    <span>🚀</span>
+                </div>
+
+                ${commentsHtml}
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 
     container.innerHTML = `
         <div style="padding: 0 20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; padding: 15px 0; border-bottom:1px solid #eee;">
-                <h2 style="font-family: var(--font-heading); font-size: 28px;">For you</h2>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn-outline" style="font-size:12px; padding: 5px 10px;" onclick="renderChat()">💬 Tâm sự với AI</button>
-                    <button class="btn-outline" style="font-size:12px; padding: 5px 10px;" onclick="renderStudentDiary()">+ Viết Nhật ký</button>
-                </div>
+                <h2 style="font-family: var(--font-heading); font-size: 28px;">News feed</h2>
+                <button class="btn-outline" style="font-size:12px; padding: 5px 10px;" onclick="renderStudentDiary()">+ Viết Nhật ký</button>
             </div>
             ${feedHtml}
         </div>
@@ -343,6 +486,7 @@ function renderStudentDiary() {
     container.innerHTML = `
         <div style="padding: 20px;">
             <div class="quick-test-section">
+                <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">Chào bạn!</h1>
                 <h3 style="font-size: 16px; color: #666;">Hôm nay bạn cảm thấy thế nào?</h3>
                 <div class="emoji-scale">
                     <div class="emoji-btn" onclick="selectMood(1, this)">😭</div>
@@ -351,7 +495,7 @@ function renderStudentDiary() {
                     <div class="emoji-btn" onclick="selectMood(4, this)">🙂</div>
                     <div class="emoji-btn" onclick="selectMood(5, this)">😁</div>
                 </div>
-                <div id="quick-test-msg" style="font-size:12px; color:var(--accent-pink); margin-top:10px; min-height:20px;"></div>
+                <div id="quick-test-msg" style="font-size:13px; color:var(--accent-pink); margin-top:10px; min-height:20px;"></div>
             </div>
 
             <h3 style="margin: 20px 0 10px 0; color: var(--deep-rose);">Nhật ký chuyên sâu</h3>
@@ -365,8 +509,8 @@ function renderStudentDiary() {
                     <button class="btn-primary" style="width:100%; margin-top:10px; font-size:13px;" onclick="confirmAndPost()">Xác nhận & Đăng</button>
                 </div>
 
-                <div style="text-align:right; margin-top:10px;" id="action-area">
-                    <button class="btn-primary" onclick="analyzeDiary()">✨ Phân tích AI</button>
+                <div style="text-align:right; margin-top:16px;" id="action-area">
+                    <button class="btn-primary" onclick="analyzeDiary()" style="font-size:16px;">✨ Phân tích AI</button>
                 </div>
             </div>
         </div>
@@ -389,7 +533,7 @@ function selectMood(score, elem) {
     } else if(score <= 2) {
         msg.innerHTML = `Bạn ổn không? <u onclick="renderStudentStats()" style="cursor:pointer; font-weight:bold;">Xem thống kê</u> hoặc <u onclick="renderResources()" style="cursor:pointer; font-weight:bold;">nghe nhạc</u> nhé.`;
     } else {
-        msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score==5?"Rất tốt":"Bình thường");
+        msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score==5?"Rất tốt":(score==4?"Tốt":"Bình thường"));
     }
 }
 
@@ -442,6 +586,8 @@ function buildFallbackChatReply(txt, riskAlert) {
 }
 
 async function analyzeDiary() {
+    if (blockIfBackendNotReady()) return;
+
     const content = document.getElementById('diary-content').value;
     const title = document.getElementById('diary-title').value;
     if(content.length < 5) return alert("Hãy viết dài hơn một chút nhé!");
@@ -493,6 +639,8 @@ async function analyzeDiary() {
 function toggleTag(el) { el.classList.toggle('selected'); }
 
 async function confirmAndPost() {
+    if (blockIfBackendNotReady()) return;
+
     const title = document.getElementById('diary-title').value;
     const content = document.getElementById('diary-content').value;
     const finalTags = [];
@@ -687,7 +835,7 @@ function renderChat() {
                 <h2 style="font-family: var(--font-heading); color: var(--deep-rose);">AI hỗ trợ tâm lý</h2>
                 <p style="font-size: 13px; color: #666;">Bạn có thể tâm sự bằng lời của mình. AI sẽ lắng nghe, đưa lời khuyên và gợi ý tài nguyên phù hợp.</p>
             </div>
-            <div class="chat-box" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
+            <div id="chat-box" class="chat-box" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
                 ${chatHistory.map(msg => `
                     <div style="align-self: ${msg.sender === 'user' ? 'flex-end' : 'flex-start'}; max-width: 80%;">
                         <div style="
@@ -710,15 +858,17 @@ function renderChat() {
             </div>
         </div>
     `;
-    setTimeout(() => { 
+    setTimeout(() => {
         const box = document.getElementById('chat-box');
-        if(box) box.scrollTop = box.scrollHeight; 
-    }, 50);
+        if (box) box.scrollTop = box.scrollHeight;
+    }, 0);
 }
 
 function handleEnter(e) { if (e.key === 'Enter') sendMsg(); }
 
 async function sendMsg() {
+    if (blockIfBackendNotReady()) return;
+
     const input = document.getElementById('chat-input');
     const txt = input.value.trim();
     if(!txt) return;
@@ -727,6 +877,11 @@ async function sendMsg() {
     renderChat();
     const activeInput = document.getElementById('chat-input');
     if(activeInput) activeInput.focus();
+
+    setTimeout(() => {
+        const box = document.getElementById('chat-box');
+        if (box) box.scrollTop = box.scrollHeight;
+    }, 0);
 
     const chatBox = document.querySelector('.chat-box');
     const typingDiv = document.createElement('div');
@@ -760,6 +915,10 @@ async function sendMsg() {
 
         chatHistory.push({ sender: 'ai', text: aiResponse });
         renderChat();
+        setTimeout(() => {
+            const box = document.getElementById('chat-box');
+            if (box) box.scrollTop = box.scrollHeight;
+        }, 0);
     } catch (error) {
         const indicator = document.getElementById('ai-typing-indicator');
         if (indicator) indicator.remove();
@@ -769,6 +928,10 @@ async function sendMsg() {
             text: buildFallbackChatReply(txt, riskAlert)
         });
         renderChat();
+        setTimeout(() => {
+            const box = document.getElementById('chat-box');
+            if (box) box.scrollTop = box.scrollHeight;
+        }, 0);
     }
 }
 
@@ -812,6 +975,8 @@ function closeBookingModal() {
 }
 
 async function handleConfirmBooking() {
+    if (blockIfBackendNotReady()) return;
+
     const requestedTime = document.getElementById('booking-time')?.value || null;
     const note = document.getElementById('booking-note')?.value || '';
     closeBookingModal();
