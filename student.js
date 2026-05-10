@@ -342,7 +342,42 @@ function showNotification(text) {
 
 function updateNav(idx) {
     // 0:Home, 1:Diary, 2:Resources, 3:Stats, 4:Chat
-    document.querySelectorAll('.nav-icon').forEach((el, i) => el.classList.toggle('active', i === idx));
+    document.querySelectorAll('.nav-icon').forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+        el.classList.remove('nav-tab-bounce');
+        if (i === idx) {
+            void el.offsetWidth;
+            el.classList.add('nav-tab-bounce');
+        }
+    });
+}
+
+function animateMainContentSwap() {
+    const container = document.getElementById('student-main-content');
+    if (!container) return;
+
+    container.classList.remove('content-fade-in');
+    void container.offsetWidth;
+    container.classList.add('content-fade-in');
+
+    if (!document.getElementById('student-tab-animations')) {
+        const style = document.createElement('style');
+        style.id = 'student-tab-animations';
+        style.textContent = `
+            .content-fade-in { animation: contentFadeIn 0.5s ease-out; }
+            .nav-tab-bounce { animation: navTabBounce 0.5s ease-out; }
+            @keyframes contentFadeIn {
+                from { opacity: 0; transform: translateY(8px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes navTabBounce {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.12); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
 }
 
 function escapeHtml(value) {
@@ -421,6 +456,7 @@ function getFallbackResourceSuggestion(txt) {
 function renderStudentHome() {
     const container = document.getElementById('student-main-content');
     updateNav(0);
+    animateMainContentSwap();
 
     let feedHtml = userFeed.map(post => {
         const postDate = post.date || post.time;
@@ -468,7 +504,7 @@ function renderStudentHome() {
     container.innerHTML = `
         <div style="padding: 0 20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; padding: 15px 0; border-bottom:1px solid #eee;">
-                <h2 style="font-family: var(--font-heading); font-size: 28px;">News feed</h2>
+                <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">News feed</h1>
                 <button class="btn-outline" style="font-size:12px; padding: 5px 10px;" onclick="renderStudentDiary()">+ Viết Nhật ký</button>
             </div>
             ${feedHtml}
@@ -482,6 +518,7 @@ function renderStudentHome() {
 function renderStudentDiary() {
     const container = document.getElementById('student-main-content');
     updateNav(1);
+    animateMainContentSwap();
 
     container.innerHTML = `
         <div style="padding: 20px;">
@@ -684,6 +721,7 @@ async function confirmAndPost() {
 function renderResources(filterType = 'Tất cả') {
     const container = document.getElementById('student-main-content');
     updateNav(2);
+    animateMainContentSwap();
 
     // Lọc dữ liệu dựa trên tab được chọn
     const filteredDB = filterType === 'Tất cả' 
@@ -719,7 +757,7 @@ function renderResources(filterType = 'Tất cả') {
 
     container.innerHTML = `
         <div style="padding: 20px 0;">
-            <h2 style="font-family: var(--font-heading); font-size: 32px; margin-bottom: 10px;">Kho Tài nguyên</h2>
+            <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">Kho Tài nguyên</h1>
             <div class="filter-bar">${filterHtml}</div>
             <div class="resource-grid">
                 ${cardsHtml}
@@ -732,7 +770,7 @@ function renderBreathingSpace() {
     const container = document.getElementById('student-main-content');
     container.innerHTML = `
         <div style="text-align:center; padding: 40px;">
-            <h2 style="font-family: var(--font-heading);">Bài tập thở giảm Stress</h2>
+            <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">Bài tập thở giảm Stress</h1>
             <p id="breath-text" style="color: #666; height: 30px;">Chuẩn bị...</p>
             <div id="breath-circle" class="breathing-circle"></div>
             <button class="btn-primary" onclick="startBreathing()">Bắt đầu</button>
@@ -768,6 +806,7 @@ function startBreathing() {
 function renderStudentStats() {
     const container = document.getElementById('student-main-content');
     updateNav(3);
+    animateMainContentSwap();
 
     const latestAlert = getRiskAlerts()[0];
     const riskLevel = latestAlert
@@ -789,7 +828,7 @@ function renderStudentStats() {
 
     container.innerHTML = `
         <div style="padding: 20px;">
-            <h2 style="color: var(--deep-rose); margin-bottom: 20px;">Thống kê Cảm xúc</h2>
+            <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">Thống kê Cảm xúc</h2>
             
             <div style="display:flex; align-items:flex-end; justify-content:space-between; height: 150px; padding: 0 10px 10px 10px; border-bottom: 1px solid #ccc;">
                 <div style="width:30px; height:40%; background: #ddd; border-radius: 4px;"></div>
@@ -828,11 +867,12 @@ function renderStudentStats() {
 function renderChat() {
     const container = document.getElementById('student-main-content');
     updateNav(4);
+    animateMainContentSwap();
 
     container.innerHTML = `
         <div class="chat-container" style="display:flex; flex-direction:column; height: 80vh;">
             <div style="padding: 0 20px 12px; border-bottom: 1px solid #eee;">
-                <h2 style="font-family: var(--font-heading); color: var(--deep-rose);">AI hỗ trợ tâm lý</h2>
+                <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">AI hỗ trợ tâm lý</h1>
                 <p style="font-size: 13px; color: #666;">Bạn có thể tâm sự bằng lời của mình. AI sẽ lắng nghe, đưa lời khuyên và gợi ý tài nguyên phù hợp.</p>
             </div>
             <div id="chat-box" class="chat-box" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
