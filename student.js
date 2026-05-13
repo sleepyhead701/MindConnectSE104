@@ -499,6 +499,21 @@ function getFallbackResourceSuggestion(txt) {
 // ==============================================
 // 3. HOME (GIAO DIỆN LAI THREADS)
 // ==============================================
+window.submitComment = function(postIndex, content) {
+    const userName = (typeof currentUser !== 'undefined' && currentUser && currentUser.name) ? currentUser.name : 'Luriam';
+    if (!userFeed[postIndex].commentObjects) {
+        userFeed[postIndex].commentObjects = [];
+    }
+    userFeed[postIndex].commentObjects.push({
+        author: userName,
+        content: content,
+        date: new Date().toISOString(),
+        likes: 0
+    });
+    localStorage.setItem('userFeed', JSON.stringify(userFeed));
+    renderStudentHome();
+};
+
 function renderStudentHome() {
     const container = document.getElementById('student-main-content');
     updateNav(0);
@@ -567,7 +582,7 @@ function renderStudentHome() {
                         </div>
                         <div class="mc-comment-input-box" style="display: none; margin-top: 16px;">
                             <input type="text" class="mc-input" placeholder="Viết bình luận của bạn..." style="margin-bottom: 8px; padding: 10px 14px; font-size: 14px;">
-                            <button type="button" class="mc-btn mc-btn-primary" style="min-height: 32px; padding: 6px 14px; font-size: 13px;" onclick="if(this.previousElementSibling.value) { const newComment = { id: Date.now().toString(), author: 'Current User', content: this.previousElementSibling.value, date: new Date().toISOString() }; if(!${JSON.stringify(post)}.comments) ${JSON.stringify(post)}.comments = []; ${JSON.stringify(post)}.comments.push(newComment); renderStudentHome(); }">Gửi bình luận</button>
+                            <button type="button" class="mc-btn mc-btn-primary" style="min-height: 32px; padding: 6px 14px; font-size: 13px;" onclick="if(this.previousElementSibling.value) { window.submitComment(${index}, this.previousElementSibling.value); this.previousElementSibling.value = ''; }">Gửi bình luận</button>
                         </div>
                     </div>
                 </div>
