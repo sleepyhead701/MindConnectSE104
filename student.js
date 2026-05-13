@@ -64,30 +64,42 @@ const resourcesDB = [
     { 
         type: 'Video', 
         title: 'Thiền 5 phút giảm lo âu', 
+        duration: '5 phút',
         img: 'https://img.youtube.com/vi/inpok4MKVLM/mqdefault.jpg', 
         url: 'https://www.youtube.com/watch?v=inpok4MKVLM' 
     },
     { 
         type: 'Blog', 
         title: 'Cách vượt qua Burnout mùa thi', 
+        duration: '7 phút đọc',
         img: 'https://suckhoedoisong.qltns.mediacdn.vn/thumb_w/640/324455921873985536/2023/4/26/cang-thang-truoc-ky-thi-16824842727412019885995.png', 
         url: '#' 
     },
     { 
         type: 'Book', 
         title: 'Hiểu về trái tim - Minh Niệm', 
+        duration: '12 chương',
         img: 'https://tramsach.vn/wp-content/uploads/2024/11/gioi-thieu-sach.jpg', 
         url: 'https://thuvienhoasen.org/images/file/y5sBQGYE1QgQAHou/hieu-ve-trai-tim.pdf' },
     { 
         type: 'Podcast', 
         title: 'Radio Cảm Xúc #12 - Chữa lành', 
+        duration: '32 phút',
         img: 'https://i.scdn.co/image/ab67656300005f1ff6bed7462a8b94b0fb452114', 
         url: 'https://open.spotify.com/episode/63VvDWyELyutySrZSRU1Hq' },
     { 
         type: 'Công cụ', 
         title: 'Bài tập thở giảm Stress', 
+        duration: '4 bài tập',
         img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlg1wCwbYTPH8TCqBnzGjRLEhlmNuhdWy44A&s', 
         action: 'renderBreathingSpace'
+    },
+    {
+        type: 'Công cụ',
+        title: 'Quản lý thời gian Pomodoro',
+        duration: 'App',
+        img: 'https://images.unsplash.com/photo-1495364141860-b0d03eccd065?w=800&q=80',
+        url: '#'
     }
 ];
 
@@ -343,9 +355,10 @@ function showNotification(text) {
 function updateNav(idx) {
     // 0:Home, 1:Diary, 2:Resources, 3:Stats, 4:Chat
     document.querySelectorAll('.nav-icon').forEach((el, i) => {
-        el.classList.toggle('active', i === idx);
+        const navIndex = Number(el.dataset.navIndex ?? i);
+        el.classList.toggle('active', navIndex === idx);
         el.classList.remove('nav-tab-bounce');
-        if (i === idx) {
+        if (navIndex === idx) {
             void el.offsetWidth;
             el.classList.add('nav-tab-bounce');
         }
@@ -404,6 +417,37 @@ function formatDiaryContent(title, content) {
     return safeTitle ? `<strong>${safeTitle}</strong><br>${safeContent}` : safeContent;
 }
 
+function getInitials(name) {
+    return String(name || 'SV')
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(part => part[0])
+        .join('')
+        .toUpperCase() || 'SV';
+}
+
+function getFeedGradient(index) {
+    const gradients = ['mc-avatar-rose', 'mc-avatar-coral', 'mc-avatar-amber', 'mc-avatar-slate'];
+    return gradients[index % gradients.length];
+}
+
+function formatFeedTime(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? escapeHtml(value || '') : relativeTimeFrom(value);
+}
+
+function stripHtml(value) {
+    return String(value || '').replace(/<[^>]*>/g, ' ');
+}
+
+function setChatSuggestion(text) {
+    const input = document.getElementById('chat-input');
+    if (!input) return;
+    input.value = text || '';
+    input.focus();
+}
+
 async function loadFeedFromBackend() {
     try {
         const diaries = await apiRequest('/api/feed');
@@ -458,57 +502,69 @@ function renderStudentHome() {
     updateNav(0);
     animateMainContentSwap();
 
-    let feedHtml = userFeed.map(post => {
+    const feedHtml = userFeed.map((post, index) => {
         const postDate = post.date || post.time;
         const comments = Array.isArray(post.commentObjects) ? post.commentObjects : [];
+        const commentCount = comments.length || post.comments || 0;
+        const postBody = post.isUser ? post.content : escapeHtml(post.content);
 
         const commentsHtml = comments.length > 0
             ? `
-                <div style="margin-top:12px; border-top:1px solid #f1f1f1; padding-top:10px;">
+                <div class="mc-reply-list">
                     ${comments.map(c => `
-                        <div style="background:#fafafa; border:1px solid #f0f0f0; border-radius:8px; padding:8px 10px; margin-bottom:8px;">
-                            <div style="display:flex; justify-content:space-between; gap:8px; margin-bottom:4px;">
-                                <strong style="font-size:12px; color: var(--deep-rose);">${escapeHtml(c.author)}</strong>
-                                <span style="font-size:11px; color:#999;">${relativeTimeFrom(c.date)}</span>
+                        <div class="mc-reply-card">
+                            <div class="mc-reply-meta">
+                                <strong>${escapeHtml(c.author)}</strong>
+                                <span>${formatFeedTime(c.date)}</span>
                             </div>
-                            <div style="font-size:13px; color:#333; line-height:1.45;">${escapeHtml(c.content)}</div>
+                            <p>${escapeHtml(c.content)}</p>
                         </div>
                     `).join('')}
                 </div>
             `
-            : `<div style="margin-top:10px; font-size:12px; color:#999;">Chưa có bình luận nào.</div>`;
+            : '';
 
         return `
-            <div class="feed-card">
-                <div style="display:flex; justify-content:space-between; margin-bottom: 5px; margin-left: 5px;">
-                    <div style="font-weight:700; font-size: 14px; color: var(--deep-rose);">${post.author}</div>
-                    <div style="font-size: 12px; color:#999; margin-right: 5px;">${relativeTimeFrom(postDate)}</div>
-                </div>
-                <p style="font-size: 15px; line-height: 1.5; margin-bottom: 10px; margin-left: 5px; color: #1a1a1a;">${post.content}</p>
-                
-                ${post.tags && post.tags.length > 0 ? 
-                    `<div style="margin-bottom:10px; margin-left: 5px;">${post.tags.map(t => `<span style="background:#f0f0f0; font-size:11px; padding:3px 8px; border-radius:4px; margin-right:5px; color:#666;">#${t}</span>`).join('')}</div>` 
-                    : ''}
+            <article class="mc-feed-card">
+                <div class="mc-feed-content">
+                    <div class="mc-avatar ${getFeedGradient(index)}">${escapeHtml(getInitials(post.author))}</div>
+                    <div class="mc-feed-main">
+                        <div class="mc-feed-meta">
+                            <h3>${escapeHtml(post.author)}</h3>
+                            <span>${formatFeedTime(postDate)}</span>
+                        </div>
+                        <p class="mc-feed-text">${postBody}</p>
 
-                <div style="display:flex; gap: 20px; font-size: 18px; color: #666;">
-                    <span>❤️ <span style="font-size:13px;">${post.likes}</span></span>
-                    <span>💬 <span style="font-size:13px;">${post.comments}</span></span>
-                    <span>🚀</span>
-                </div>
+                        ${post.tags && post.tags.length > 0 ?
+                            `<div class="mc-tag-row">${post.tags.map(t => `<span>#${escapeHtml(t)}</span>`).join('')}</div>`
+                            : ''}
 
+                        <div class="mc-feed-actions">
+                            <button type="button" aria-label="Thả tim"><span>♥</span>${post.likes || 0}</button>
+                            <button type="button" aria-label="Bình luận"><span>○</span>${commentCount}</button>
+                            <button type="button" aria-label="Chia sẻ">↗</button>
+                        </div>
+                    </div>
+                </div>
                 ${commentsHtml}
-            </div>
+            </article>
         `;
     }).join('');
 
     container.innerHTML = `
-        <div style="padding: 0 20px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding: 15px 0; border-bottom:1px solid #eee;">
-                <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">News feed</h1>
-                <button class="btn-outline" style="font-size:12px; padding: 5px 10px;" onclick="renderStudentDiary()">+ Viết Nhật ký</button>
+        <section class="mc-page mc-home-page">
+            <div class="mc-page-header mc-page-header-row">
+                <div>
+                    <p class="mc-kicker">Cộng đồng</p>
+                    <h1>News feed</h1>
+                    <p>Chia sẻ ẩn danh, lắng nghe nhau.</p>
+                </div>
+                <button class="mc-btn mc-btn-outline" type="button" onclick="renderStudentDiary()">+ Viết Nhật ký</button>
             </div>
-            ${feedHtml}
-        </div>
+            <div class="mc-feed-list">
+                ${feedHtml}
+            </div>
+        </section>
     `;
 }
 
@@ -520,42 +576,75 @@ function renderStudentDiary() {
     updateNav(1);
     animateMainContentSwap();
 
-    container.innerHTML = `
-        <div style="padding: 20px;">
-            <div class="quick-test-section">
-                <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">Chào bạn!</h1>
-                <h3 style="font-size: 16px; color: #666;">Hôm nay bạn cảm thấy thế nào?</h3>
-                <div class="emoji-scale">
-                    <div class="emoji-btn" onclick="selectMood(1, this)">😭</div>
-                    <div class="emoji-btn" onclick="selectMood(2, this)">😔</div>
-                    <div class="emoji-btn" onclick="selectMood(3, this)">😐</div>
-                    <div class="emoji-btn" onclick="selectMood(4, this)">🙂</div>
-                    <div class="emoji-btn" onclick="selectMood(5, this)">😁</div>
-                </div>
-                <div id="quick-test-msg" style="font-size:13px; color:var(--accent-pink); margin-top:10px; min-height:20px;"></div>
-            </div>
+    const moodItems = [
+        { score: 5, label: 'Tuyệt vời', mark: '♥', tone: 'rose' },
+        { score: 4, label: 'Ổn', mark: ':)', tone: 'amber' },
+        { score: 3, label: 'Bình thường', mark: ':|', tone: 'stone' },
+        { score: 2, label: 'Mệt mỏi', mark: '...', tone: 'slate' },
+        { score: 1, label: 'Tệ', mark: '!', tone: 'violet' }
+    ];
 
-            <h3 style="margin: 20px 0 10px 0; color: var(--deep-rose);">Nhật ký chuyên sâu</h3>
-            <div class="notion-editor-container">
-                <input type="text" id="diary-title" class="notion-title" placeholder="Tiêu đề...">
-                <textarea id="diary-content" class="notion-body" placeholder="Viết những suy nghĩ của bạn, nhấn '/' để AI gợi ý..."></textarea>
-                
-                <div id="ai-suggestion-area" class="ai-tag-box hidden">
-                    <div style="font-size:12px; font-weight:600; margin-bottom:5px;">🤖 AI đề xuất Tag:</div>
-                    <div id="tag-container"></div>
-                    <button class="btn-primary" style="width:100%; margin-top:10px; font-size:13px;" onclick="confirmAndPost()">Xác nhận & Đăng</button>
-                </div>
-
-                <div style="text-align:right; margin-top:16px;" id="action-area">
-                    <button class="btn-primary" onclick="analyzeDiary()" style="font-size:16px;">✨ Phân tích AI</button>
-                </div>
+    const recentHtml = userFeed.slice(0, 3).map((entry, index) => `
+        <div class="mc-recent-entry">
+            <div class="mc-recent-top">
+                <span class="mc-recent-dot ${getFeedGradient(index)}">${escapeHtml(getInitials(entry.author))}</span>
+                <strong>${formatFeedTime(entry.date || entry.time)}</strong>
             </div>
+            <p>${escapeHtml(stripHtml(entry.content)).slice(0, 120)}${stripHtml(entry.content).length > 120 ? '...' : ''}</p>
         </div>
+    `).join('');
+
+    container.innerHTML = `
+        <section class="mc-page">
+            <div class="mc-page-header">
+                <p class="mc-kicker">Nhật ký riêng tư</p>
+                <h1>Hôm nay bạn thấy thế nào?</h1>
+                <p>Chỉ bạn nhìn thấy. AI sẽ phân tích ẩn danh để gợi ý phù hợp.</p>
+            </div>
+
+            <div class="mc-diary-grid">
+                <div class="mc-panel mc-diary-editor">
+                    <div class="quick-test-section mc-mood-section">
+                        <label class="mc-field-label">Cảm xúc hiện tại</label>
+                        <div class="mc-mood-grid">
+                            ${moodItems.map(item => `
+                                <button class="mood-card ${item.score === 4 ? 'active' : ''}" type="button" onclick="selectMood(${item.score}, this)">
+                                    <span class="mood-mark mood-${item.tone}">${item.mark}</span>
+                                    <span>${item.label}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div id="quick-test-msg" class="mc-mood-msg"></div>
+                    </div>
+
+                    <label class="mc-field-label" for="diary-title">Tiêu đề</label>
+                    <input type="text" id="diary-title" class="notion-title mc-input" placeholder="Tiêu đề...">
+
+                    <label class="mc-field-label" for="diary-content">Hôm nay của bạn</label>
+                    <textarea id="diary-content" class="notion-body mc-textarea" placeholder="Viết những suy nghĩ của bạn, nhấn '/' để AI gợi ý..."></textarea>
+
+                    <div id="ai-suggestion-area" class="ai-tag-box mc-ai-tag-box hidden">
+                        <div class="mc-ai-tag-title">AI đề xuất Tag</div>
+                        <div id="tag-container"></div>
+                        <button class="mc-btn mc-btn-primary mc-full-width" type="button" onclick="confirmAndPost()">Xác nhận & Đăng</button>
+                    </div>
+
+                    <div class="mc-editor-actions" id="action-area">
+                        <button class="mc-btn mc-btn-primary" type="button" onclick="analyzeDiary()">Phân tích AI</button>
+                    </div>
+                </div>
+
+                <aside class="mc-panel mc-recent-panel">
+                    <h3>Gần đây</h3>
+                    <div class="mc-recent-list">${recentHtml || '<p class="mc-empty">Chưa có nhật ký nào.</p>'}</div>
+                </aside>
+            </div>
+        </section>
     `;
 }
 
 function selectMood(score, elem) {
-    document.querySelectorAll('.emoji-btn').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.emoji-btn, .mood-card').forEach(e => e.classList.remove('active'));
     elem.classList.add('active');
     
     const msg = document.getElementById('quick-test-msg');
@@ -723,7 +812,6 @@ function renderResources(filterType = 'Tất cả') {
     updateNav(2);
     animateMainContentSwap();
 
-    // Lọc dữ liệu dựa trên tab được chọn
     const filteredDB = filterType === 'Tất cả' 
         ? resourcesDB 
         : resourcesDB.filter(res => res.type === filterType);
@@ -731,50 +819,61 @@ function renderResources(filterType = 'Tất cả') {
     const types = ['Tất cả', ...new Set(resourcesDB.map(r => r.type))];
 
     const filterHtml = types.map(t => `
-        <button class="filter-btn ${t === filterType ? 'active' : ''}" 
-                onclick="renderResources('${t}')">${t}</button>
+        <button class="filter-btn ${t === filterType ? 'active' : ''}" type="button"
+                onclick="renderResources('${t}')">${escapeHtml(t)}</button>
     `).join('');
 
     const cardsHtml = filteredDB.map(res => {
-        const actionAttr = res.action 
-            ? `onclick="${res.action}(); return false;" href="#"` 
-            : `href="${res.url}" target="_blank"`;
+        const href = res.url || '#';
+        const actionAttr = res.action
+            ? `onclick="${res.action}(); return false;" href="#"`
+            : `href="${escapeHtml(href)}" ${href === '#' ? '' : 'target="_blank" rel="noopener noreferrer"'}`;
 
         return `
-            <a ${actionAttr} class="res-link">
-                <div class="res-card">
-                    <div class="res-img-container" style="background-image: url('${res.img || 'https://via.placeholder.com/150'}')">
-                        <span class="res-type-tag">${res.type}</span>
+            <a ${actionAttr} class="res-link mc-resource-link">
+                <article class="res-card mc-resource-card">
+                    <div class="res-img-container mc-resource-cover" style="background-image: url('${res.img || 'https://via.placeholder.com/150'}')">
+                        <span class="res-type-tag">${escapeHtml(res.type)}</span>
+                        <span class="mc-resource-duration">${escapeHtml(res.duration || '')}</span>
                     </div>
                     <div class="res-info">
-                        <div class="res-title-main">${res.title}</div>
+                        <div class="res-title-main">${escapeHtml(res.title)}</div>
                         <div class="res-footer">Xem thêm →</div>
                     </div>
-                </div>
+                </article>
             </a>
         `;
     }).join('');
 
     container.innerHTML = `
-        <div style="padding: 20px 0;">
-            <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">Kho Tài nguyên</h1>
-            <div class="filter-bar">${filterHtml}</div>
-            <div class="resource-grid">
+        <section class="mc-page">
+            <div class="mc-page-header">
+                <p class="mc-kicker">Kho tài nguyên</p>
+                <h1>Tài nguyên cho <span>tâm hồn.</span></h1>
+                <p>Thiền, podcast, sách và công cụ được tuyển chọn để đồng hành cùng bạn.</p>
+            </div>
+            <div class="filter-bar mc-filter-bar">${filterHtml}</div>
+            <div class="resource-grid mc-resource-grid">
                 ${cardsHtml}
             </div>
-        </div>
+        </section>
     `;
 }
 
 function renderBreathingSpace() {
     const container = document.getElementById('student-main-content');
+    updateNav(2);
+    animateMainContentSwap();
     container.innerHTML = `
-        <div style="text-align:center; padding: 40px;">
-            <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">Bài tập thở giảm Stress</h1>
-            <p id="breath-text" style="color: #666; height: 30px;">Chuẩn bị...</p>
+        <section class="mc-page">
+            <div class="mc-panel mc-breathing-panel">
+                <p class="mc-kicker">Công cụ thở</p>
+                <h1>Bài tập thở giảm Stress</h1>
+                <p id="breath-text">Chuẩn bị...</p>
             <div id="breath-circle" class="breathing-circle"></div>
-            <button class="btn-primary" onclick="startBreathing()">Bắt đầu</button>
-        </div>
+                <button class="mc-btn mc-btn-primary" type="button" onclick="startBreathing()">Bắt đầu</button>
+            </div>
+        </section>
     `;
 }
 
@@ -814,50 +913,81 @@ function renderStudentStats() {
         : 'medium';
     let alertColor = "var(--warning)";
     let aiMessage = "Có vẻ bạn đang hơi căng thẳng. Hãy nghỉ ngơi một chút nhé.";
-    let barColor = "var(--warning)";
 
     if(riskLevel === 'high') {
         alertColor = "#FF6961";
         aiMessage = "Mức độ lo âu CAO. Chúng tôi khuyến nghị bạn đặt lịch tham vấn ngay.";
-        barColor = "var(--deep-rose)";
     } else if (riskLevel === 'low') {
         alertColor = "var(--success)";
         aiMessage = "Trạng thái cảm xúc ổn định. Hãy duy trì nhé!";
-        barColor = "var(--success)";
     }
 
-    container.innerHTML = `
-        <div style="padding: 20px;">
-            <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">Thống kê Cảm xúc</h2>
-            
-            <div style="display:flex; align-items:flex-end; justify-content:space-between; height: 150px; padding: 0 10px 10px 10px; border-bottom: 1px solid #ccc;">
-                <div style="width:30px; height:40%; background: #ddd; border-radius: 4px;"></div>
-                <div style="width:30px; height:60%; background: var(--accent-pink); border-radius: 4px;"></div>
-                <div style="width:30px; height:30%; background: #ddd; border-radius: 4px;"></div>
-                <div style="width:30px; height:80%; background: ${barColor}; border-radius: 4px;"></div>
-                <div style="width:30px; height:20%; background: #eee; border-radius: 4px; border:1px dashed #999;"></div>
-            </div>
-            <p style="text-align:center; font-size: 12px; color: #888; margin-top: 5px;">T2 - T3 - T4 - T5 (Hôm nay)</p>
+    const days = [
+        { d: 'T2', value: 45, label: 'Bình thường', tone: 'neutral' },
+        { d: 'T3', value: 70, label: 'Tốt', tone: 'rose' },
+        { d: 'T4', value: 50, label: 'Bình thường', tone: 'neutral' },
+        { d: 'T5', value: riskLevel === 'high' ? 38 : 85, label: riskLevel === 'high' ? 'Căng thẳng' : 'Tuyệt vời', tone: riskLevel === 'high' ? 'danger' : 'amber' },
+        { d: 'T6', value: 30, label: 'Chưa ghi', future: true },
+        { d: 'T7', value: 30, label: 'Chưa ghi', future: true },
+        { d: 'CN', value: 30, label: 'Chưa ghi', future: true }
+    ];
 
-            <div class="feed-card" style="margin: 20px 0; border-left: 4px solid ${alertColor};">
-                <h4 style="display:flex; align-items:center; gap:5px;">🤖 Phân tích AI</h4>
-                <p style="font-size: 13px; margin-top: 5px;">${aiMessage}</p>
+    const barsHtml = days.map(day => `
+        <div class="mc-chart-day">
+            <div class="mc-chart-track">
+                <div class="mc-chart-bar ${day.future ? 'future' : `tone-${day.tone}`}" style="height:${day.value}%" title="${escapeHtml(day.label)}"></div>
             </div>
-
-            ${latestAlert ? `
-                <div class="feed-card" style="margin: 20px 0; border-left: 4px solid #d32f2f;">
-                    <h4>Cảnh báo gần nhất</h4>
-                    <p style="font-size: 13px; margin-top: 5px;">
-                        ${latestAlert.label} từ ${latestAlert.source}. Trạng thái: đã gửi ẩn danh đến tổ tham vấn.
-                    </p>
-                </div>
-            ` : ''}
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <button class="btn-outline" onclick="renderResources()" style="font-size:13px;">📺 Xem Tài nguyên</button>
-                ${riskLevel !== 'low' ? `<button class="btn-primary" onclick="openBookingModal()" style="font-size:13px;">📅 Đặt lịch ngay</button>` : ''}
-            </div>
+            <span>${day.d}</span>
         </div>
+    `).join('');
+
+    container.innerHTML = `
+        <section class="mc-page">
+            <div class="mc-page-header">
+                <p class="mc-kicker">Tuần này</p>
+                <h1>Thống kê <span>Cảm xúc</span></h1>
+                <p>Theo dõi nhịp cảm xúc của bạn theo thời gian.</p>
+            </div>
+
+            <div class="mc-panel mc-stats-chart">
+                <div class="mc-chart-header">
+                    <div>
+                        <h3>Cảm xúc 7 ngày qua</h3>
+                        <p>Điểm trung bình: <strong>${riskLevel === 'high' ? '48' : '62'} / 100</strong></p>
+                    </div>
+                    <span class="mc-trend-pill">${riskLevel === 'high' ? 'Cần nghỉ ngơi' : '+12% so với tuần trước'}</span>
+                </div>
+                <div class="mc-chart-grid">${barsHtml}</div>
+                <p class="mc-chart-note">T5 (Hôm nay) - ${riskLevel === 'high' ? 'nên ưu tiên chăm sóc bản thân' : 'cảm xúc tích cực nhất tuần'}</p>
+            </div>
+
+            <div class="mc-insight-grid">
+                <div class="mc-panel mc-insight-card" style="border-left-color:${alertColor};">
+                    <div class="mc-insight-icon">AI</div>
+                    <div>
+                        <h3>Phân tích AI</h3>
+                        <p>${escapeHtml(aiMessage)}</p>
+                    </div>
+                </div>
+
+                <div class="mc-panel mc-insight-card" style="border-left-color:#d32f2f;">
+                    <div class="mc-insight-icon muted">!</div>
+                    <div>
+                        <h3>Cảnh báo gần nhất</h3>
+                        <p>${
+                            latestAlert
+                                ? `${escapeHtml(latestAlert.label)} từ ${escapeHtml(latestAlert.source)}. Trạng thái: đã gửi ẩn danh đến tổ tham vấn.`
+                                : 'Chưa có cảnh báo mới. Nếu cần hỗ trợ, bạn vẫn có thể đặt lịch tham vấn bất cứ lúc nào.'
+                        }</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mc-action-grid">
+                <button class="mc-btn mc-btn-outline" type="button" onclick="renderResources()">Xem Tài nguyên</button>
+                ${riskLevel !== 'low' ? `<button class="mc-btn mc-btn-primary" type="button" onclick="openBookingModal()">Đặt lịch ngay</button>` : ''}
+            </div>
+        </section>
     `;
 }
 
@@ -869,34 +999,48 @@ function renderChat() {
     updateNav(4);
     animateMainContentSwap();
 
-    container.innerHTML = `
-        <div class="chat-container" style="display:flex; flex-direction:column; height: 80vh;">
-            <div style="padding: 0 20px 12px; border-bottom: 1px solid #eee;">
-                <h1 style="font-size: var(--font-heading); font-size: 30px; color: var(--deep-rose); margin-bottom: 5px;">AI hỗ trợ tâm lý</h1>
-                <p style="font-size: 13px; color: #666;">Bạn có thể tâm sự bằng lời của mình. AI sẽ lắng nghe, đưa lời khuyên và gợi ý tài nguyên phù hợp.</p>
-            </div>
-            <div id="chat-box" class="chat-box" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:15px;">
-                ${chatHistory.map(msg => `
-                    <div style="align-self: ${msg.sender === 'user' ? 'flex-end' : 'flex-start'}; max-width: 80%;">
-                        <div style="
-                            background: ${msg.sender === 'ai' ? 'var(--primary-pink)' : '#f3f3f3'};
-                            color: #333;
-                            padding: 12px 16px;
-                            border-radius: 15px;
-                            border-bottom-${msg.sender === 'ai' ? 'right' : 'left'}-radius: 4px;
-                            font-size: 15px;
-                            line-height: 1.5;
-                        ">
-                            ${formatChatMessage(msg.text)}
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-            <div style="padding: 15px; background: white; border-top: 1px solid #eee; display:flex; gap: 10px;">
-                <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." style="margin:0;" onkeypress="handleEnter(event)">
-                <button class="btn-primary" style="border-radius: 50%; width: 45px; height: 45px; display:flex; justify-content:center; align-items:center; flex-shrink: 0;" onclick="sendMsg()">➤</button>
+    const suggestions = [
+        'Mình đang căng thẳng vì deadline',
+        'Gợi ý bài tập thở 5 phút',
+        'Mình cần nói chuyện với ai đó'
+    ];
+
+    const messagesHtml = chatHistory.map(msg => `
+        <div class="mc-message-row ${msg.sender === 'user' ? 'user' : 'ai'}">
+            ${msg.sender === 'ai' ? '<div class="mc-ai-avatar">AI</div>' : ''}
+            <div class="mc-message-bubble ${msg.sender === 'user' ? 'user' : 'ai'}">
+                ${formatChatMessage(msg.text)}
             </div>
         </div>
+    `).join('');
+
+    container.innerHTML = `
+        <section class="mc-page mc-chat-page">
+            <div class="mc-page-header">
+                <p class="mc-kicker">Trò chuyện riêng tư</p>
+                <h1>AI hỗ trợ <span>tâm lý</span></h1>
+                <p>Tâm sự bằng lời của mình. AI sẽ lắng nghe, đưa lời khuyên và gợi ý tài nguyên phù hợp.</p>
+            </div>
+
+            <div class="mc-chat-panel">
+                <div id="chat-box" class="chat-box mc-chat-box">
+                    ${messagesHtml}
+                </div>
+
+                <div class="mc-chat-suggestions">
+                    ${suggestions.map(s => `
+                        <button type="button" data-suggestion="${escapeHtml(s)}" onclick="setChatSuggestion(this.dataset.suggestion)">
+                            ${escapeHtml(s)}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <div class="mc-chat-input-row">
+                    <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." onkeypress="handleEnter(event)">
+                    <button class="mc-send-btn" type="button" aria-label="Gửi tin nhắn" onclick="sendMsg()">→</button>
+                </div>
+            </div>
+        </section>
     `;
     setTimeout(() => {
         const box = document.getElementById('chat-box');
