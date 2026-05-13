@@ -6,24 +6,26 @@ const defaultChatHistory = [
 ];
 
 class Comment {
-    constructor(id, author, date, content, likes = 0, replies = []) {
+    constructor(id, author, date, content, likes = [0, 0, 0, 0, 0], replies = []) {
         this.id = id;
         this.author = author;
         this.date = date;
         this.content = content;
         this.likes = likes;
+        this.isLiked = false;
         this.replies = replies;
     }
 }
 
 class FeedUser {
-    constructor(id, author, date, content, tags = [], likes = 0, comments = 0, isUser = false) {
+    constructor(id, author, date, content, tags = [], likes = [0, 0, 0, 0, 0], comments = 0, isUser = false) {
         this.id = id;
         this.author = author;
         this.date = date;
         this.content = content;
         this.tags = tags;
         this.likes = likes;
+        this.isLiked = false;
         this.comments = comments;
         this.isUser = isUser;
         this.commentObjects = [];
@@ -37,12 +39,12 @@ const defaultUserFeed = [
         date: '2024-11-01T14:30:00Z', 
         content: 'Cảm thấy áp lực deadline quá... Có ai biết cách quản lý thời gian hiệu quả không?', 
         tags: ['Áp lực học tập', 'Cần lời khuyên'], 
-        likes: 5, 
+        likes: [5, 3, 2, 1, 0], 
         comments: 2, 
         isUser: false,
             commentObjects: [
-                new Comment(1, 'Corn Candy', '2024-11-01T15:00:00Z', 'Mình cũng đang gặp vấn đề tương tự. Mình thường chia nhỏ công việc ra và đặt deadline ảo cho từng phần.', 2),
-                new Comment(2, 'MindConnect AI', '2024-11-01T15:05:00Z', 'Bạn có thể thử phương pháp Pomodoro: làm việc 25 phút, nghỉ 5 phút. Sau 4 lần, nghỉ dài hơn. Mình cũng có thể gợi ý một số công cụ quản lý thời gian nếu bạn muốn!', 3)
+                new Comment(1, 'Corn Candy', '2024-11-01T15:00:00Z', 'Mình cũng đang gặp vấn đề tương tự. Mình thường chia nhỏ công việc ra và đặt deadline ảo cho từng phần.', [2, 0, 0, 0, 0]),
+                new Comment(2, 'MindConnect AI', '2024-11-01T15:05:00Z', 'Bạn có thể thử phương pháp Pomodoro: làm việc 25 phút, nghỉ 5 phút. Sau 4 lần, nghỉ dài hơn. Mình cũng có thể gợi ý một số công cụ quản lý thời gian nếu bạn muốn!', [3, 0, 0, 0, 0])
             ]
     },
     { 
@@ -51,11 +53,11 @@ const defaultUserFeed = [
         date: '2025-12-22T09:15:00Z', 
         content: 'Hôm nay mình đã thử bài tập thở mà AI gợi ý, cảm giác khá ổn đấy! Ai muốn thử cùng mình không?',
         tags: ['Thở', 'Giảm stress'], 
-        likes: 3, 
+        likes: [3, 1, 0, 0, 0], 
         comments: 1, 
         isUser: false,
         commentObjects: [
-            new Comment(3, 'MindConnect AI', '2025-12-22T09:30:00Z', 'Chúc bạn có một ngày tốt lành!', 1)
+            new Comment(3, 'MindConnect AI', '2025-12-22T09:30:00Z', 'Chúc bạn có một ngày tốt lành!', [1, 0, 0, 0, 0])
         ]
     }
 ];
@@ -518,6 +520,16 @@ function renderStudentHome() {
                                 <span>${formatFeedTime(c.date)}</span>
                             </div>
                             <p>${escapeHtml(c.content)}</p>
+                            <div style="margin-top: 8px; position: relative; display: inline-block;" class="mc-reaction-wrapper" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
+                                <button type="button" aria-label="Thả tim" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 16px; color: #666; transition: transform 0.2s;" onclick="this.classList.toggle('mc-liked'); const num = this.querySelector('.mc-like-count'); if(this.classList.contains('mc-liked')){ num.textContent = parseInt(num.textContent) + 1; this.style.color = 'var(--deep-rose)'; this.style.transform = 'scale(1.2)'; setTimeout(() => this.style.transform = 'scale(1)', 200); } else { num.textContent = parseInt(num.textContent) - 1; this.style.color = '#666'; this.querySelector('.mc-reaction-icon').textContent = '♥'; }"><span class="mc-reaction-icon">♥</span> <span class="mc-like-count">${Array.isArray(c.likes) ? c.likes.length : (c.likes || 0)}</span></button>
+                                <div class="mc-reaction-popup" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 5px 10px; gap: 10px; z-index: 10;">
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='👍'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">👍</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='❤️'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">❤️</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😂'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😂</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😮'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😮</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😢'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😢</span>
+                                </div>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -540,9 +552,22 @@ function renderStudentHome() {
                             : ''}
 
                         <div class="mc-feed-actions">
-                            <button type="button" aria-label="Thả tim"><span>♥</span>${post.likes || 0}</button>
-                            <button type="button" aria-label="Bình luận"><span>○</span>${commentCount}</button>
-                            <button type="button" aria-label="Chia sẻ">↗</button>
+                            <div class="mc-reaction-wrapper" style="position: relative; display: inline-block;" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
+                                <button type="button" aria-label="Thả tim" style="transition: transform 0.2s;" onclick="this.classList.toggle('mc-liked'); const num = this.querySelector('.mc-like-count'); if(this.classList.contains('mc-liked')){ num.textContent = parseInt(num.textContent) + 1; this.style.color = 'var(--deep-rose)'; this.style.transform = 'scale(1.2)'; setTimeout(() => this.style.transform = 'scale(1)', 200); } else { num.textContent = parseInt(num.textContent) - 1; this.style.color = ''; this.querySelector('.mc-reaction-icon').textContent = '♥'; }"><span class="mc-reaction-icon">♥</span> <span class="mc-like-count">${Array.isArray(post.likes) ? post.likes.length : (post.likes || 0)}</span></button>
+                                <div class="mc-reaction-popup" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 5px 10px; gap: 10px; z-index: 10;">
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='👍'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">👍</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='❤️'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">❤️</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😂'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😂</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😮'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😮</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😢'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😢</span>
+                                </div>
+                            </div>
+                            <button type="button" aria-label="Bình luận" onclick="const box = this.parentElement.nextElementSibling; box.style.display = box.style.display === 'none' ? 'block' : 'none';"><span>💬</span> ${commentCount}</button>
+                            <button type="button" aria-label="Chia sẻ"><span>➦</span></button>
+                        </div>
+                        <div class="mc-comment-input-box" style="display: none; margin-top: 16px;">
+                            <input type="text" class="mc-input" placeholder="Viết bình luận của bạn..." style="margin-bottom: 8px; padding: 10px 14px; font-size: 14px;">
+                            <button type="button" class="mc-btn mc-btn-primary" style="min-height: 32px; padding: 6px 14px; font-size: 13px;" onclick="if(this.previousElementSibling.value) { const newComment = { id: Date.now().toString(), author: 'Current User', content: this.previousElementSibling.value, date: new Date().toISOString() }; if(!${JSON.stringify(post)}.comments) ${JSON.stringify(post)}.comments = []; ${JSON.stringify(post)}.comments.push(newComment); renderStudentHome(); }">Gửi bình luận</button>
                         </div>
                     </div>
                 </div>
