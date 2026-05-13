@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindConnect - Đăng nhập</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     
     <style>
@@ -276,6 +276,271 @@
             margin-bottom: 20px;
             line-height: 1.5;
         }
+
+        /* --- PORTED LOGIN UI FROM REACT MOCKUP, STATIC-FRONTEND SAFE --- */
+        :root {
+            --mc-cream: #fffdf7;
+            --mc-blush: #fdecef;
+            --mc-secondary: #fbf4f4;
+            --mc-ink: #392833;
+            --mc-ink-soft: #745f69;
+            --mc-border: rgba(100, 59, 77, 0.1);
+            --mc-primary: #d42e70;
+            --mc-coral: #f29a78;
+            --mc-gradient-rose: linear-gradient(135deg, #dc4779 0%, #f3a169 100%);
+            --mc-gradient-blush: linear-gradient(180deg, #fffdf7 0%, #fff0f3 100%);
+            --mc-shadow-card: 0 1px 2px rgba(57, 40, 51, 0.04), 0 12px 36px -16px rgba(57, 40, 51, 0.18);
+            --mc-shadow-soft: 0 32px 90px -36px rgba(212, 46, 112, 0.22);
+        }
+
+        body {
+            min-height: 100vh;
+            height: auto;
+            overflow-x: hidden;
+            overflow-y: auto;
+            background: var(--mc-gradient-blush);
+            color: var(--mc-ink);
+            font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+        }
+
+        .landing-nav {
+            min-height: 80px;
+            padding: 0 clamp(20px, 5vw, 64px);
+        }
+
+        .nav-brand img {
+            height: 46px;
+        }
+
+        .brand-text {
+            font-family: 'Fraunces', Georgia, serif;
+            color: var(--mc-primary);
+            font-size: 30px;
+            letter-spacing: 0;
+        }
+
+        .nav-item {
+            color: var(--mc-ink-soft);
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            color: var(--mc-primary);
+        }
+
+        .btn-login-nav {
+            border-radius: 999px;
+            background: var(--mc-blush);
+            color: var(--mc-primary);
+            box-shadow: var(--mc-shadow-card);
+        }
+
+        .btn-login-nav:hover {
+            background: var(--mc-gradient-rose);
+            color: white;
+        }
+
+        .main-container {
+            width: min(100%, 1280px);
+            min-height: calc(100vh - 80px);
+            margin: 0 auto;
+            padding: 48px clamp(20px, 5vw, 64px) 76px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(340px, 430px);
+            align-items: center;
+            justify-content: initial;
+            gap: clamp(36px, 7vw, 86px);
+            box-sizing: border-box;
+        }
+
+        .login-hero-copy {
+            max-width: 620px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--mc-border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            padding: 8px 12px;
+            color: var(--mc-ink-soft);
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: var(--mc-shadow-card);
+        }
+
+        .hero-badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--mc-primary);
+        }
+
+        .login-hero-copy h1 {
+            margin: 24px 0 0;
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: clamp(46px, 7vw, 72px);
+            line-height: 1.04;
+            font-weight: 500;
+            letter-spacing: 0;
+            color: var(--mc-ink);
+        }
+
+        .login-hero-copy h1 span {
+            display: inline-block;
+            font-style: italic;
+            background: var(--mc-gradient-rose);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .login-hero-copy p {
+            margin: 20px 0 0;
+            color: var(--mc-ink-soft);
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        .hero-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 22px;
+            margin-top: 30px;
+            color: var(--mc-ink-soft);
+            font-size: 14px;
+        }
+
+        .hero-stats strong {
+            display: block;
+            color: var(--mc-ink);
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .login-card-glass {
+            width: 100%;
+            padding: 32px;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid var(--mc-border);
+            box-shadow: var(--mc-shadow-soft);
+            justify-self: end;
+        }
+
+        .role-switch-container {
+            background: var(--mc-blush);
+            border-radius: 999px;
+            padding: 5px;
+            gap: 4px;
+        }
+
+        .role-btn {
+            border-radius: 999px;
+            color: var(--mc-ink-soft);
+            font-size: 14px;
+        }
+
+        .role-btn.active {
+            color: var(--mc-primary);
+            box-shadow: var(--mc-shadow-card);
+        }
+
+        .input-label {
+            color: var(--mc-ink);
+            font-size: 13px;
+        }
+
+        .custom-input {
+            background: var(--mc-secondary);
+            border: 1px solid transparent;
+            color: var(--mc-ink);
+            border-radius: 14px;
+            font-family: inherit;
+        }
+
+        .custom-input:focus {
+            background: white;
+            box-shadow: 0 0 0 3px rgba(212, 46, 112, 0.16);
+            border-color: rgba(212, 46, 112, 0.18);
+        }
+
+        .btn-submit-gradient {
+            background: var(--mc-gradient-rose);
+            border-radius: 999px;
+            box-shadow: 0 18px 48px -22px rgba(212, 46, 112, 0.55);
+            font-family: inherit;
+        }
+
+        .btn-submit-gradient:hover {
+            box-shadow: var(--mc-shadow-soft);
+            transform: translateY(-1px);
+        }
+
+        .footer-text,
+        .link-forgot {
+            color: var(--mc-ink-soft);
+        }
+
+        .link-register,
+        .link-forgot:hover {
+            color: var(--mc-primary);
+        }
+
+        .form-title {
+            font-family: 'Fraunces', Georgia, serif;
+            color: var(--mc-primary);
+            letter-spacing: 0;
+        }
+
+        @media (max-width: 900px) {
+            .landing-nav {
+                height: auto;
+                padding-top: 14px;
+                padding-bottom: 14px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .main-container {
+                min-height: auto;
+                grid-template-columns: 1fr;
+                padding-top: 28px;
+            }
+
+            .login-card-glass {
+                justify-self: stretch;
+                max-width: 520px;
+                margin: 0 auto;
+            }
+
+            .login-hero-copy {
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .brand-text {
+                font-size: 24px;
+            }
+
+            .main-container {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .login-card-glass {
+                padding: 24px;
+                border-radius: 22px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -295,6 +560,20 @@
     </nav>
 
     <div class="main-container">
+        <section class="login-hero-copy" aria-label="MindConnect introduction">
+            <div class="hero-badge"><span class="hero-badge-dot"></span>AI đồng hành sức khỏe tinh thần</div>
+            <h1>Lắng nghe cảm xúc. <span>Mỗi ngày.</span></h1>
+            <p>
+                Một nơi an toàn để bạn ghi lại cảm xúc, được AI đồng hành và kết nối với
+                chuyên viên tư vấn khi cần, riêng tư và ẩn danh.
+            </p>
+            <div class="hero-stats">
+                <div><strong>10+</strong>trường thành viên</div>
+                <div><strong>8.3K</strong>sinh viên khảo sát</div>
+                <div><strong>100%</strong>ẩn danh</div>
+            </div>
+        </section>
+
         <div class="login-card-glass" id="login-form">
             <div class="role-switch-container">
                 <div class="role-btn active" id="tab-student" onclick="switchRole('student')">Sinh viên</div>

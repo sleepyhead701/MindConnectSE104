@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindConnect - Student Workspace</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
     <style>
@@ -402,21 +402,193 @@
             font-size: 13px; color: #888; cursor: pointer; margin-right: 15px; text-decoration: underline;
         }
         .btn-logout-text:hover { color: var(--danger); }
+
+        /* --- PORTED APP HEADER + PAGE SHELL FROM REACT MOCKUP --- */
+        :root {
+            --font-heading: 'Fraunces', Georgia, serif;
+            --font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+            --mc-cream: #fffdf7;
+            --mc-blush: #fdecef;
+            --mc-secondary: #fbf4f4;
+            --mc-ink: #392833;
+            --mc-ink-soft: #745f69;
+            --mc-border: rgba(100, 59, 77, 0.1);
+            --mc-primary: #d42e70;
+            --mc-coral: #f29a78;
+            --mc-gradient-rose: linear-gradient(135deg, #dc4779 0%, #f3a169 100%);
+            --mc-gradient-blush: linear-gradient(180deg, #fffdf7 0%, #fff0f3 100%);
+            --mc-shadow-card: 0 1px 2px rgba(57, 40, 51, 0.04), 0 12px 36px -16px rgba(57, 40, 51, 0.16);
+            --mc-shadow-soft: 0 28px 70px -34px rgba(212, 46, 112, 0.24);
+        }
+
+        body {
+            padding-top: 64px;
+            background: var(--mc-gradient-blush);
+            color: var(--mc-ink);
+            font-family: var(--font-body);
+        }
+
+        #presentation-frame,
+        .view-section,
+        .student-container,
+        .mobile-frame {
+            width: 100% !important;
+            min-height: calc(100vh - 64px);
+            background: transparent !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+
+        .mobile-frame {
+            overflow: visible;
+            position: relative;
+        }
+
+        .desktop-nav {
+            height: 64px;
+            padding: 0 clamp(16px, 5vw, 56px);
+            background: rgba(255, 255, 255, 0.76);
+            border-bottom: 1px solid var(--mc-border);
+            box-shadow: none;
+        }
+
+        .nav-brand {
+            color: var(--mc-primary);
+            font-family: var(--font-heading);
+            font-size: 23px;
+            letter-spacing: 0;
+        }
+
+        .nav-brand img {
+            height: 34px;
+        }
+
+        .nav-menu {
+            gap: 3px;
+            padding: 4px;
+            border: 1px solid var(--mc-border);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            box-shadow: var(--mc-shadow-card);
+        }
+
+        .nav-menu .nav-icon,
+        .mobile-menu-content .nav-icon {
+            opacity: 1;
+            color: var(--mc-ink-soft);
+            border-radius: 999px;
+            font-size: 14px !important;
+            font-weight: 600;
+            padding: 8px 16px;
+        }
+
+        .nav-menu .nav-icon::after {
+            display: none;
+        }
+
+        .nav-menu .nav-icon:hover,
+        .mobile-menu-content .nav-icon:hover {
+            background: var(--mc-blush);
+            color: var(--mc-primary);
+            transform: none;
+        }
+
+        .nav-menu .nav-icon.active,
+        .mobile-menu-content .nav-icon.active {
+            background: var(--mc-gradient-rose);
+            color: white;
+            box-shadow: 0 16px 36px -22px rgba(212, 46, 112, 0.65);
+            transform: none;
+        }
+
+        .btn-logout {
+            border-radius: 999px;
+            border-color: var(--mc-border);
+            background: rgba(255, 255, 255, 0.68);
+            color: var(--mc-ink-soft);
+        }
+
+        .btn-logout:hover {
+            color: var(--mc-primary);
+            border-color: rgba(212, 46, 112, 0.28);
+            background: white;
+        }
+
+        .user-profile-badge {
+            width: 38px;
+            height: 38px;
+            background: var(--mc-gradient-rose);
+            box-shadow: 0 16px 36px -22px rgba(212, 46, 112, 0.65);
+        }
+
+        .notion-layout {
+            max-width: 1120px;
+            padding: 36px clamp(16px, 4vw, 42px) 90px;
+        }
+
+        #student-main-content {
+            background: transparent !important;
+            color: var(--mc-ink);
+        }
+
+        .mc-panel,
+        .mc-feed-card,
+        .mc-chat-panel,
+        .mc-resource-card {
+            border: 1px solid var(--mc-border) !important;
+            box-shadow: var(--mc-shadow-card) !important;
+        }
+
+        .mobile-menu-overlay {
+            top: 64px;
+        }
+
+        .mobile-menu-content {
+            background: rgba(255, 255, 255, 0.96);
+        }
+
+        .mobile-menu-content .nav-icon {
+            border-bottom: none;
+            margin-bottom: 6px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-top: 60px;
+            }
+
+            .desktop-nav {
+                height: 60px;
+            }
+
+            .mobile-menu-overlay {
+                top: 60px;
+            }
+
+            .nav-brand span {
+                display: none;
+            }
+
+            .notion-layout {
+                padding-top: 26px;
+            }
+        }
     </style>
 </head>
 <body>
 
     <div class="desktop-nav">
-        <a href="#" class="nav-brand">
+        <a href="#" class="nav-brand" onclick="renderStudentHome(); return false;">
             <img src="logo.png" alt="MindConnect Logo">
+            <span>MindConnect</span>
         </a>
 
         <div class="nav-menu">
-            <div class="nav-icon active" onclick="renderStudentHome()">Home</div>
-            <div class="nav-icon" onclick="renderStudentDiary()">Diary</div>
-            <div class="nav-icon" onclick="renderResources()">Resources</div>
-            <div class="nav-icon" onclick="renderStudentStats()">Stats</div>
-            <div class="nav-icon" onclick="renderChat()">Chat</div>
+            <div class="nav-icon active" data-nav-index="0" onclick="renderStudentHome()">Home</div>
+            <div class="nav-icon" data-nav-index="1" onclick="renderStudentDiary()">Diary</div>
+            <div class="nav-icon" data-nav-index="2" onclick="renderResources()">Resources</div>
+            <div class="nav-icon" data-nav-index="3" onclick="renderStudentStats()">Stats</div>
+            <div class="nav-icon" data-nav-index="4" onclick="renderChat()">Chat</div>
         </div>
 
         <div class="nav-actions">
@@ -444,11 +616,11 @@
 
     <div class="mobile-menu-overlay" id="mobileMenuOverlay">
         <div class="mobile-menu-content">
-            <div class="nav-icon" onclick="renderStudentHome(); closeMobileMenu();">Home</div>
-            <div class="nav-icon" onclick="renderStudentDiary(); closeMobileMenu();">Diary</div>
-            <div class="nav-icon" onclick="renderResources(); closeMobileMenu();">Resources</div>
-            <div class="nav-icon" onclick="renderStudentStats(); closeMobileMenu();">Stats</div>
-            <div class="nav-icon" onclick="renderChat(); closeMobileMenu();">Chat</div>
+            <div class="nav-icon" data-nav-index="0" onclick="renderStudentHome(); closeMobileMenu();">Home</div>
+            <div class="nav-icon" data-nav-index="1" onclick="renderStudentDiary(); closeMobileMenu();">Diary</div>
+            <div class="nav-icon" data-nav-index="2" onclick="renderResources(); closeMobileMenu();">Resources</div>
+            <div class="nav-icon" data-nav-index="3" onclick="renderStudentStats(); closeMobileMenu();">Stats</div>
+            <div class="nav-icon" data-nav-index="4" onclick="renderChat(); closeMobileMenu();">Chat</div>
             <div class="mobile-menu-actions">
                 <button class="btn-logout" onclick="logout()">Log out</button>
             </div>
