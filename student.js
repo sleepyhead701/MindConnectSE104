@@ -5,6 +5,32 @@ const defaultChatHistory = [
     { sender: 'ai', text: 'Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?' }
 ];
 
+class userProfile {
+    constructor(name, email, avatarUrl, bio) {
+        this.name = name;
+        this.email = email;
+        this.avatarUrl = avatarUrl;
+        this.bio = bio;
+    }
+}
+
+class userSession {
+    constructor(name, email) {
+        this.name = name;
+        this.email = email;
+    }
+}
+
+const currentUser = new userSession('Durian', 'student@example.com');
+
+// Tạo list user profiles (dự phòng cho tính năng mở rộng sau này, hiện chỉ có 2 profile)
+const usersDB = [
+    new userProfile('Durian', 'student@example.com', 'https://quillandpad.com/wp-content/uploads/2023/02/durian-fruit.jpg', 'Sinh viên năm 8 Đại học Bách Khoa Hà Nội, ngành CNTT, đam mê công nghệ và thích ăn sầu riêng.'),
+    new userProfile('Luriam', 'hoshino@beta.com', 'https://vn.portal-pokemon.com/play/resources/pokedex/img/pm/1e83fbcb00ab179cc89db5c53baea3e72d5942ad.png', 'Sinh viên năm 2 Đại học Bách Khoa Hà Nội, ngành Khoa học Máy tính, yêu thích lập trình và trò chơi.'),
+    new userProfile('Sleepyhead', 'sleepyhead701@gmail.com', 'https://avatars.githubusercontent.com/u/169965772?v=4', 'Sinh viên năm 3 Đại học Bách Khoa Hà Nội, ngành Khoa học Máy tính, yêu thích nghiên cứu và phát triển phần mềm.'),
+    new userProfile('MindConnect AI', 'mindconnect@mindconnect.com', 'logo.png', 'AI hỗ trợ học tập của MindConnect.')
+];
+
 class Comment {
     constructor(id, author, date, content, likes = [0, 0, 0, 0, 0], replies = []) {
         this.id = id;
@@ -49,7 +75,7 @@ const defaultUserFeed = [
     },
     { 
         id: 2,
-        author: 'Iuriam', 
+        author: 'Luriam', 
         date: '2025-12-22T09:15:00Z', 
         content: 'Hôm nay mình đã thử bài tập thở mà AI gợi ý, cảm giác khá ổn đấy! Ai muốn thử cùng mình không?',
         tags: ['Thở', 'Giảm stress'], 
@@ -499,6 +525,25 @@ function getFallbackResourceSuggestion(txt) {
 // ==============================================
 // 3. HOME (GIAO DIỆN LAI THREADS)
 // ==============================================
+window.submitComment = function(postIndex, content) {
+    const userName = (typeof currentUser !== 'undefined' && currentUser && currentUser.name) ? currentUser.name : 'Luriam';
+    if (!userFeed[postIndex].commentObjects) {
+        userFeed[postIndex].commentObjects = [];
+    }
+    userFeed[postIndex].commentObjects.push({
+        author: userName,
+        content: content,
+        date: new Date().toISOString(),
+        likes: 0
+    });
+    localStorage.setItem('userFeed', JSON.stringify(userFeed));
+    renderStudentHome();
+};
+
+function getUserProfile(name) {
+    return usersDB.find(u => u.name === name) || null;
+}
+
 function renderStudentHome() {
     const container = document.getElementById('student-main-content');
     updateNav(0);
@@ -515,8 +560,10 @@ function renderStudentHome() {
                 <div class="mc-reply-list">
                     ${comments.map(c => `
                         <div class="mc-reply-card">
-                            <div class="mc-reply-meta">
-                                <strong>${escapeHtml(c.author)}</strong>
+                            <div class="mc-avatar ${getUserProfile(c.author)?.avatarUrl ? '' : getFeedGradient(index)}">${getUserProfile(c.author)?.avatarUrl ? `<img src="${escapeHtml(getUserProfile(c.author).avatarUrl)}" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : escapeHtml(getInitials(c.author))}</div>
+                            <div class="mc-reply-content-box">
+                                <div class="mc-reply-meta">
+                                    <strong>${escapeHtml(c.author)}</strong>
                                 <span>${formatFeedTime(c.date)}</span>
                             </div>
                             <p>${escapeHtml(c.content)}</p>
@@ -531,6 +578,7 @@ function renderStudentHome() {
                                 </div>
                             </div>
                         </div>
+                        </div>
                     `).join('')}
                 </div>
             `
@@ -539,7 +587,7 @@ function renderStudentHome() {
         return `
             <article class="mc-feed-card">
                 <div class="mc-feed-content">
-                    <div class="mc-avatar ${getFeedGradient(index)}">${escapeHtml(getInitials(post.author))}</div>
+                    <div class="mc-avatar ${getUserProfile(post.author)?.avatarUrl ? '' : getFeedGradient(index)}">${getUserProfile(post.author)?.avatarUrl ? `<img src="${escapeHtml(getUserProfile(post.author).avatarUrl)}" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : escapeHtml(getInitials(post.author))}</div>
                     <div class="mc-feed-main">
                         <div class="mc-feed-meta">
                             <h3>${escapeHtml(post.author)}</h3>
@@ -567,7 +615,7 @@ function renderStudentHome() {
                         </div>
                         <div class="mc-comment-input-box" style="display: none; margin-top: 16px;">
                             <input type="text" class="mc-input" placeholder="Viết bình luận của bạn..." style="margin-bottom: 8px; padding: 10px 14px; font-size: 14px;">
-                            <button type="button" class="mc-btn mc-btn-primary" style="min-height: 32px; padding: 6px 14px; font-size: 13px;" onclick="if(this.previousElementSibling.value) { const newComment = { id: Date.now().toString(), author: 'Current User', content: this.previousElementSibling.value, date: new Date().toISOString() }; if(!${JSON.stringify(post)}.comments) ${JSON.stringify(post)}.comments = []; ${JSON.stringify(post)}.comments.push(newComment); renderStudentHome(); }">Gửi bình luận</button>
+                            <button type="button" class="mc-btn mc-btn-primary" style="min-height: 32px; padding: 6px 14px; font-size: 13px;" onclick="if(this.previousElementSibling.value) { window.submitComment(${index}, this.previousElementSibling.value); this.previousElementSibling.value = ''; }">Gửi bình luận</button>
                         </div>
                     </div>
                 </div>
@@ -923,6 +971,56 @@ function startBreathing() {
     }, 4000);
 }
 
+function getAuthSession() {
+    return JSON.parse(localStorage.getItem('authSession')) || currentUser || { name: 'Người dùng ẩn danh', email: 'student@example.com' };
+}
+
+
+function renderProfile() {
+    const container = document.getElementById('student-main-content');
+    updateNav(-1);
+    animateMainContentSwap();
+
+    const session = getAuthSession();
+    if (!session || !session.name) {
+        session.name = 'Người dùng ẩn danh';
+    }
+
+    // Tìm thông tin người dùng dựa trên username trên session, nếu có
+    currentUserProfile = usersDB.find(u => u.name === session.name) || {};
+
+
+    container.innerHTML = `
+        <section class="mc-page">
+            <div class="mc-page-header">
+                <p class="mc-kicker">Thông tin cá nhân</p>
+                <h1>User <span>Profile</span></h1>
+                <p>Quản lý tài khoản và thiết lập riêng tư của bạn.</p>
+            </div>
+            <div class="mc-panel" style="max-width: 600px; margin: 0 auto; padding: 24px;">
+                <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
+                    <img src="${escapeHtml(currentUserProfile.avatarUrl)}" alt="Avatar" class="user-profile-badge" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+                    <div>
+                        <h2 style="margin: 0; font-family: var(--font-heading); color: var(--mc-ink);">${escapeHtml(session.name)}</h2>
+                        <p style="margin: 4px 0 0; color: var(--mc-ink-soft);">${escapeHtml(currentUserProfile.email)}</p>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label class="mc-field-label">Tên hiển thị (Ẩn danh)</label>
+                    <input type="text" class="mc-input" value="${escapeHtml(currentUserProfile.name)}" disabled>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label class="mc-field-label">Email trường</label>
+                    <input type="email" class="mc-input" value="${escapeHtml(currentUserProfile.email)}" disabled>
+                </div>
+                
+                <button class="mc-btn mc-btn-outline" style="width: 100%; margin-top: 10px;" onclick="logout()">Đăng xuất</button>
+            </div>
+        </section>
+    `;
+}
 
 // ==============================================
 // 6. STATS (THỐNG KÊ DYNAMIC)
