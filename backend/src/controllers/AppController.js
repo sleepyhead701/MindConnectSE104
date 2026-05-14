@@ -3,6 +3,7 @@ const Diary = require('../models/Diary');
 const RiskAlert = require('../models/RiskAlert');
 const Booking = require('../models/Booking');
 const openAIChatService = require('../services/OpenAIChatService');
+const riskDetectionService = require('../services/RiskDetectionService');
 
 const memoryStore = {
   diaries: [],
@@ -97,9 +98,32 @@ const suggestDiaryTags = async (req, res, next) => {
 
     const result = await openAIChatService.suggestDiaryTags({ title, content });
 
+    const riskSignal = riskDetectionService.detectRiskSignal(`${title} ${content}`);
+    let riskAlert = null;
+    if (riskSignal) {
+      const alertPayload = {
+        user_id: req.user?.id || null,
+        source: 'Diary',
+        severity: riskSignal.severity,
+        label: riskSignal.label,
+        matched_keyword: riskSignal.matchedKeyword,
+        status: 'new',
+        student_alias: 'SV ẩn danh',
+        class_name: 'CNTT_K48',
+        department: 'CNTT',
+        excerpt: `${title || ''} ${content}`.trim().slice(0, 500),
+        created_at: new Date()
+      };
+      riskAlert = isDbConnected() ? await RiskAlert.create(alertPayload) : { id: makeMemoryId('alert'), ...alertPayload };
+      if (!isDbConnected()) memoryStore.riskAlerts.unshift(riskAlert);
+    }
+
     res.json({
       success: true,
-      data: result
+      data: {
+        ...result,
+        riskAlert: riskAlert ? normalizeDocument(riskAlert) : null
+      }
     });
   } catch (error) {
     next(error);
@@ -283,15 +307,33 @@ const getDashboard = async (req, res, next) => {
 
     const openAlerts = alerts.filter(alert => alert.status !== 'resolved');
     const highRiskCount = openAlerts.filter(alert => ['high', 'critical'].includes(alert.severity)).length;
+    const completedBookingsCount = bookings.filter(b => ['completed', 'resolved'].includes(b.status)).length;
+
+    let sentiment = 8.2;
+    if (diaries.length) {
+      const scored = diaries.filter(d => d.mood_score);
+      if (scored.length) {
+        sentiment = (scored.reduce((sum, d) => sum + d.mood_score, 0) / scored.length) * 2;
+        sentiment = Math.round(sentiment * 10) / 10;
+      }
+    }
+
+    let intervention_reduction = 0;
+    if (alerts.length > 0 && completedBookingsCount > 0) {
+      intervention_reduction = -Math.round((completedBookingsCount / alerts.length) * 100);
+      intervention_reduction = Math.max(intervention_reduction, -100);
+    } else if (bookings.length > 0) {
+      intervention_reduction = -15;
+    }
 
     res.json({
       success: true,
       data: {
         metrics: {
-          sentiment: diaries.length ? 7.8 : 8.2,
+          sentiment: sentiment,
           high_risk_rate: diaries.length ? Math.round((highRiskCount / Math.max(diaries.length, 1)) * 1000) / 10 : 0,
           engagement: diaries.length + bookings.length + alerts.length,
-          intervention_reduction: bookings.length ? -35 : 0
+          intervention_reduction: intervention_reduction
         },
         alerts: openAlerts.map(normalizeDocument),
         bookings: bookings.map(normalizeDocument),

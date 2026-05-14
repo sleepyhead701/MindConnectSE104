@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindConnect - Student Workspace</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <link rel="stylesheet" href="style.css">
     <style>
         /* --- GHI ĐÈ CSS ĐỂ CHUYỂN TỪ MOBILE -> DESKTOP (NOTION STYLE) --- */
@@ -31,11 +34,35 @@
         }
 
         /* Ẩn các thành phần Mobile cũ */
-        .view-section { position: static; width: 100%; height: auto; animation: none; }
-        .student-container { background: transparent; height: auto; display: block; padding-top: 0; }
-        .mobile-frame { width: 100%; height: auto; border-radius: 0; box-shadow: none; overflow: visible; }
-        .mobile-header { display: none; }
-        .mobile-nav { display: none; }
+        .view-section {
+            position: static;
+            width: 100%;
+            height: auto;
+            animation: none;
+        }
+
+        .student-container {
+            background: transparent;
+            height: auto;
+            display: block;
+            padding-top: 0;
+        }
+
+        .mobile-frame {
+            width: 100%;
+            height: auto;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: visible;
+        }
+
+        .mobile-header {
+            display: none;
+        }
+
+        .mobile-nav {
+            display: none;
+        }
 
         /* --- 3. GIAO DIỆN MỚI: THANH ĐIỀU HƯỚNG TRÊN CÙNG (MODERN TOP NAV) --- */
         .desktop-nav {
@@ -373,6 +400,7 @@
         .page-greeting {
             margin-bottom: 30px;
         }
+
         .page-greeting h1 {
             font-family: var(--font-heading);
             font-size: 42px;
@@ -387,21 +415,31 @@
             overflow: visible !important;
         }
 
-        .feed-card, .res-card {
+        .feed-card,
+        .res-card {
             border: 1px solid #e0e0e0 !important;
             box-shadow: none !important;
             transition: 0.2s;
         }
-        .feed-card:hover, .res-card:hover {
+
+        .feed-card:hover,
+        .res-card:hover {
             border-color: #ccc !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
         }
 
         /* Nút Logout */
         .btn-logout-text {
-            font-size: 13px; color: #888; cursor: pointer; margin-right: 15px; text-decoration: underline;
+            font-size: 13px;
+            color: #888;
+            cursor: pointer;
+            margin-right: 15px;
+            text-decoration: underline;
         }
-        .btn-logout-text:hover { color: var(--danger); }
+
+        .btn-logout-text:hover {
+            color: var(--danger);
+        }
 
         /* --- PORTED APP HEADER + PAGE SHELL FROM REACT MOCKUP --- */
         :root {
@@ -575,11 +613,12 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="desktop-nav">
         <a href="#" class="nav-brand" onclick="renderStudentHome(); return false;">
-            <img src="logo.png" alt="MindConnect Logo">
+            <img src="logonoword.png" alt="MindConnect Logo">
             <span>MindConnect</span>
         </a>
 
@@ -650,14 +689,14 @@
         <div id="view-student" class="view-section">
             <div class="student-container">
                 <div class="mobile-frame">
-                    
+
                     <div class="notion-layout">
 
                         <div id="student-main-content">
-                            </div>
+                        </div>
                     </div>
 
-                    <div class="mobile-nav"></div> 
+                    <div class="mobile-nav"></div>
                 </div>
             </div>
         </div>
@@ -665,4 +704,5 @@
     <script src="student.js"></script>
 
 </body>
+
 </html>
