@@ -1,7 +1,8 @@
-﻿
-// --- 1. Dá»® LIá»†U & TRáº NG THÃI (STATE) ---
+// student.js - FULL VERSION (MERGED)
+
+// --- 1. DỮ LIỆU & TRẠNG THÁI (STATE) ---
 const defaultChatHistory = [
-    { sender: 'ai', text: 'ChÃ o báº¡n! MÃ¬nh lÃ  AI cá»§a MindConnect. MÃ¬nh cÃ³ thá»ƒ giÃºp gÃ¬ cho báº¡n hÃ´m nay?' }
+    { sender: 'ai', text: 'Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?' }
 ];
 
 class Comment {
@@ -36,27 +37,27 @@ const defaultUserFeed = [
         id: 1, 
         author: 'Sleepyhead', 
         date: '2024-11-01T14:30:00Z', 
-        content: 'Cáº£m tháº¥y Ã¡p lá»±c deadline quÃ¡... CÃ³ ai biáº¿t cÃ¡ch quáº£n lÃ½ thá»i gian hiá»‡u quáº£ khÃ´ng?', 
-        tags: ['Ãp lá»±c há»c táº­p', 'Cáº§n lá»i khuyÃªn'], 
+        content: 'Cảm thấy áp lực deadline quá... Có ai biết cách quản lý thời gian hiệu quả không?', 
+        tags: ['Áp lực học tập', 'Cần lời khuyên'], 
         likes: [5, 3, 2, 1, 0], 
         comments: 2, 
         isUser: false,
             commentObjects: [
-                new Comment(1, 'Corn Candy', '2024-11-01T15:00:00Z', 'MÃ¬nh cÅ©ng Ä‘ang gáº·p váº¥n Ä‘á» tÆ°Æ¡ng tá»±. MÃ¬nh thÆ°á»ng chia nhá» cÃ´ng viá»‡c ra vÃ  Ä‘áº·t deadline áº£o cho tá»«ng pháº§n.', [2, 0, 0, 0, 0]),
-                new Comment(2, 'MindConnect AI', '2024-11-01T15:05:00Z', 'Báº¡n cÃ³ thá»ƒ thá»­ phÆ°Æ¡ng phÃ¡p Pomodoro: lÃ m viá»‡c 25 phÃºt, nghá»‰ 5 phÃºt. Sau 4 láº§n, nghá»‰ dÃ i hÆ¡n. MÃ¬nh cÅ©ng cÃ³ thá»ƒ gá»£i Ã½ má»™t sá»‘ cÃ´ng cá»¥ quáº£n lÃ½ thá»i gian náº¿u báº¡n muá»‘n!', [3, 0, 0, 0, 0])
+                new Comment(1, 'Corn Candy', '2024-11-01T15:00:00Z', 'Mình cũng đang gặp vấn đề tương tự. Mình thường chia nhỏ công việc ra và đặt deadline ảo cho từng phần.', [2, 0, 0, 0, 0]),
+                new Comment(2, 'MindConnect AI', '2024-11-01T15:05:00Z', 'Bạn có thể thử phương pháp Pomodoro: làm việc 25 phút, nghỉ 5 phút. Sau 4 lần, nghỉ dài hơn. Mình cũng có thể gợi ý một số công cụ quản lý thời gian nếu bạn muốn!', [3, 0, 0, 0, 0])
             ]
     },
     { 
         id: 2,
         author: 'Iuriam', 
         date: '2025-12-22T09:15:00Z', 
-        content: 'HÃ´m nay mÃ¬nh Ä‘Ã£ thá»­ bÃ i táº­p thá»Ÿ mÃ  AI gá»£i Ã½, cáº£m giÃ¡c khÃ¡ á»•n Ä‘áº¥y! Ai muá»‘n thá»­ cÃ¹ng mÃ¬nh khÃ´ng?',
-        tags: ['Thá»Ÿ', 'Giáº£m stress'], 
+        content: 'Hôm nay mình đã thử bài tập thở mà AI gợi ý, cảm giác khá ổn đấy! Ai muốn thử cùng mình không?',
+        tags: ['Thở', 'Giảm stress'], 
         likes: [3, 1, 0, 0, 0], 
         comments: 1, 
         isUser: false,
         commentObjects: [
-            new Comment(3, 'MindConnect AI', '2025-12-22T09:30:00Z', 'ChÃºc báº¡n cÃ³ má»™t ngÃ y tá»‘t lÃ nh!', [1, 0, 0, 0, 0])
+            new Comment(3, 'MindConnect AI', '2025-12-22T09:30:00Z', 'Chúc bạn có một ngày tốt lành!', [1, 0, 0, 0, 0])
         ]
     }
 ];
@@ -64,40 +65,40 @@ const defaultUserFeed = [
 const resourcesDB = [
     { 
         type: 'Video', 
-        title: 'Thiá»n 5 phÃºt giáº£m lo Ã¢u', 
-        duration: '5 phÃºt',
+        title: 'Thiền 5 phút giảm lo âu', 
+        duration: '5 phút',
         img: 'https://img.youtube.com/vi/inpok4MKVLM/mqdefault.jpg', 
         url: 'https://www.youtube.com/watch?v=inpok4MKVLM' 
     },
     { 
         type: 'Blog', 
-        title: 'CÃ¡ch vÆ°á»£t qua Burnout mÃ¹a thi', 
-        duration: '7 phÃºt Ä‘á»c',
+        title: 'Cách vượt qua Burnout mùa thi', 
+        duration: '7 phút đọc',
         img: 'https://suckhoedoisong.qltns.mediacdn.vn/thumb_w/640/324455921873985536/2023/4/26/cang-thang-truoc-ky-thi-16824842727412019885995.png', 
         url: '#' 
     },
     { 
         type: 'Book', 
-        title: 'Hiá»ƒu vá» trÃ¡i tim - Minh Niá»‡m', 
-        duration: '12 chÆ°Æ¡ng',
+        title: 'Hiểu về trái tim - Minh Niệm', 
+        duration: '12 chương',
         img: 'https://tramsach.vn/wp-content/uploads/2024/11/gioi-thieu-sach.jpg', 
         url: 'https://thuvienhoasen.org/images/file/y5sBQGYE1QgQAHou/hieu-ve-trai-tim.pdf' },
     { 
         type: 'Podcast', 
-        title: 'Radio Cáº£m XÃºc #12 - Chá»¯a lÃ nh', 
-        duration: '32 phÃºt',
+        title: 'Radio Cảm Xúc #12 - Chữa lành', 
+        duration: '32 phút',
         img: 'https://i.scdn.co/image/ab67656300005f1ff6bed7462a8b94b0fb452114', 
         url: 'https://open.spotify.com/episode/63VvDWyELyutySrZSRU1Hq' },
     { 
-        type: 'CÃ´ng cá»¥', 
-        title: 'BÃ i táº­p thá»Ÿ giáº£m Stress', 
-        duration: '4 bÃ i táº­p',
+        type: 'Công cụ', 
+        title: 'Bài tập thở giảm Stress', 
+        duration: '4 bài tập',
         img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlg1wCwbYTPH8TCqBnzGjRLEhlmNuhdWy44A&s', 
         action: 'renderBreathingSpace'
     },
     {
-        type: 'CÃ´ng cá»¥',
-        title: 'Quáº£n lÃ½ thá»i gian Pomodoro',
+        type: 'Công cụ',
+        title: 'Quản lý thời gian Pomodoro',
         duration: 'App',
         img: 'https://images.unsplash.com/photo-1495364141860-b0d03eccd065?w=800&q=80',
         url: '#'
@@ -120,11 +121,11 @@ function setBackendReadyState(isReady) {
 function relativeTimeFrom(dateInput) {
     const date = new Date(dateInput);
     const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (diff < 60) return "Vá»«a xong";
-    if (diff < 3600) return `${Math.floor(diff / 60)}p trÆ°á»›c`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} giá» trÆ°á»›c`;
-    if (diff < 2592000) return `${Math.floor(diff / 86400)} ngÃ y trÆ°á»›c`;
-    if (diff < 31536000) return `${Math.floor(diff / 2592000)} thÃ¡ng trÆ°á»›c`;
+    if (diff < 60) return "Vừa xong";
+    if (diff < 3600) return `${Math.floor(diff / 60)}p trước`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+    if (diff < 2592000) return `${Math.floor(diff / 86400)} ngày trước`;
+    if (diff < 31536000) return `${Math.floor(diff / 2592000)} tháng trước`;
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 }
 
@@ -159,6 +160,52 @@ async function apiRequest(path, options = {}) {
     return result.data;
 }
 
+const riskDetectionRules = [
+    {
+        severity: 'critical',
+        label: 'Cảnh báo tự tử',
+        keywords: [
+            'tự tử', 'tu tu', 'tự hại', 'tu hai', 'muốn chết', 'muon chet',
+            'không muốn sống', 'khong muon song', 'kết thúc cuộc đời', 'ket thuc cuoc doi',
+            'biến mất mãi mãi', 'bien mat mai mai'
+        ]
+    },
+    {
+        severity: 'high',
+        label: 'Rủi ro tâm lý cao',
+        keywords: [
+            'trầm cảm', 'tram cam', 'hoảng loạn', 'hoang loan', 'kiệt sức', 'kiet suc',
+            'stress', 'khóc', 'khoc', 'mệt mỏi', 'met moi', 'tuyệt vọng', 'tuyet vong'
+        ]
+    }
+];
+
+function normalizeVietnamese(text) {
+    return (text || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd');
+}
+
+function detectRiskSignal(text) {
+    const rawText = (text || '').toLowerCase();
+    const normalizedText = normalizeVietnamese(text);
+
+    for (const rule of riskDetectionRules) {
+        const matchedKeyword = rule.keywords.find(keyword => {
+            const normalizedKeyword = normalizeVietnamese(keyword);
+            return rawText.includes(keyword) || normalizedText.includes(normalizedKeyword);
+        });
+
+        if (matchedKeyword) {
+            return { ...rule, matchedKeyword };
+        }
+    }
+
+    return null;
+}
+
 function getRiskAlerts() {
     try {
         return JSON.parse(localStorage.getItem(RISK_ALERTS_KEY)) || [];
@@ -171,28 +218,40 @@ function saveRiskAlerts(alerts) {
     localStorage.setItem(RISK_ALERTS_KEY, JSON.stringify(alerts.slice(0, 30)));
 }
 
-async function createRiskAlert(source, text, extra = {}) {
-    const alertPayload = {
+async function syncRiskAlert(alert) {
+    try {
+        await apiRequest('/api/risk-alerts', {
+            method: 'POST',
+            body: JSON.stringify(alert)
+        });
+    } catch (error) {
+        // Local storage remains the fallback when the backend is unavailable.
+    }
+}
+
+function createRiskAlert(source, text, extra = {}) {
+    const signal = detectRiskSignal(text);
+    const { force, ...alertExtra } = extra;
+    if (!signal && !force) return null;
+
+    const alert = {
+        id: `RA-${Date.now()}`,
+        created_at: new Date().toISOString(),
         source,
-        severity: extra.severity || 'high',
-        label: extra.label || 'Rá»§i ro tÃ¢m lÃ½ cao',
+        severity: signal?.severity || alertExtra.severity || 'high',
+        label: signal?.label || alertExtra.label || 'Rủi ro tâm lý cao',
+        matched_keyword: signal?.matchedKeyword || alertExtra.matched_keyword || 'manual-trigger',
+        status: 'new',
+        student_alias: 'SV ẩn danh',
+        class_name: 'CNTT_K48',
+        department: 'CNTT',
         excerpt: (text || '').replace(/\s+/g, ' ').trim().slice(0, 180),
-        ...extra
+        ...alertExtra
     };
 
-    try {
-        const result = await apiRequest('/api/risk-alerts', {
-            method: 'POST',
-            body: JSON.stringify(alertPayload)
-        });
-        const alert = result.data || result;
-        saveRiskAlerts([alert, ...getRiskAlerts()]);
-        return alert;
-    } catch (error) {
-        const alert = { id: `RA-${Date.now()}`, created_at: new Date().toISOString(), ...alertPayload };
-        saveRiskAlerts([alert, ...getRiskAlerts()]);
-        return alert;
-    }
+    saveRiskAlerts([alert, ...getRiskAlerts()]);
+    syncRiskAlert(alert);
+    return alert;
 }
 
 function renderCrisisSupportNotice(alert) {
@@ -201,25 +260,25 @@ function renderCrisisSupportNotice(alert) {
     const isCritical = alert.severity === 'critical';
     return `
         <div class="crisis-support-card ${isCritical ? 'critical' : ''}">
-            <strong>${isCritical ? 'Cáº§n há»— trá»£ kháº©n cáº¥p' : 'TÃ­n hiá»‡u rá»§i ro Ä‘Ã£ Ä‘Æ°á»£c ghi nháº­n'}</strong>
+            <strong>${isCritical ? 'Cần hỗ trợ khẩn cấp' : 'Tín hiệu rủi ro đã được ghi nhận'}</strong>
             <p>
-                Há»‡ thá»‘ng Ä‘Ã£ táº¡o cáº£nh bÃ¡o áº©n danh cho tá»• tham váº¥n. Náº¿u báº¡n Ä‘ang khÃ´ng an toÃ n,
-                hÃ£y gá»i hotline <a href="tel:19001267">1900.1267</a> hoáº·c liÃªn há»‡ ngÆ°á»i tin cáº­y ngay.
+                Hệ thống đã tạo cảnh báo ẩn danh cho tổ tham vấn. Nếu bạn đang không an toàn,
+                hãy gọi hotline <a href="tel:19001267">1900.1267</a> hoặc liên hệ người tin cậy ngay.
             </p>
-            <button class="btn-primary" onclick="openBookingModal()">Äáº·t lá»‹ch tham váº¥n</button>
+            <button class="btn-primary" onclick="openBookingModal()">Đặt lịch tham vấn</button>
         </div>
     `;
 }
 
-// --- 2. KHá»žI Táº O (INIT) ---
+// --- 2. KHỞI TẠO (INIT) ---
 window.onload = function() {
     setBackendReadyState(false);
-    showLoadingScreen(); // Hiá»ƒn thá»‹ mÃ n hÃ¬nh
+    showLoadingScreen(); // Hiển thị màn hình
     loadFeedFromBackend();
     hideLoadingScreen();
-    renderStudentHome(); // Máº·c Ä‘á»‹nh vÃ o trang chá»§
+    renderStudentHome(); // Mặc định vào trang chủ
     setTimeout(() => {
-        showNotification("ðŸ“… Äá»«ng quÃªn lÃ m Quick Test cáº£m xÃºc hÃ´m nay nhÃ©!");
+        showNotification("📅 Đừng quên làm Quick Test cảm xúc hôm nay nhé!");
     }, 1000);
 };
 
@@ -241,9 +300,9 @@ function showLoadingScreen() {
     `;
     loadingScreen.innerHTML = `
         <div style="text-align: center;">
-            <div style="font-size: 48px; margin-bottom: 20px; animation: pulse 1s infinite;">â³</div>
-            <h2 style="font-family: var(--font-heading); font-size: 24px; color: #333; margin-bottom: 10px;">Äang táº£i...</h2>
-            <p style="font-size: 14px; color: #999;">Vui lÃ²ng chá» trong giÃ¢y lÃ¡t</p>
+            <div style="font-size: 48px; margin-bottom: 20px; animation: pulse 1s infinite;">⏳</div>
+            <h2 style="font-family: var(--font-heading); font-size: 24px; color: #333; margin-bottom: 10px;">Đang tải...</h2>
+            <p style="font-size: 14px; color: #999;">Vui lòng chờ trong giây lát</p>
             <div style="margin-top: 20px; display: flex; gap: 5px; justify-content: center;">
                 <div style="width: 8px; height: 8px; background: var(--accent-pink); border-radius: 50%; animation: bounce 1.4s infinite;"></div>
                 <div style="width: 8px; height: 8px; background: var(--accent-pink); border-radius: 50%; animation: bounce 1.4s infinite 0.2s;"></div>
@@ -275,7 +334,7 @@ function hideLoadingScreen() {
 
 function blockIfBackendNotReady() {
     if (backendReady) return false;
-    setTimeout(() => showNotification('â³ Backend chÆ°a sáºµn sÃ ng, vui lÃ²ng chá»‰ xem giao diá»‡n.'), 1000 );
+    setTimeout(() => showNotification('⏳ Backend chưa sẵn sàng, vui lòng chỉ xem giao diện.'), 1000 );
     return true;
 }
 
@@ -287,7 +346,7 @@ function showNotification(text) {
     const notif = document.createElement('div');
     notif.className = 'notification-toast';
     notif.innerText = text;
-    // TÃ¬m mobile-frame Ä‘á»ƒ gáº¯n vÃ o, trÃ¡nh lá»—i náº¿u chÆ°a load DOM
+    // Tìm mobile-frame để gắn vào, tránh lỗi nếu chưa load DOM
     const frame = document.querySelector('.mobile-frame');
     if(frame) {
         frame.appendChild(notif);
@@ -398,7 +457,7 @@ async function loadFeedFromBackend() {
 
         userFeed = diaries.map(diary => ({
             id: diary.id,
-            author: diary.author_alias || 'TÃ´i',
+            author: diary.author_alias || 'Tôi',
             time: new Date(diary.created_at).toLocaleString('vi-VN'),
             content: formatDiaryContent(diary.title, diary.content),
             tags: diary.tags || [],
@@ -410,34 +469,35 @@ async function loadFeedFromBackend() {
         renderStudentHome();
         setBackendReadyState(true);
     } catch (error) {
-        setBackendReadyState(true); 
+        // Keep built-in demo feed when backend is unavailable.
+        setBackendReadyState(true); // Temporarily allow user to interact with the interface in demo mode.
     }
 }
 
 function getFallbackResourceSuggestion(txt) {
-    const normalizedText = (txt || '').toLowerCase();
+    const normalizedText = normalizeVietnamese(txt);
 
     if (normalizedText.includes('thi') || normalizedText.includes('hoc') || normalizedText.includes('deadline') || normalizedText.includes('burnout')) {
-        return 'Báº¡n cÃ³ thá»ƒ xem thÃªm bÃ i Blog "CÃ¡ch vÆ°á»£t qua Burnout mÃ¹a thi" trong Resources.';
+        return 'Bạn có thể xem thêm bài Blog "Cách vượt qua Burnout mùa thi" trong Resources.';
     }
 
     if (normalizedText.includes('lo au') || normalizedText.includes('stress') || normalizedText.includes('cang thang')) {
-        return 'Báº¡n cÃ³ thá»ƒ thá»­ video "Thiá»n 5 phÃºt giáº£m lo Ã¢u": https://www.youtube.com/watch?v=inpok4MKVLM';
+        return 'Bạn có thể thử video "Thiền 5 phút giảm lo âu": https://www.youtube.com/watch?v=inpok4MKVLM';
     }
 
     if (normalizedText.includes('co don') || normalizedText.includes('buon') || normalizedText.includes('khoc')) {
-        return 'Báº¡n cÃ³ thá»ƒ nghe Podcast "Radio Cáº£m XÃºc #12 - Chá»¯a lÃ nh": https://open.spotify.com/episode/63VvDWyELyutySrZSRU1Hq';
+        return 'Bạn có thể nghe Podcast "Radio Cảm Xúc #12 - Chữa lành": https://open.spotify.com/episode/63VvDWyELyutySrZSRU1Hq';
     }
 
     if (normalizedText.includes('mat ngu') || normalizedText.includes('kho ngu')) {
-        return 'Báº¡n cÃ³ thá»ƒ má»Ÿ "BÃ i táº­p thá»Ÿ giáº£m Stress" trong má»¥c Resources Ä‘á»ƒ Ä‘iá»u hÃ²a nhá»‹p thá»Ÿ trÆ°á»›c khi ngá»§.';
+        return 'Bạn có thể mở "Bài tập thở giảm Stress" trong mục Resources để điều hòa nhịp thở trước khi ngủ.';
     }
 
-    return 'Náº¿u báº¡n muá»‘n, mÃ¬nh cÃ³ thá»ƒ gá»£i Ã½ má»™t video, podcast hoáº·c bÃ i táº­p thá»Ÿ trong má»¥c Resources.';
+    return 'Nếu bạn muốn, mình có thể gợi ý một video, podcast hoặc bài tập thở trong mục Resources.';
 }
 
 // ==============================================
-// 3. HOME (GIAO DIá»†N LAI THREADS)
+// 3. HOME (GIAO DIỆN LAI THREADS)
 // ==============================================
 function renderStudentHome() {
     const container = document.getElementById('student-main-content');
@@ -461,13 +521,13 @@ function renderStudentHome() {
                             </div>
                             <p>${escapeHtml(c.content)}</p>
                             <div style="margin-top: 8px; position: relative; display: inline-block;" class="mc-reaction-wrapper" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
-                                <button type="button" aria-label="Tháº£ tim" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 16px; color: #666; transition: transform 0.2s;" onclick="this.classList.toggle('mc-liked'); const num = this.querySelector('.mc-like-count'); if(this.classList.contains('mc-liked')){ num.textContent = parseInt(num.textContent) + 1; this.style.color = 'var(--deep-rose)'; this.style.transform = 'scale(1.2)'; setTimeout(() => this.style.transform = 'scale(1)', 200); } else { num.textContent = parseInt(num.textContent) - 1; this.style.color = '#666'; this.querySelector('.mc-reaction-icon').textContent = 'â™¥'; }"><span class="mc-reaction-icon">â™¥</span> <span class="mc-like-count">${Array.isArray(c.likes) ? c.likes.length : (c.likes || 0)}</span></button>
+                                <button type="button" aria-label="Thả tim" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 16px; color: #666; transition: transform 0.2s;" onclick="this.classList.toggle('mc-liked'); const num = this.querySelector('.mc-like-count'); if(this.classList.contains('mc-liked')){ num.textContent = parseInt(num.textContent) + 1; this.style.color = 'var(--deep-rose)'; this.style.transform = 'scale(1.2)'; setTimeout(() => this.style.transform = 'scale(1)', 200); } else { num.textContent = parseInt(num.textContent) - 1; this.style.color = '#666'; this.querySelector('.mc-reaction-icon').textContent = '♥'; }"><span class="mc-reaction-icon">♥</span> <span class="mc-like-count">${Array.isArray(c.likes) ? c.likes.length : (c.likes || 0)}</span></button>
                                 <div class="mc-reaction-popup" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 5px 10px; gap: 10px; z-index: 10;">
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='ðŸ‘'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">ðŸ‘</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='â¤ï¸'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">â¤ï¸</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='ðŸ˜‚'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">ðŸ˜‚</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='ðŸ˜®'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">ðŸ˜®</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='ðŸ˜¢'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">ðŸ˜¢</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='👍'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">👍</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='❤️'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">❤️</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😂'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😂</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😮'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😮</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😢'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😢</span>
                                 </div>
                             </div>
                         </div>
@@ -493,21 +553,21 @@ function renderStudentHome() {
 
                         <div class="mc-feed-actions">
                             <div class="mc-reaction-wrapper" style="position: relative; display: inline-block;" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
-                                <button type="button" aria-label="Tháº£ tim" style="transition: transform 0.2s;" onclick="this.classList.toggle('mc-liked'); const num = this.querySelector('.mc-like-count'); if(this.classList.contains('mc-liked')){ num.textContent = parseInt(num.textContent) + 1; this.style.color = 'var(--deep-rose)'; this.style.transform = 'scale(1.2)'; setTimeout(() => this.style.transform = 'scale(1)', 200); } else { num.textContent = parseInt(num.textContent) - 1; this.style.color = ''; this.querySelector('.mc-reaction-icon').textContent = 'â™¥'; }"><span class="mc-reaction-icon">â™¥</span> <span class="mc-like-count">${Array.isArray(post.likes) ? post.likes.length : (post.likes || 0)}</span></button>
+                                <button type="button" aria-label="Thả tim" style="transition: transform 0.2s;" onclick="this.classList.toggle('mc-liked'); const num = this.querySelector('.mc-like-count'); if(this.classList.contains('mc-liked')){ num.textContent = parseInt(num.textContent) + 1; this.style.color = 'var(--deep-rose)'; this.style.transform = 'scale(1.2)'; setTimeout(() => this.style.transform = 'scale(1)', 200); } else { num.textContent = parseInt(num.textContent) - 1; this.style.color = ''; this.querySelector('.mc-reaction-icon').textContent = '♥'; }"><span class="mc-reaction-icon">♥</span> <span class="mc-like-count">${Array.isArray(post.likes) ? post.likes.length : (post.likes || 0)}</span></button>
                                 <div class="mc-reaction-popup" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 5px 10px; gap: 10px; z-index: 10;">
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='ðŸ‘'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">ðŸ‘</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='â¤ï¸'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">â¤ï¸</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='ðŸ˜‚'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">ðŸ˜‚</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='ðŸ˜®'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">ðŸ˜®</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='ðŸ˜¢'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">ðŸ˜¢</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='👍'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">👍</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='❤️'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">❤️</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😂'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😂</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😮'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😮</span>
+                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😢'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😢</span>
                                 </div>
                             </div>
-                            <button type="button" aria-label="BÃ¬nh luáº­n" onclick="const box = this.parentElement.nextElementSibling; box.style.display = box.style.display === 'none' ? 'block' : 'none';"><span>ðŸ’¬</span> ${commentCount}</button>
-                            <button type="button" aria-label="Chia sáº»"><span>âž¦</span></button>
+                            <button type="button" aria-label="Bình luận" onclick="const box = this.parentElement.nextElementSibling; box.style.display = box.style.display === 'none' ? 'block' : 'none';"><span>💬</span> ${commentCount}</button>
+                            <button type="button" aria-label="Chia sẻ"><span>➦</span></button>
                         </div>
                         <div class="mc-comment-input-box" style="display: none; margin-top: 16px;">
-                            <input type="text" class="mc-input" placeholder="Viáº¿t bÃ¬nh luáº­n cá»§a báº¡n..." style="margin-bottom: 8px; padding: 10px 14px; font-size: 14px;">
-                            <button type="button" class="mc-btn mc-btn-primary" style="min-height: 32px; padding: 6px 14px; font-size: 13px;" onclick="if(this.previousElementSibling.value) { const newComment = { id: Date.now().toString(), author: 'Current User', content: this.previousElementSibling.value, date: new Date().toISOString() }; if(!${JSON.stringify(post)}.comments) ${JSON.stringify(post)}.comments = []; ${JSON.stringify(post)}.comments.push(newComment); renderStudentHome(); }">Gá»­i bÃ¬nh luáº­n</button>
+                            <input type="text" class="mc-input" placeholder="Viết bình luận của bạn..." style="margin-bottom: 8px; padding: 10px 14px; font-size: 14px;">
+                            <button type="button" class="mc-btn mc-btn-primary" style="min-height: 32px; padding: 6px 14px; font-size: 13px;" onclick="if(this.previousElementSibling.value) { const newComment = { id: Date.now().toString(), author: 'Current User', content: this.previousElementSibling.value, date: new Date().toISOString() }; if(!${JSON.stringify(post)}.comments) ${JSON.stringify(post)}.comments = []; ${JSON.stringify(post)}.comments.push(newComment); renderStudentHome(); }">Gửi bình luận</button>
                         </div>
                     </div>
                 </div>
@@ -520,11 +580,11 @@ function renderStudentHome() {
         <section class="mc-page mc-home-page">
             <div class="mc-page-header mc-page-header-row">
                 <div>
-                    <p class="mc-kicker">Cá»™ng Ä‘á»“ng</p>
+                    <p class="mc-kicker">Cộng đồng</p>
                     <h1>News feed</h1>
-                    <p>Chia sáº» áº©n danh, láº¯ng nghe nhau.</p>
+                    <p>Chia sẻ ẩn danh, lắng nghe nhau.</p>
                 </div>
-                <button class="mc-btn mc-btn-outline" type="button" onclick="renderStudentDiary()">+ Viáº¿t Nháº­t kÃ½</button>
+                <button class="mc-btn mc-btn-outline" type="button" onclick="renderStudentDiary()">+ Viết Nhật ký</button>
             </div>
             <div class="mc-feed-list">
                 ${feedHtml}
@@ -542,11 +602,11 @@ function renderStudentDiary() {
     animateMainContentSwap();
 
     const moodItems = [
-        { score: 5, label: 'Tuyá»‡t vá»i', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.7-4.4-9.1-8.1C.8 9.6 2.5 5.3 6.2 5c2-.2 3.5.8 4.4 2.3C11.5 5.8 13 4.8 15 5c3.7.3 5.4 4.6 3.3 7.9C15.9 16.6 12 21 12 21Z"/></svg>', tone: 'rose' },
-        { score: 4, label: 'á»”n', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.3 10.2a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7ZM15.7 10.2a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7Z"/><path d="M7.4 14.1c1 2.1 2.6 3.1 4.6 3.1s3.6-1 4.6-3.1c.3-.6-.1-1.3-.8-1.3H8.2c-.7 0-1.1.7-.8 1.3Z"/></svg>', tone: 'amber' },
-        { score: 3, label: 'BÃ¬nh thÆ°á»ng', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.2 10.2a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6ZM15.8 10.2a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6Z"/><path d="M8 15.1h8c.6 0 1-.4 1-1s-.4-1-1-1H8c-.6 0-1 .4-1 1s.4 1 1 1Z"/></svg>', tone: 'stone' },
-        { score: 2, label: 'Má»‡t má»i', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.8 10.1 5.9 8.7c-.5-.4-.6-1-.2-1.4.4-.5 1-.6 1.5-.2l1.9 1.4c.5.4.6 1 .2 1.4-.4.5-1 .6-1.5.2ZM16.2 10.1l1.9-1.4c.5-.4.6-1 .2-1.4-.4-.5-1-.6-1.5-.2l-1.9 1.4c-.5.4-.6 1-.2 1.4.4.5 1 .6 1.5.2Z"/><path d="M8.2 16.6c1-1.3 2.2-1.9 3.8-1.9s2.8.6 3.8 1.9c.4.5 1.1.5 1.5.1.4-.4.4-1 0-1.5-1.4-1.7-3.2-2.6-5.3-2.6s-3.9.9-5.3 2.6c-.4.5-.4 1.1 0 1.5.4.4 1.1.4 1.5-.1Z"/></svg>', tone: 'slate' },
-        { score: 1, label: 'Tá»‡', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c4.7 0 8.5 3.8 8.5 8.5s-3.8 8.5-8.5 8.5S3.5 16.7 3.5 12 7.3 3.5 12 3.5Zm-1.1 4.2.4 5.7c0 .4.3.7.7.7s.7-.3.7-.7l.4-5.7c0-.7-.5-1.2-1.1-1.2s-1.1.5-1.1 1.2ZM12 17.7a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7Z"/></svg>', tone: 'violet' }
+        { score: 5, label: 'Tuyệt vời', mark: '♥', tone: 'rose' },
+        { score: 4, label: 'Ổn', mark: ':)', tone: 'amber' },
+        { score: 3, label: 'Bình thường', mark: ':|', tone: 'stone' },
+        { score: 2, label: 'Mệt mỏi', mark: '...', tone: 'slate' },
+        { score: 1, label: 'Tệ', mark: '!', tone: 'violet' }
     ];
 
     const recentHtml = userFeed.slice(0, 3).map((entry, index) => `
@@ -562,19 +622,19 @@ function renderStudentDiary() {
     container.innerHTML = `
         <section class="mc-page">
             <div class="mc-page-header">
-                <p class="mc-kicker">Nháº­t kÃ½ riÃªng tÆ°</p>
-                <h1>HÃ´m nay báº¡n tháº¥y tháº¿ nÃ o?</h1>
-                <p>Chá»‰ báº¡n nhÃ¬n tháº¥y. AI sáº½ phÃ¢n tÃ­ch áº©n danh Ä‘á»ƒ gá»£i Ã½ phÃ¹ há»£p.</p>
+                <p class="mc-kicker">Nhật ký riêng tư</p>
+                <h1>Hôm nay bạn thấy thế nào?</h1>
+                <p>Chỉ bạn nhìn thấy. AI sẽ phân tích ẩn danh để gợi ý phù hợp.</p>
             </div>
 
             <div class="mc-diary-grid">
                 <div class="mc-panel mc-diary-editor">
                     <div class="quick-test-section mc-mood-section">
-                        <label class="mc-field-label">Cáº£m xÃºc hiá»‡n táº¡i</label>
+                        <label class="mc-field-label">Cảm xúc hiện tại</label>
                         <div class="mc-mood-grid">
                             ${moodItems.map(item => `
                                 <button class="mood-card ${item.score === 4 ? 'active' : ''}" type="button" onclick="selectMood(${item.score}, this)">
-                                    <span class="mood-mark mood-${item.tone}">${item.icon}</span>
+                                    <span class="mood-mark mood-${item.tone}">${item.mark}</span>
                                     <span>${item.label}</span>
                                 </button>
                             `).join('')}
@@ -582,26 +642,26 @@ function renderStudentDiary() {
                         <div id="quick-test-msg" class="mc-mood-msg"></div>
                     </div>
 
-                    <label class="mc-field-label" for="diary-title">TiÃªu Ä‘á»</label>
-                    <input type="text" id="diary-title" class="notion-title mc-input" placeholder="TiÃªu Ä‘á»...">
+                    <label class="mc-field-label" for="diary-title">Tiêu đề</label>
+                    <input type="text" id="diary-title" class="notion-title mc-input" placeholder="Tiêu đề...">
 
-                    <label class="mc-field-label" for="diary-content">HÃ´m nay cá»§a báº¡n</label>
-                    <textarea id="diary-content" class="notion-body mc-textarea" placeholder="Viáº¿t nhá»¯ng suy nghÄ© cá»§a báº¡n, nháº¥n '/' Ä‘á»ƒ AI gá»£i Ã½..."></textarea>
+                    <label class="mc-field-label" for="diary-content">Hôm nay của bạn</label>
+                    <textarea id="diary-content" class="notion-body mc-textarea" placeholder="Viết những suy nghĩ của bạn, nhấn '/' để AI gợi ý..."></textarea>
 
                     <div id="ai-suggestion-area" class="ai-tag-box mc-ai-tag-box hidden">
-                        <div class="mc-ai-tag-title">AI Ä‘á» xuáº¥t Tag</div>
+                        <div class="mc-ai-tag-title">AI đề xuất Tag</div>
                         <div id="tag-container"></div>
-                        <button class="mc-btn mc-btn-primary mc-full-width" type="button" onclick="confirmAndPost()">XÃ¡c nháº­n & ÄÄƒng</button>
+                        <button class="mc-btn mc-btn-primary mc-full-width" type="button" onclick="confirmAndPost()">Xác nhận & Đăng</button>
                     </div>
 
                     <div class="mc-editor-actions" id="action-area">
-                        <button class="mc-btn mc-btn-primary" type="button" onclick="analyzeDiary()">PhÃ¢n tÃ­ch AI</button>
+                        <button class="mc-btn mc-btn-primary" type="button" onclick="analyzeDiary()">Phân tích AI</button>
                     </div>
                 </div>
 
                 <aside class="mc-panel mc-recent-panel">
-                    <h3>Gáº§n Ä‘Ã¢y</h3>
-                    <div class="mc-recent-list">${recentHtml || '<p class="mc-empty">ChÆ°a cÃ³ nháº­t kÃ½ nÃ o.</p>'}</div>
+                    <h3>Gần đây</h3>
+                    <div class="mc-recent-list">${recentHtml || '<p class="mc-empty">Chưa có nhật ký nào.</p>'}</div>
                 </aside>
             </div>
         </section>
@@ -614,17 +674,17 @@ function selectMood(score, elem) {
     
     const msg = document.getElementById('quick-test-msg');
     if(score === 1) {
-        createRiskAlert('Quick Test', 'Sinh viÃªn chá»n má»©c cáº£m xÃºc ráº¥t tháº¥p trong Quick Test', {
+        createRiskAlert('Quick Test', 'Sinh viên chọn mức cảm xúc rất thấp trong Quick Test', {
             force: true,
-            label: 'Cáº£nh bÃ¡o cáº£m xÃºc ráº¥t tháº¥p',
+            label: 'Cảnh báo cảm xúc rất thấp',
             severity: 'high',
-            excerpt: 'Quick Test ghi nháº­n má»©c cáº£m xÃºc 1/5.'
+            excerpt: 'Quick Test ghi nhận mức cảm xúc 1/5.'
         });
-        msg.innerHTML = `MÃ¬nh Ä‘Ã£ ghi nháº­n má»©c cáº£m xÃºc ráº¥t tháº¥p vÃ  gá»­i cáº£nh bÃ¡o áº©n danh cho tá»• tham váº¥n. <u onclick="openBookingModal()" style="cursor:pointer; font-weight:bold;">Äáº·t lá»‹ch há»— trá»£</u>`;
+        msg.innerHTML = `Mình đã ghi nhận mức cảm xúc rất thấp và gửi cảnh báo ẩn danh cho tổ tham vấn. <u onclick="openBookingModal()" style="cursor:pointer; font-weight:bold;">Đặt lịch hỗ trợ</u>`;
     } else if(score <= 2) {
-        msg.innerHTML = `Báº¡n á»•n khÃ´ng? <u onclick="renderStudentStats()" style="cursor:pointer; font-weight:bold;">Xem thá»‘ng kÃª</u> hoáº·c <u onclick="renderResources()" style="cursor:pointer; font-weight:bold;">nghe nháº¡c</u> nhÃ©.`;
+        msg.innerHTML = `Bạn ổn không? <u onclick="renderStudentStats()" style="cursor:pointer; font-weight:bold;">Xem thống kê</u> hoặc <u onclick="renderResources()" style="cursor:pointer; font-weight:bold;">nghe nhạc</u> nhé.`;
     } else {
-        msg.innerHTML = "ÄÃ£ ghi nháº­n! Cáº£m xÃºc chá»§ Ä‘áº¡o: " + (score==5?"Ráº¥t tá»‘t":(score==4?"Tá»‘t":"BÃ¬nh thÆ°á»ng"));
+        msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score==5?"Rất tốt":(score==4?"Tốt":"Bình thường"));
     }
 }
 
@@ -662,18 +722,18 @@ function buildFallbackChatReply(txt, riskAlert) {
     const suggestion = getFallbackResourceSuggestion(txt);
 
     if(riskAlert && riskAlert.severity === 'critical') {
-        return "âš ï¸ MÃ¬nh ráº¥t lo láº¯ng cho sá»± an toÃ n cá»§a báº¡n. Cáº£nh bÃ¡o áº©n danh Ä‘Ã£ Ä‘Æ°á»£c gá»­i Ä‘áº¿n tá»• tham váº¥n. Náº¿u báº¡n Ä‘ang cÃ³ nguy cÆ¡ tá»± háº¡i, hÃ£y gá»i hotline 1900.1267 hoáº·c liÃªn há»‡ ngÆ°á»i tin cáº­y ngay.";
+        return "⚠️ Mình rất lo lắng cho sự an toàn của bạn. Cảnh báo ẩn danh đã được gửi đến tổ tham vấn. Nếu bạn đang có nguy cơ tự hại, hãy gọi hotline 1900.1267 hoặc liên hệ người tin cậy ngay.";
     }
 
     if(riskAlert) {
-        return `MÃ¬nh nháº­n tháº¥y báº¡n Ä‘ang cÃ³ dáº¥u hiá»‡u cÄƒng tháº³ng cao. MÃ¬nh Ä‘Ã£ ghi nháº­n cáº£nh bÃ¡o áº©n danh Ä‘á»ƒ tá»• tham váº¥n cÃ³ thá»ƒ há»— trá»£, vÃ  báº¡n cÃ³ thá»ƒ Ä‘áº·t lá»‹ch ngay náº¿u muá»‘n. ${suggestion}`;
+        return `Mình nhận thấy bạn đang có dấu hiệu căng thẳng cao. Mình đã ghi nhận cảnh báo ẩn danh để tổ tham vấn có thể hỗ trợ, và bạn có thể đặt lịch ngay nếu muốn. ${suggestion}`;
     }
 
-    if(lowerTxt.includes("buá»“n") || lowerTxt.includes("khÃ³c") || lowerTxt.includes("má»‡t") || lowerTxt.includes("stress")) {
-        return `MÃ¬nh cáº£m nháº­n Ä‘Æ°á»£c báº¡n Ä‘ang cÃ³ tÃ¢m tráº¡ng khÃ´ng tá»‘t. TrÆ°á»›c máº¯t, báº¡n hÃ£y thá»­ gá»i tÃªn cáº£m xÃºc cá»§a mÃ¬nh vÃ  hÃ­t thá»Ÿ cháº­m trong 1 phÃºt. ${suggestion}`;
+    if(lowerTxt.includes("buồn") || lowerTxt.includes("khóc") || lowerTxt.includes("mệt") || lowerTxt.includes("stress")) {
+        return `Mình cảm nhận được bạn đang có tâm trạng không tốt. Trước mắt, bạn hãy thử gọi tên cảm xúc của mình và hít thở chậm trong 1 phút. ${suggestion}`;
     }
 
-    return `Cáº£m Æ¡n báº¡n Ä‘Ã£ chia sáº». MÃ¬nh luÃ´n á»Ÿ Ä‘Ã¢y láº¯ng nghe báº¡n; báº¡n cÃ³ thá»ƒ ká»ƒ rÃµ hÆ¡n chuyá»‡n gÃ¬ Ä‘ang lÃ m báº¡n náº·ng lÃ²ng nháº¥t khÃ´ng? ${suggestion}`;
+    return `Cảm ơn bạn đã chia sẻ. Mình luôn ở đây lắng nghe bạn; bạn có thể kể rõ hơn chuyện gì đang làm bạn nặng lòng nhất không? ${suggestion}`;
 }
 
 async function analyzeDiary() {
@@ -681,15 +741,14 @@ async function analyzeDiary() {
 
     const content = document.getElementById('diary-content').value;
     const title = document.getElementById('diary-title').value;
-    if(content.length < 5) return alert("HÃ£y viáº¿t dÃ i hÆ¡n má»™t chÃºt nhÃ©!");
+    if(content.length < 5) return alert("Hãy viết dài hơn một chút nhé!");
 
     const btn = document.querySelector('#action-area button');
-    btn.innerText = "â³ Äang Ä‘á»c..."; 
+    btn.innerText = "⏳ Đang đọc..."; 
     btn.disabled = true;
 
     try {
         let suggestedTags = [];
-        let riskAlert = null;
 
         try {
             const result = await apiRequest('/api/diaries/tags', {
@@ -697,15 +756,15 @@ async function analyzeDiary() {
                 body: JSON.stringify({ title, content })
             });
             suggestedTags = Array.isArray(result.tags) ? result.tags : [];
-            riskAlert = result.riskAlert;
         } catch (error) {
-            if(content.includes("thi") || content.includes("Ä‘iá»ƒm") || content.includes("há»c")) suggestedTags.push("Há»c táº­p");
-            if(content.includes("buá»“n") || content.includes("khÃ³c")) suggestedTags.push("Lo Ã¢u");
-            if(content.includes("báº¡n") || content.includes("cÃ£i")) suggestedTags.push("Má»‘i quan há»‡");
+            if(content.includes("thi") || content.includes("điểm") || content.includes("học")) suggestedTags.push("Học tập");
+            if(content.includes("buồn") || content.includes("khóc")) suggestedTags.push("Lo âu");
+            if(content.includes("bạn") || content.includes("cãi")) suggestedTags.push("Mối quan hệ");
         }
 
+        const riskAlert = createRiskAlert('Diary', `${title} ${content}`, { diary_title: title || 'Không có tiêu đề' });
         if(riskAlert) suggestedTags.unshift(riskAlert.label);
-        if(suggestedTags.length === 0) suggestedTags.push("TÃ¢m sá»±");
+        if(suggestedTags.length === 0) suggestedTags.push("Tâm sự");
 
         document.getElementById('action-area').classList.add('hidden');
         const tagBox = document.getElementById('ai-suggestion-area');
@@ -715,15 +774,15 @@ async function analyzeDiary() {
         const tagContainer = document.getElementById('tag-container');
         tagContainer.innerHTML = suggestedTags.map(tag => 
             `<span class="tag-chip selected" onclick="toggleTag(this)">${tag}</span>`
-        ).join('') + `<span class="tag-chip" onclick="toggleTag(this)">+ KhÃ¡c</span>`;
+        ).join('') + `<span class="tag-chip" onclick="toggleTag(this)">+ Khác</span>`;
 
         if(riskAlert) {
             tagBox.insertAdjacentHTML('afterbegin', renderCrisisSupportNotice(riskAlert));
-            showNotification("ÄÃ£ gá»­i cáº£nh bÃ¡o áº©n danh Ä‘áº¿n tá»• tham váº¥n.");
+            showNotification("Đã gửi cảnh báo ẩn danh đến tổ tham vấn.");
         }
     } catch (error) {
-        alert("KhÃ´ng thá»ƒ phÃ¢n tÃ­ch nháº­t kÃ½ lÃºc nÃ y. Báº¡n thá»­ láº¡i sau nhÃ©.");
-        btn.innerText = "âœ¨ PhÃ¢n tÃ­ch AI";
+        alert("Không thể phân tích nhật ký lúc này. Bạn thử lại sau nhé.");
+        btn.innerText = "✨ Phân tích AI";
         btn.disabled = false;
     }
 }
@@ -740,12 +799,12 @@ async function confirmAndPost() {
     const tagBox = document.getElementById('ai-suggestion-area');
     const riskAlert = tagBox?.dataset.riskAlertCreated === 'true'
         ? null
-        : createRiskAlert('Diary Post', `${title} ${content}`, { diary_title: title || 'KhÃ´ng cÃ³ tiÃªu Ä‘á»' });
+        : createRiskAlert('Diary Post', `${title} ${content}`, { diary_title: title || 'Không có tiêu đề' });
 
     userFeed.unshift({
         id: Date.now(),
-        author: 'TÃ´i',
-        time: 'Vá»«a xong',
+        author: 'Tôi',
+        time: 'Vừa xong',
         content: formatDiaryContent(title, content),
         tags: finalTags,
         likes: 0, comments: 0, isUser: true
@@ -765,24 +824,24 @@ async function confirmAndPost() {
     }
 
     alert(riskAlert || tagBox?.dataset.riskAlertCreated === 'true'
-        ? "ÄÃ£ lÆ°u nháº­t kÃ½ vÃ  gá»­i cáº£nh bÃ¡o áº©n danh cho tá»• tham váº¥n."
-        : "âœ… ÄÃ£ lÆ°u nháº­t kÃ½ & Gá»­i dá»¯ liá»‡u áº©n danh vá» trÆ°á»ng!");
+        ? "Đã lưu nhật ký và gửi cảnh báo ẩn danh cho tổ tham vấn."
+        : "✅ Đã lưu nhật ký & Gửi dữ liệu ẩn danh về trường!");
     renderStudentHome();
 }
 
 // ==============================================
-// 5. RESOURCES (TÃ€I NGUYÃŠN)
+// 5. RESOURCES (TÀI NGUYÊN)
 // ==============================================
-function renderResources(filterType = 'Táº¥t cáº£') {
+function renderResources(filterType = 'Tất cả') {
     const container = document.getElementById('student-main-content');
     updateNav(2);
     animateMainContentSwap();
 
-    const filteredDB = filterType === 'Táº¥t cáº£' 
+    const filteredDB = filterType === 'Tất cả' 
         ? resourcesDB 
         : resourcesDB.filter(res => res.type === filterType);
 
-    const types = ['Táº¥t cáº£', ...new Set(resourcesDB.map(r => r.type))];
+    const types = ['Tất cả', ...new Set(resourcesDB.map(r => r.type))];
 
     const filterHtml = types.map(t => `
         <button class="filter-btn ${t === filterType ? 'active' : ''}" type="button"
@@ -804,7 +863,7 @@ function renderResources(filterType = 'Táº¥t cáº£') {
                     </div>
                     <div class="res-info">
                         <div class="res-title-main">${escapeHtml(res.title)}</div>
-                        <div class="res-footer">Xem thÃªm â†’</div>
+                        <div class="res-footer">Xem thêm →</div>
                     </div>
                 </article>
             </a>
@@ -814,9 +873,9 @@ function renderResources(filterType = 'Táº¥t cáº£') {
     container.innerHTML = `
         <section class="mc-page">
             <div class="mc-page-header">
-                <p class="mc-kicker">Kho tÃ i nguyÃªn</p>
-                <h1>TÃ i nguyÃªn cho <span>tÃ¢m há»“n.</span></h1>
-                <p>Thiá»n, podcast, sÃ¡ch vÃ  cÃ´ng cá»¥ Ä‘Æ°á»£c tuyá»ƒn chá»n Ä‘á»ƒ Ä‘á»“ng hÃ nh cÃ¹ng báº¡n.</p>
+                <p class="mc-kicker">Kho tài nguyên</p>
+                <h1>Tài nguyên cho <span>tâm hồn.</span></h1>
+                <p>Thiền, podcast, sách và công cụ được tuyển chọn để đồng hành cùng bạn.</p>
             </div>
             <div class="filter-bar mc-filter-bar">${filterHtml}</div>
             <div class="resource-grid mc-resource-grid">
@@ -833,11 +892,11 @@ function renderBreathingSpace() {
     container.innerHTML = `
         <section class="mc-page">
             <div class="mc-panel mc-breathing-panel">
-                <p class="mc-kicker">CÃ´ng cá»¥ thá»Ÿ</p>
-                <h1>BÃ i táº­p thá»Ÿ giáº£m Stress</h1>
-                <p id="breath-text">Chuáº©n bá»‹...</p>
+                <p class="mc-kicker">Công cụ thở</p>
+                <h1>Bài tập thở giảm Stress</h1>
+                <p id="breath-text">Chuẩn bị...</p>
             <div id="breath-circle" class="breathing-circle"></div>
-                <button class="mc-btn mc-btn-primary" type="button" onclick="startBreathing()">Báº¯t Ä‘áº§u</button>
+                <button class="mc-btn mc-btn-primary" type="button" onclick="startBreathing()">Bắt đầu</button>
             </div>
         </section>
     `;
@@ -846,19 +905,19 @@ function renderBreathingSpace() {
 function startBreathing() {
     const circle = document.getElementById('breath-circle');
     const text = document.getElementById('breath-text');
-    let phase = 0; // 0: HÃ­t, 1: Giá»¯, 2: Thá»Ÿ
+    let phase = 0; // 0: Hít, 1: Giữ, 2: Thở
 
     setInterval(() => {
         if(phase === 0) {
             circle.style.transform = "scale(1.5)";
-            text.innerText = "HÃ­t vÃ o tháº­t sÃ¢u...";
+            text.innerText = "Hít vào thật sâu...";
             phase = 1;
         } else if(phase === 1) {
-            text.innerText = "Giá»¯ hÆ¡i thá»Ÿ...";
+            text.innerText = "Giữ hơi thở...";
             phase = 2;
         } else {
             circle.style.transform = "scale(1)";
-            text.innerText = "Thá»Ÿ ra nháº¹ nhÃ ng...";
+            text.innerText = "Thở ra nhẹ nhàng...";
             phase = 0;
         }
     }, 4000);
@@ -866,7 +925,7 @@ function startBreathing() {
 
 
 // ==============================================
-// 6. STATS (THá»NG KÃŠ DYNAMIC)
+// 6. STATS (THỐNG KÊ DYNAMIC)
 // ==============================================
 function renderStudentStats() {
     const container = document.getElementById('student-main-content');
@@ -878,24 +937,24 @@ function renderStudentStats() {
         ? (latestAlert.severity === 'critical' ? 'high' : 'medium')
         : 'medium';
     let alertColor = "var(--warning)";
-    let aiMessage = "CÃ³ váº» báº¡n Ä‘ang hÆ¡i cÄƒng tháº³ng. HÃ£y nghá»‰ ngÆ¡i má»™t chÃºt nhÃ©.";
+    let aiMessage = "Có vẻ bạn đang hơi căng thẳng. Hãy nghỉ ngơi một chút nhé.";
 
     if(riskLevel === 'high') {
         alertColor = "#FF6961";
-        aiMessage = "Má»©c Ä‘á»™ lo Ã¢u CAO. ChÃºng tÃ´i khuyáº¿n nghá»‹ báº¡n Ä‘áº·t lá»‹ch tham váº¥n ngay.";
+        aiMessage = "Mức độ lo âu CAO. Chúng tôi khuyến nghị bạn đặt lịch tham vấn ngay.";
     } else if (riskLevel === 'low') {
         alertColor = "var(--success)";
-        aiMessage = "Tráº¡ng thÃ¡i cáº£m xÃºc á»•n Ä‘á»‹nh. HÃ£y duy trÃ¬ nhÃ©!";
+        aiMessage = "Trạng thái cảm xúc ổn định. Hãy duy trì nhé!";
     }
 
     const days = [
-        { d: 'T2', value: 45, label: 'BÃ¬nh thÆ°á»ng', tone: 'neutral' },
-        { d: 'T3', value: 70, label: 'Tá»‘t', tone: 'rose' },
-        { d: 'T4', value: 50, label: 'BÃ¬nh thÆ°á»ng', tone: 'neutral' },
-        { d: 'T5', value: riskLevel === 'high' ? 38 : 85, label: riskLevel === 'high' ? 'CÄƒng tháº³ng' : 'Tuyá»‡t vá»i', tone: riskLevel === 'high' ? 'danger' : 'amber' },
-        { d: 'T6', value: 30, label: 'ChÆ°a ghi', future: true },
-        { d: 'T7', value: 30, label: 'ChÆ°a ghi', future: true },
-        { d: 'CN', value: 30, label: 'ChÆ°a ghi', future: true }
+        { d: 'T2', value: 45, label: 'Bình thường', tone: 'neutral' },
+        { d: 'T3', value: 70, label: 'Tốt', tone: 'rose' },
+        { d: 'T4', value: 50, label: 'Bình thường', tone: 'neutral' },
+        { d: 'T5', value: riskLevel === 'high' ? 38 : 85, label: riskLevel === 'high' ? 'Căng thẳng' : 'Tuyệt vời', tone: riskLevel === 'high' ? 'danger' : 'amber' },
+        { d: 'T6', value: 30, label: 'Chưa ghi', future: true },
+        { d: 'T7', value: 30, label: 'Chưa ghi', future: true },
+        { d: 'CN', value: 30, label: 'Chưa ghi', future: true }
     ];
 
     const barsHtml = days.map(day => `
@@ -910,28 +969,28 @@ function renderStudentStats() {
     container.innerHTML = `
         <section class="mc-page">
             <div class="mc-page-header">
-                <p class="mc-kicker">Tuáº§n nÃ y</p>
-                <h1>Thá»‘ng kÃª <span>Cáº£m xÃºc</span></h1>
-                <p>Theo dÃµi nhá»‹p cáº£m xÃºc cá»§a báº¡n theo thá»i gian.</p>
+                <p class="mc-kicker">Tuần này</p>
+                <h1>Thống kê <span>Cảm xúc</span></h1>
+                <p>Theo dõi nhịp cảm xúc của bạn theo thời gian.</p>
             </div>
 
             <div class="mc-panel mc-stats-chart">
                 <div class="mc-chart-header">
                     <div>
-                        <h3>Cáº£m xÃºc 7 ngÃ y qua</h3>
-                        <p>Äiá»ƒm trung bÃ¬nh: <strong>${riskLevel === 'high' ? '48' : '62'} / 100</strong></p>
+                        <h3>Cảm xúc 7 ngày qua</h3>
+                        <p>Điểm trung bình: <strong>${riskLevel === 'high' ? '48' : '62'} / 100</strong></p>
                     </div>
-                    <span class="mc-trend-pill">${riskLevel === 'high' ? 'Cáº§n nghá»‰ ngÆ¡i' : '+12% so vá»›i tuáº§n trÆ°á»›c'}</span>
+                    <span class="mc-trend-pill">${riskLevel === 'high' ? 'Cần nghỉ ngơi' : '+12% so với tuần trước'}</span>
                 </div>
                 <div class="mc-chart-grid">${barsHtml}</div>
-                <p class="mc-chart-note">T5 (HÃ´m nay) - ${riskLevel === 'high' ? 'nÃªn Æ°u tiÃªn chÄƒm sÃ³c báº£n thÃ¢n' : 'cáº£m xÃºc tÃ­ch cá»±c nháº¥t tuáº§n'}</p>
+                <p class="mc-chart-note">T5 (Hôm nay) - ${riskLevel === 'high' ? 'nên ưu tiên chăm sóc bản thân' : 'cảm xúc tích cực nhất tuần'}</p>
             </div>
 
             <div class="mc-insight-grid">
                 <div class="mc-panel mc-insight-card" style="border-left-color:${alertColor};">
                     <div class="mc-insight-icon">AI</div>
                     <div>
-                        <h3>PhÃ¢n tÃ­ch AI</h3>
+                        <h3>Phân tích AI</h3>
                         <p>${escapeHtml(aiMessage)}</p>
                     </div>
                 </div>
@@ -939,26 +998,26 @@ function renderStudentStats() {
                 <div class="mc-panel mc-insight-card" style="border-left-color:#d32f2f;">
                     <div class="mc-insight-icon muted">!</div>
                     <div>
-                        <h3>Cáº£nh bÃ¡o gáº§n nháº¥t</h3>
+                        <h3>Cảnh báo gần nhất</h3>
                         <p>${
                             latestAlert
-                                ? `${escapeHtml(latestAlert.label)} tá»« ${escapeHtml(latestAlert.source)}. Tráº¡ng thÃ¡i: Ä‘Ã£ gá»­i áº©n danh Ä‘áº¿n tá»• tham váº¥n.`
-                                : 'ChÆ°a cÃ³ cáº£nh bÃ¡o má»›i. Náº¿u cáº§n há»— trá»£, báº¡n váº«n cÃ³ thá»ƒ Ä‘áº·t lá»‹ch tham váº¥n báº¥t cá»© lÃºc nÃ o.'
+                                ? `${escapeHtml(latestAlert.label)} từ ${escapeHtml(latestAlert.source)}. Trạng thái: đã gửi ẩn danh đến tổ tham vấn.`
+                                : 'Chưa có cảnh báo mới. Nếu cần hỗ trợ, bạn vẫn có thể đặt lịch tham vấn bất cứ lúc nào.'
                         }</p>
                     </div>
                 </div>
             </div>
 
             <div class="mc-action-grid">
-                <button class="mc-btn mc-btn-outline" type="button" onclick="renderResources()">Xem TÃ i nguyÃªn</button>
-                ${riskLevel !== 'low' ? `<button class="mc-btn mc-btn-primary" type="button" onclick="openBookingModal()">Äáº·t lá»‹ch ngay</button>` : ''}
+                <button class="mc-btn mc-btn-outline" type="button" onclick="renderResources()">Xem Tài nguyên</button>
+                ${riskLevel !== 'low' ? `<button class="mc-btn mc-btn-primary" type="button" onclick="openBookingModal()">Đặt lịch ngay</button>` : ''}
             </div>
         </section>
     `;
 }
 
 // ==============================================
-// 7. CHATBOT (LOGIC CÅ¨ ÄÃƒ KHÃ”I PHá»¤C)
+// 7. CHATBOT (LOGIC CŨ ĐÃ KHÔI PHỤC)
 // ==============================================
 function renderChat() {
     const container = document.getElementById('student-main-content');
@@ -966,9 +1025,9 @@ function renderChat() {
     animateMainContentSwap();
 
     const suggestions = [
-        'MÃ¬nh Ä‘ang cÄƒng tháº³ng vÃ¬ deadline',
-        'Gá»£i Ã½ bÃ i táº­p thá»Ÿ 5 phÃºt',
-        'MÃ¬nh cáº§n nÃ³i chuyá»‡n vá»›i ai Ä‘Ã³'
+        'Mình đang căng thẳng vì deadline',
+        'Gợi ý bài tập thở 5 phút',
+        'Mình cần nói chuyện với ai đó'
     ];
 
     const messagesHtml = chatHistory.map(msg => `
@@ -983,9 +1042,9 @@ function renderChat() {
     container.innerHTML = `
         <section class="mc-page mc-chat-page">
             <div class="mc-page-header">
-                <p class="mc-kicker">TrÃ² chuyá»‡n riÃªng tÆ°</p>
-                <h1>AI há»— trá»£ <span>tÃ¢m lÃ½</span></h1>
-                <p>TÃ¢m sá»± báº±ng lá»i cá»§a mÃ¬nh. AI sáº½ láº¯ng nghe, Ä‘Æ°a lá»i khuyÃªn vÃ  gá»£i Ã½ tÃ i nguyÃªn phÃ¹ há»£p.</p>
+                <p class="mc-kicker">Trò chuyện riêng tư</p>
+                <h1>AI hỗ trợ <span>tâm lý</span></h1>
+                <p>Tâm sự bằng lời của mình. AI sẽ lắng nghe, đưa lời khuyên và gợi ý tài nguyên phù hợp.</p>
             </div>
 
             <div class="mc-chat-panel">
@@ -1002,8 +1061,8 @@ function renderChat() {
                 </div>
 
                 <div class="mc-chat-input-row">
-                    <input type="text" id="chat-input" placeholder="Nháº­p tin nháº¯n..." onkeypress="handleEnter(event)">
-                    <button class="mc-send-btn" type="button" aria-label="Gá»­i tin nháº¯n" onclick="sendMsg()">â†’</button>
+                    <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." onkeypress="handleEnter(event)">
+                    <button class="mc-send-btn" type="button" aria-label="Gửi tin nhắn" onclick="sendMsg()">→</button>
                 </div>
             </div>
         </section>
@@ -1050,9 +1109,9 @@ async function sendMsg() {
 
     const riskAlert = createRiskAlert('Chat AI', txt);
     if(riskAlert && riskAlert.severity === 'critical') {
-        showNotification("ÄÃ£ gá»­i cáº£nh bÃ¡o kháº©n cáº¥p áº©n danh.");
+        showNotification("Đã gửi cảnh báo khẩn cấp ẩn danh.");
     } else if(riskAlert) {
-        showNotification("ÄÃ£ ghi nháº­n tÃ­n hiá»‡u rá»§i ro áº©n danh.");
+        showNotification("Đã ghi nhận tín hiệu rủi ro ẩn danh.");
     }
 
     try {
@@ -1086,7 +1145,7 @@ async function sendMsg() {
 }
 
 // ==============================================
-// 8. BOOKING MODAL (LOGIC CÅ¨ ÄÃƒ KHÃ”I PHá»¤C)
+// 8. BOOKING MODAL (LOGIC CŨ ĐÃ KHÔI PHỤC)
 // ==============================================
 function openBookingModal() {
     const modal = document.createElement('div');
@@ -1098,22 +1157,22 @@ function openBookingModal() {
     modal.innerHTML = `
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                <h3 style="color: var(--deep-rose); font-family: var(--font-heading);">Äáº·t lá»‹ch tham váº¥n</h3>
+                <h3 style="color: var(--deep-rose); font-family: var(--font-heading);">Đặt lịch tham vấn</h3>
                 <span onclick="closeBookingModal()" style="font-size: 24px; cursor:pointer; color: #999;">&times;</span>
             </div>
 
-            <div class="info-row"><span class="label">ðŸ“ž Hotline há»— trá»£:</span><a href="tel:19001234" class="val" style="text-decoration:none;">1900.1234</a></div>
-            <div class="info-row"><span class="label">ðŸ“ Äá»‹a Ä‘iá»ƒm:</span><span class="val" style="font-size: 14px;">PhÃ²ng 102 - Khu B</span></div>
+            <div class="info-row"><span class="label">📞 Hotline hỗ trợ:</span><a href="tel:19001234" class="val" style="text-decoration:none;">1900.1234</a></div>
+            <div class="info-row"><span class="label">📍 Địa điểm:</span><span class="val" style="font-size: 14px;">Phòng 102 - Khu B</span></div>
 
             <div style="margin-bottom: 15px;">
-                <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Chá»n thá»i gian mong muá»‘n:</label>
+                <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Chọn thời gian mong muốn:</label>
                 <input type="datetime-local" id="booking-time" style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
             </div>
             <div style="margin-bottom: 20px;">
-                <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Ghi chÃº (KhÃ´ng báº¯t buá»™c):</label>
-                <input type="text" id="booking-note" placeholder="VÃ­ dá»¥: MÃ¬nh muá»‘n tÆ° váº¥n vá»..." style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Ghi chú (Không bắt buộc):</label>
+                <input type="text" id="booking-note" placeholder="Ví dụ: Mình muốn tư vấn về..." style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
             </div>
-            <button class="btn-primary" style="width:100%; padding: 12px;" onclick="handleConfirmBooking()">XÃ¡c nháº­n Ä‘áº·t lá»‹ch</button>
+            <button class="btn-primary" style="width:100%; padding: 12px;" onclick="handleConfirmBooking()">Xác nhận đặt lịch</button>
         </div>
     `;
     document.querySelector('.mobile-frame').appendChild(modal);
@@ -1145,18 +1204,18 @@ async function handleConfirmBooking() {
             created_at: new Date().toISOString(),
             source: 'Booking',
             severity: 'medium',
-            label: 'YÃªu cáº§u tham váº¥n',
+            label: 'Yêu cầu tham vấn',
             matched_keyword: 'booking',
             status: 'new',
-            student_alias: 'SV áº©n danh',
+            student_alias: 'SV ẩn danh',
             class_name: 'CNTT_K48',
             department: 'CNTT',
-            excerpt: note || 'Sinh viÃªn yÃªu cáº§u Ä‘áº·t lá»‹ch tham váº¥n.'
+            excerpt: note || 'Sinh viên yêu cầu đặt lịch tham vấn.'
         };
         saveRiskAlerts([localBookingAlert, ...getRiskAlerts()]);
     }
 
     setTimeout(() => {
-        alert("âœ… ÄÃ£ gá»­i yÃªu cáº§u thÃ nh cÃ´ng!\nCÃ¡n bá»™ tham váº¥n sáº½ liÃªn há»‡ láº¡i vá»›i báº¡n qua SÄT hoáº·c Email trong vÃ²ng 24h.");
+        alert("✅ Đã gửi yêu cầu thành công!\nCán bộ tham vấn sẽ liên hệ lại với bạn qua SĐT hoặc Email trong vòng 24h.");
     }, 300);
 }
