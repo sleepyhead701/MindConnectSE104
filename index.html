@@ -561,17 +561,17 @@
 
     <div class="main-container">
         <section class="login-hero-copy" aria-label="MindConnect introduction">
-            <div class="hero-badge"><span class="hero-badge-dot"></span>AI đồng hành sức khỏe tinh thần</div>
+            <!-- <div class="hero-badge"><span class="hero-badge-dot"></span>AI đồng hành sức khỏe tinh thần</div> -->
             <h1>Lắng nghe cảm xúc. <span>Mỗi ngày.</span></h1>
             <p>
                 Một nơi an toàn để bạn ghi lại cảm xúc, được AI đồng hành và kết nối với
                 chuyên viên tư vấn khi cần, riêng tư và ẩn danh.
             </p>
-            <div class="hero-stats">
+            <!-- <div class="hero-stats">x
                 <div><strong>10+</strong>trường thành viên</div>
                 <div><strong>8.3K</strong>sinh viên khảo sát</div>
                 <div><strong>100%</strong>ẩn danh</div>
-            </div>
+            </div> -->
         </section>
 
         <div class="login-card-glass" id="login-form">
@@ -622,8 +622,8 @@
                 </div>
 
                 <div class="input-group">
-                    <label class="input-label">Email</label>
-                    <input type="email" id="reg-email" class="custom-input" placeholder="email@example.com" required>
+                    <label class="input-label">Email / MSSV</label>
+                    <input type="text" id="reg-email" class="custom-input" placeholder="MSSV hoặc Email" required>
                 </div>
                 
                 <div class="input-group">
@@ -719,8 +719,10 @@
         function clearAuthMessages() {
             const errorEl = document.getElementById('reg-error');
             const successEl = document.getElementById('reg-success');
+            const authStatusEl = document.getElementById('auth-status');
             if (errorEl) errorEl.classList.add('hidden');
             if (successEl) successEl.classList.add('hidden');
+            if (authStatusEl) authStatusEl.textContent = '';
         }
 
         function showError(message) {
@@ -832,7 +834,8 @@
 
         function validateRegistrationForm() {
             const username = document.getElementById('reg-username')?.value.trim() || '';
-            const email = document.getElementById('reg-email')?.value.trim() || '';
+            const rawEmail = document.getElementById('reg-email')?.value.trim() || '';
+            const identifiers = getLoginIdentifiers(rawEmail);
             const password = document.getElementById('reg-password')?.value || '';
             const confirmPassword = document.getElementById('reg-confirm-password')?.value || '';
 
@@ -845,13 +848,8 @@
                 return false;
             }
 
-            const emailRegex = /^\S+@\S+\.\S+$/;
-            if (!email) {
-                showError('Vui lòng nhập email');
-                return false;
-            }
-            if (!emailRegex.test(email)) {
-                showError('Vui lòng nhập địa chỉ email hợp lệ');
+            if (!identifiers.length) {
+                showError('Vui lòng nhập MSSV hoặc email');
                 return false;
             }
 
@@ -880,7 +878,8 @@
             }
 
             const username = document.getElementById('reg-username').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
+            const identifiers = getLoginIdentifiers(document.getElementById('reg-email').value);
+            const email = identifiers[0];
             const password = document.getElementById('reg-password').value;
             const status = document.getElementById('reg-error');
             const successStatus = document.getElementById('reg-success');
@@ -890,22 +889,41 @@
             setRegisterLoading(true);
 
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        username,
-                        email,
-                        password,
-                        role: currentRole
-                    })
-                });
+                let result;
+                try {
+                    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username,
+                            email,
+                            password,
+                            role: currentRole
+                        })
+                    });
+                    result = await response.json().catch(() => ({}));
+                    if (!response.ok || !result.success) {
+                        const error = new Error(result.error || 'Đăng ký thất bại. Vui lòng thử lại.');
+                        error.isBackendResponse = true;
+                        throw error;
+                    }
+                } catch (netErr) {
+                    if (netErr.isBackendResponse) {
+                        throw netErr;
+                    }
 
-                const result = await response.json().catch(() => ({}));
-
-                if (!response.ok || !result.success) {
-                    throw new Error(result.error || 'Đăng ký thất bại. Vui lòng thử lại.');
+                    // Fallback Offline/Mock
+                    console.warn("Backend offline. Using LocalStorage mock for Registration.");
+                    const users = getMockUsers();
+                    if (findMockUserByIdentifiers(identifiers)) {
+                        throw new Error('Tài khoản với email/MSSV này đã tồn tại.');
+                    }
+                    users.push({ username, email, password, role: currentRole });
+                    saveMockUsers(users);
+                    result = { success: true };
                 }
+
+                upsertMockUser({ username, email, password, role: currentRole }, identifiers);
 
                 showSuccess('Đăng ký thành công! Đang chuyển hướng...');
 
@@ -922,10 +940,71 @@
             }
         }
 
-        function normalizeLoginIdentifier(value) {
+        function getLoginIdentifiers(value) {
             const raw = value.trim().toLowerCase();
-            if (raw.includes('@')) return raw;
-            return `${raw}@mindconnect.local`;
+            if (!raw) return [];
+
+            const identifiers = [];
+            const addIdentifier = (identifier) => {
+                if (identifier && !identifiers.includes(identifier)) {
+                    identifiers.push(identifier);
+                }
+            };
+
+            if (raw.includes('@')) {
+                addIdentifier(raw);
+            } else if (/^\d+$/.test(raw)) {
+                addIdentifier(`${raw}@gm.uit.edu.vn`);
+            } else {
+                addIdentifier(`${raw}@mindconnect.local`);
+            }
+
+            const studentIdMatch = raw.match(/^(\d+)(?:@(gm\.uit\.edu\.vn|mindconnect\.local))?$/);
+            if (studentIdMatch) {
+                addIdentifier(`${studentIdMatch[1]}@gm.uit.edu.vn`);
+                addIdentifier(`${studentIdMatch[1]}@mindconnect.local`);
+            }
+
+            return identifiers;
+        }
+
+        function normalizeLoginIdentifier(value) {
+            return getLoginIdentifiers(value)[0] || '';
+        }
+
+        function getMockUsers() {
+            try {
+                const users = JSON.parse(localStorage.getItem('mc_mock_users') || '[]');
+                return Array.isArray(users) ? users : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function saveMockUsers(users) {
+            localStorage.setItem('mc_mock_users', JSON.stringify(users));
+        }
+
+        function findMockUserByIdentifiers(identifiers, password) {
+            const normalizedIdentifiers = identifiers.map(item => item.toLowerCase());
+            return getMockUsers().find(user => {
+                const emailMatches = normalizedIdentifiers.includes(String(user.email || '').toLowerCase());
+                return emailMatches && (password === undefined || user.password === password);
+            });
+        }
+
+        function upsertMockUser(user, identifiers) {
+            const users = getMockUsers();
+            const normalizedIdentifiers = identifiers.map(item => item.toLowerCase());
+            const existingIndex = users.findIndex(item => normalizedIdentifiers.includes(String(item.email || '').toLowerCase()));
+
+            if (existingIndex >= 0) {
+                users[existingIndex] = { ...users[existingIndex], ...user };
+            } else {
+                users.push(user);
+            }
+
+            saveMockUsers(users);
         }
 
         async function requestAuth(path, email, password) {
@@ -944,36 +1023,54 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const email = normalizeLoginIdentifier(document.getElementById('login-email').value);
+            const identifiers = getLoginIdentifiers(document.getElementById('login-email').value);
+            const email = identifiers[0];
             const password = document.getElementById('login-password').value;
             const status = document.getElementById('auth-status');
             const submit = document.getElementById('login-submit');
+
+            if (!email) {
+                status.innerText = 'Vui lòng nhập email hoặc MSSV.';
+                return;
+            }
 
             status.innerText = 'Đang xác thực...';
             submit.disabled = true;
 
             try {
-                let { response, result } = await requestAuth('/auth/login', email, password);
+                let result;
+                let lastAuthError = null;
+                try {
+                    for (const identifier of identifiers) {
+                        const { response, result: authResult } = await requestAuth('/auth/login', identifier, password);
+                        if (response.ok && authResult.success) {
+                            result = authResult;
+                            break;
+                        }
 
-                if (response.status === 401) {
-                    status.innerText = 'Tài khoản chưa có, đang tạo tài khoản demo...';
-                    const registered = await requestAuth('/auth/register', email, password);
-                    response = registered.response;
-                    result = registered.result;
+                        lastAuthError = authResult.error || 'Tài khoản không tồn tại hoặc sai mật khẩu. Vui lòng đăng ký nếu chưa có tài khoản.';
+                    }
+                } catch (netErr) {
+                    console.warn("Backend offline. Using LocalStorage mock for Login.");
                 }
 
-                if (!response.ok || !result.success) {
-                    throw new Error(result.error || 'Không thể đăng nhập');
+                if (!result) {
+                    const user = findMockUserByIdentifiers(identifiers, password);
+                    if (!user) {
+                        throw new Error(lastAuthError || 'Tài khoản không tồn tại hoặc sai mật khẩu. Vui lòng đăng ký nếu chưa có tài khoản.');
+                    }
+
+                    result = {
+                        success: true,
+                        data: { user: { id: Date.now(), email: user.email, role: user.role }, token: 'mock-token' }
+                    };
                 }
 
                 localStorage.setItem('mindconnect:auth', JSON.stringify(result.data));
                 localStorage.setItem('mindconnect:role', currentRole);
                 window.location.href = currentRole === 'student' ? 'student.html' : 'school.html';
             } catch (error) {
-                status.innerText = `${error.message}. Nếu backend chưa chạy, hệ thống sẽ vào chế độ demo.`;
-                setTimeout(() => {
-                    window.location.href = currentRole === 'student' ? 'student.html' : 'school.html';
-                }, 1200);
+                status.innerText = `${error.message}`;
             } finally {
                 submit.disabled = false;
             }

@@ -1478,7 +1478,7 @@ input {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     min-height: 92px;
     border: 1px solid var(--mc-border, rgba(0, 0, 0, 0.08));
     border-radius: 8px;
@@ -1489,7 +1489,7 @@ input {
     font-size: 12px;
     font-weight: 700;
     padding: 12px 8px;
-    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .mood-card:hover,
@@ -1497,6 +1497,7 @@ input {
     border-color: rgba(212, 46, 112, 0.34);
     background: var(--mc-blush, #fff0f5);
     color: var(--mc-primary, var(--deep-rose));
+    box-shadow: 0 14px 30px rgba(92, 53, 69, 0.08);
 }
 
 .mood-card:hover {
@@ -1506,11 +1507,25 @@ input {
 .mood-mark {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     color: white;
-    font-weight: 900;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 10px 22px rgba(49, 35, 43, 0.14);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mood-card:hover .mood-mark,
+.mood-card.active .mood-mark {
+    transform: scale(1.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 14px 28px rgba(49, 35, 43, 0.18);
+}
+
+.mood-mark svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+    display: block;
 }
 
 .mood-rose { background: linear-gradient(135deg, #ef6f8f, #d42e70); }
