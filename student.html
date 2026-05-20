@@ -219,10 +219,15 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            width: 100%;
+            border: 0;
+            background: transparent;
             padding: 12px 16px;
+            font: inherit;
             font-size: 14px;
             color: var(--text-dark);
             text-decoration: none;
+            text-align: left;
             cursor: pointer;
             transition: background 0.2s;
         }
@@ -626,20 +631,20 @@
             <div class="nav-icon active" data-nav-index="0" onclick="renderStudentHome()">Home</div>
             <div class="nav-icon" data-nav-index="1" onclick="renderStudentDiary()">Diary</div>
             <div class="profile-dropdown">
-                <div class="nav-icon" onclick="renderResources()">Resources</div>
+                <div class="nav-icon" data-nav-index="2" onclick="renderResources()">Resources</div>
                 <div class="profile-dropdown-menu">
-                    <div class="dropdown-item">
+                    <button type="button" class="dropdown-item" onclick="navigateResourceMenu('topics')">
                         <span>A to Z topics</span>
-                    </div>
-                    <div class="dropdown-item">
-                        <span>Events</span>
-                    </div>
-                    <div class="dropdown-item">
-                        <span>Courses</span>
-                    </div>
-                    <div class="dropdown-item">
+                    </button>
+                    <button type="button" class="dropdown-item" onclick="navigateResourceMenu('videos')">
+                        <span>Videos</span>
+                    </button>
+                    <button type="button" class="dropdown-item" onclick="navigateResourceMenu('books')">
+                        <span>Books</span>
+                    </button>
+                    <button type="button" class="dropdown-item" onclick="navigateResourceMenu('blog')">
                         <span>Blog</span>
-                    </div>
+                    </button>
                 </div>
             </div>
             <div class="nav-icon" data-nav-index="3" onclick="renderStudentStats()">Stats</div>

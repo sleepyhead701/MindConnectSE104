@@ -89,37 +89,39 @@ const defaultUserFeed = [
 ];
 
 const resourcesDB = [
-    { 
-        type: 'Video', 
-        title: 'Thiền 5 phút giảm lo âu', 
+    {
+        type: 'Video',
+        title: 'Thiền 5 phút giảm lo âu',
         duration: '5 phút',
-        img: 'https://img.youtube.com/vi/inpok4MKVLM/mqdefault.jpg', 
-        url: 'https://www.youtube.com/watch?v=inpok4MKVLM' 
+        img: 'https://img.youtube.com/vi/inpok4MKVLM/mqdefault.jpg',
+        url: 'https://www.youtube.com/watch?v=inpok4MKVLM'
     },
-    { 
-        type: 'Blog', 
-        title: 'Cách vượt qua Burnout mùa thi', 
-        duration: '7 phút đọc',
-        img: 'https://suckhoedoisong.qltns.mediacdn.vn/thumb_w/640/324455921873985536/2023/4/26/cang-thang-truoc-ky-thi-16824842727412019885995.png', 
-        url: '#' 
+    {
+        type: 'Blog',
+        title: 'Cách vượt qua căng thẳng trước kỳ thi',
+        duration: '5 phút đọc',
+        img: 'https://suckhoedoisong.qltns.mediacdn.vn/thumb_w/640/324455921873985536/2023/4/26/cang-thang-truoc-ky-thi-16824842727412019885995.png',
+        url: 'https://suckhoedoisong.vn/chuyen-gia-chi-cach-vuot-qua-cang-thang-truoc-ky-thi-169230426121339076.htm'
     },
-    { 
-        type: 'Book', 
-        title: 'Hiểu về trái tim - Minh Niệm', 
+    {
+        type: 'Book',
+        title: 'Hiểu về trái tim - Minh Niệm',
         duration: '12 chương',
-        img: 'https://tramsach.vn/wp-content/uploads/2024/11/gioi-thieu-sach.jpg', 
-        url: 'https://thuvienhoasen.org/images/file/y5sBQGYE1QgQAHou/hieu-ve-trai-tim.pdf' },
-    { 
-        type: 'Podcast', 
-        title: 'Radio Cảm Xúc #12 - Chữa lành', 
+        img: 'https://tramsach.vn/wp-content/uploads/2024/11/gioi-thieu-sach.jpg',
+        url: 'https://thuvienhoasen.org/images/file/y5sBQGYE1QgQAHou/hieu-ve-trai-tim.pdf'
+    },
+    {
+        type: 'Podcast',
+        title: 'Radio Cảm Xúc #12 - Chữa lành',
         duration: '32 phút',
-        img: 'https://i.scdn.co/image/ab67656300005f1ff6bed7462a8b94b0fb452114', 
-        url: 'https://open.spotify.com/episode/63VvDWyELyutySrZSRU1Hq' },
-    { 
-        type: 'Công cụ', 
-        title: 'Bài tập thở giảm Stress', 
+        img: 'https://i.scdn.co/image/ab67656300005f1ff6bed7462a8b94b0fb452114',
+        url: 'https://open.spotify.com/episode/63VvDWyELyutySrZSRU1Hq'
+    },
+    {
+        type: 'Công cụ',
+        title: 'Bài tập thở giảm Stress',
         duration: '4 bài tập',
-        img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlg1wCwbYTPH8TCqBnzGjRLEhlmNuhdWy44A&s', 
+        img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlg1wCwbYTPH8TCqBnzGjRLEhlmNuhdWy44A&s',
         action: 'renderBreathingSpace'
     },
     {
@@ -127,7 +129,7 @@ const resourcesDB = [
         title: 'Quản lý thời gian Pomodoro',
         duration: 'App',
         img: 'https://images.unsplash.com/photo-1495364141860-b0d03eccd065?w=800&q=80',
-        url: '#'
+        url: 'https://pomodoro.pomodorotechnique.com/'
     }
 ];
 
@@ -419,6 +421,29 @@ function animateMainContentSwap() {
         `;
         document.head.appendChild(style);
     }
+}
+
+function navigateResourceMenu(routeKey) {
+    const routes = {
+        topics: { hash: 'resources', filter: null },
+        videos: { hash: 'resources/videos', filter: 'Video' },
+        books: { hash: 'resources/books', filter: 'Book' },
+        blog: { hash: 'resources/blog', filter: 'Blog' }
+    };
+    const target = routes[routeKey] || routes.topics;
+
+    const nextHash = `#${target.hash}`;
+
+    if (window.location.hash !== nextHash) {
+        window.location.hash = nextHash;
+    }
+
+    if (target.filter) {
+        renderResources(target.filter);
+        return;
+    }
+
+    renderResources();
 }
 
 function escapeHtml(value) {
@@ -910,9 +935,10 @@ function renderResources(filterType = 'Tất cả') {
     updateNav(2);
     animateMainContentSwap();
 
-    const filteredDB = filterType === 'Tất cả' 
-        ? resourcesDB 
+    const filteredDB = filterType === 'Tất cả'
+        ? resourcesDB
         : resourcesDB.filter(res => res.type === filterType);
+    currentResource = filteredDB;
 
     const types = ['Tất cả', ...new Set(resourcesDB.map(r => r.type))];
 
