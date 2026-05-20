@@ -5,6 +5,17 @@ const userRepository = require('../repositories/UserRepository');
 
 const memoryUsers = [];
 const isDbConnected = () => mongoose.connection.readyState === 1;
+const roleAllowsPortal = (userRole, requestedRole) => {
+  if (!requestedRole) {
+    return true;
+  }
+
+  if (requestedRole === 'school') {
+    return userRole === 'school' || userRole === 'admin';
+  }
+
+  return userRole === requestedRole;
+};
 
 class AuthService {
   async register(email, password, role = 'student') {
@@ -67,8 +78,25 @@ class AuthService {
     }
   }
 
-  async login(email, password) {
+  assertRoleAllowed(userRole, requestedRole) {
+    if (roleAllowsPortal(userRole, requestedRole)) {
+      return;
+    }
+
+    const error = new Error(
+      requestedRole === 'school'
+        ? 'Tài khoản sinh viên không thể đăng nhập khu vực nhà trường. Vui lòng dùng email nhà trường hoặc quản lý.'
+        : 'Tài khoản nhà trường không thể đăng nhập khu vực sinh viên.'
+    );
+    error.statusCode = 403;
+    throw error;
+  }
+
+  async login(email, password, requestedRole) {
     const normalizedEmail = email.trim().toLowerCase();
+    const normalizedRequestedRole = ['student', 'school', 'admin'].includes(requestedRole)
+      ? requestedRole
+      : undefined;
 
     if (!isDbConnected()) {
       const user = memoryUsers.find(item => item.email === normalizedEmail);
@@ -77,6 +105,8 @@ class AuthService {
         error.statusCode = 401;
         throw error;
       }
+
+      this.assertRoleAllowed(user.role, normalizedRequestedRole);
 
       return {
         user: {
@@ -102,6 +132,8 @@ class AuthService {
       error.statusCode = 401;
       throw error;
     }
+
+    this.assertRoleAllowed(user.role, normalizedRequestedRole);
 
     const token = this.generateToken(user._id, user.role);
 

@@ -13,9 +13,14 @@ const validateRole = (role) => {
   return !role || ['student', 'school', 'admin'].includes(role);
 };
 
+const isStudentEmail = (email) => {
+  return /^\d+@(gm\.uit\.edu\.vn|mindconnect\.local)$/i.test(email);
+};
+
 const register = async (req, res, next) => {
   try {
     const { email, password, role } = req.body;
+    const requestedRole = role || 'student';
 
     if (!email) {
       return res.status(400).json({
@@ -52,7 +57,14 @@ const register = async (req, res, next) => {
       });
     }
 
-    const result = await authService.register(email, password, role);
+    if (requestedRole === 'school' && isStudentEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nhà trường/người quản lý vui lòng dùng email quản lý, không dùng MSSV/email sinh viên.'
+      });
+    }
+
+    const result = await authService.register(email, password, requestedRole);
 
     res.status(201).json({
       success: true,
@@ -66,7 +78,7 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -82,7 +94,14 @@ const login = async (req, res, next) => {
       });
     }
 
-    const result = await authService.login(email, password);
+    if (!validateRole(role)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Role must be student, school, or admin'
+      });
+    }
+
+    const result = await authService.login(email, password, role);
 
     res.status(200).json({
       success: true,

@@ -582,7 +582,7 @@
 
             <form onsubmit="handleLogin(event)">
                 <div class="input-group">
-                    <label class="input-label">Tên đăng nhập</label>
+                    <label class="input-label" id="login-email-label">Tên đăng nhập</label>
                     <input type="text" id="login-email" class="custom-input" placeholder="Email / MSSV" required>
                 </div>
                 
@@ -612,17 +612,17 @@
                         <path d="M19 12H5M12 19l-7-7 7-7"/>
                     </svg>
                 </button>
-                <h2 class="form-title">Tạo tài khoản</h2>
+                <h2 class="form-title" id="register-title">Tạo tài khoản</h2>
             </div>
 
             <form onsubmit="handleRegister(event)">
                 <div class="input-group">
-                    <label class="input-label">Tên người dùng</label>
+                    <label class="input-label" id="reg-username-label">Tên người dùng</label>
                     <input type="text" id="reg-username" class="custom-input" placeholder="Nhập tên của bạn" required>
                 </div>
 
                 <div class="input-group">
-                    <label class="input-label">Email / MSSV</label>
+                    <label class="input-label" id="reg-email-label">Email / MSSV</label>
                     <input type="text" id="reg-email" class="custom-input" placeholder="MSSV hoặc Email" required>
                 </div>
                 
@@ -693,12 +693,14 @@
             document.getElementById('tab-student').classList.remove('active');
             document.getElementById('tab-school').classList.remove('active');
             document.getElementById('tab-' + role).classList.add('active');
+            syncRoleCopy();
         }
 
         function showLoginForm() {
             document.getElementById('login-form').classList.remove('hidden');
             document.getElementById('register-form').classList.add('hidden');
             document.getElementById('forgot-form').classList.add('hidden');
+            syncRoleCopy();
             clearAuthMessages();
         }
 
@@ -706,6 +708,7 @@
             document.getElementById('login-form').classList.add('hidden');
             document.getElementById('register-form').classList.remove('hidden');
             document.getElementById('forgot-form').classList.add('hidden');
+            syncRoleCopy();
             clearAuthMessages();
         }
 
@@ -723,6 +726,25 @@
             if (errorEl) errorEl.classList.add('hidden');
             if (successEl) successEl.classList.add('hidden');
             if (authStatusEl) authStatusEl.textContent = '';
+        }
+
+        function syncRoleCopy() {
+            const isSchool = currentRole === 'school';
+            const loginEmailLabel = document.getElementById('login-email-label');
+            const loginEmailInput = document.getElementById('login-email');
+            const registerTitle = document.getElementById('register-title');
+            const regUsernameLabel = document.getElementById('reg-username-label');
+            const regUsernameInput = document.getElementById('reg-username');
+            const regEmailLabel = document.getElementById('reg-email-label');
+            const regEmailInput = document.getElementById('reg-email');
+
+            if (loginEmailLabel) loginEmailLabel.textContent = isSchool ? 'Email nhà trường / quản lý' : 'Tên đăng nhập';
+            if (loginEmailInput) loginEmailInput.placeholder = isSchool ? 'manager@gmail.com' : 'Email / MSSV';
+            if (registerTitle) registerTitle.textContent = isSchool ? 'Tạo tài khoản nhà trường' : 'Tạo tài khoản sinh viên';
+            if (regUsernameLabel) regUsernameLabel.textContent = isSchool ? 'Tên nhà trường / quản lý' : 'Tên người dùng';
+            if (regUsernameInput) regUsernameInput.placeholder = isSchool ? 'Nhập tên nhà trường hoặc quản lý' : 'Nhập tên của bạn';
+            if (regEmailLabel) regEmailLabel.textContent = isSchool ? 'Email nhà trường / quản lý' : 'Email / MSSV';
+            if (regEmailInput) regEmailInput.placeholder = isSchool ? 'manager@gmail.com' : 'MSSV hoặc Email';
         }
 
         function showError(message) {
@@ -852,6 +874,9 @@
                 showError('Vui lòng nhập MSSV hoặc email');
                 return false;
             }
+            if (!validateRoleIdentifier(rawEmail, identifiers, showError)) {
+                return false;
+            }
 
             if (!password) {
                 showError('Vui lòng nhập mật khẩu');
@@ -972,6 +997,43 @@
             return getLoginIdentifiers(value)[0] || '';
         }
 
+        function isStudentIdentifier(value) {
+            const raw = String(value || '').trim().toLowerCase();
+            return /^\d+$/.test(raw) || /^\d+@(gm\.uit\.edu\.vn|mindconnect\.local)$/.test(raw);
+        }
+
+        function getCurrentAuthRole() {
+            return currentRole === 'school' ? 'school' : 'student';
+        }
+
+        function roleMatchesPortal(userRole, requestedRole = getCurrentAuthRole()) {
+            if (requestedRole === 'school') {
+                return userRole === 'school' || userRole === 'admin';
+            }
+            return userRole === requestedRole;
+        }
+
+        function getRoleMismatchMessage() {
+            return currentRole === 'school'
+                ? 'Tài khoản sinh viên không thể đăng nhập khu vực nhà trường. Vui lòng dùng email nhà trường hoặc quản lý.'
+                : 'Tài khoản nhà trường không thể đăng nhập khu vực sinh viên.';
+        }
+
+        function validateRoleIdentifier(rawValue, identifiers, showMessage) {
+            if (currentRole !== 'school') {
+                return true;
+            }
+
+            const raw = rawValue.trim().toLowerCase();
+            const email = identifiers[0] || '';
+            if (!raw.includes('@') || !validateEmail(raw) || isStudentIdentifier(raw) || isStudentIdentifier(email)) {
+                showMessage('Nhà trường/người quản lý vui lòng dùng email quản lý, không dùng MSSV/email sinh viên.');
+                return false;
+            }
+
+            return true;
+        }
+
         function getMockUsers() {
             try {
                 const users = JSON.parse(localStorage.getItem('mc_mock_users') || '[]');
@@ -985,11 +1047,13 @@
             localStorage.setItem('mc_mock_users', JSON.stringify(users));
         }
 
-        function findMockUserByIdentifiers(identifiers, password) {
+        function findMockUserByIdentifiers(identifiers, password, requestedRole) {
             const normalizedIdentifiers = identifiers.map(item => item.toLowerCase());
             return getMockUsers().find(user => {
                 const emailMatches = normalizedIdentifiers.includes(String(user.email || '').toLowerCase());
-                return emailMatches && (password === undefined || user.password === password);
+                const passwordMatches = password === undefined || user.password === password;
+                const roleMatches = !requestedRole || roleMatchesPortal(user.role, requestedRole);
+                return emailMatches && passwordMatches && roleMatches;
             });
         }
 
@@ -1014,7 +1078,7 @@
                 body: JSON.stringify({
                     email,
                     password,
-                    role: currentRole === 'school' ? 'school' : 'student'
+                    role: getCurrentAuthRole()
                 })
             });
             const result = await response.json().catch(() => ({}));
@@ -1033,6 +1097,11 @@
                 status.innerText = 'Vui lòng nhập email hoặc MSSV.';
                 return;
             }
+            if (!validateRoleIdentifier(document.getElementById('login-email').value, identifiers, message => {
+                status.innerText = message;
+            })) {
+                return;
+            }
 
             status.innerText = 'Đang xác thực...';
             submit.disabled = true;
@@ -1040,22 +1109,30 @@
             try {
                 let result;
                 let lastAuthError = null;
+                const requestedRole = getCurrentAuthRole();
                 try {
                     for (const identifier of identifiers) {
                         const { response, result: authResult } = await requestAuth('/auth/login', identifier, password);
                         if (response.ok && authResult.success) {
-                            result = authResult;
-                            break;
+                            if (roleMatchesPortal(authResult.data?.user?.role, requestedRole)) {
+                                result = authResult;
+                                break;
+                            }
+
+                            lastAuthError = getRoleMismatchMessage();
+                            continue;
                         }
 
-                        lastAuthError = authResult.error || 'Tài khoản không tồn tại hoặc sai mật khẩu. Vui lòng đăng ký nếu chưa có tài khoản.';
+                        lastAuthError = response.status === 403
+                            ? getRoleMismatchMessage()
+                            : authResult.error || 'Tài khoản không tồn tại hoặc sai mật khẩu. Vui lòng đăng ký nếu chưa có tài khoản.';
                     }
                 } catch (netErr) {
                     console.warn("Backend offline. Using LocalStorage mock for Login.");
                 }
 
                 if (!result) {
-                    const user = findMockUserByIdentifiers(identifiers, password);
+                    const user = findMockUserByIdentifiers(identifiers, password, requestedRole);
                     if (!user) {
                         throw new Error(lastAuthError || 'Tài khoản không tồn tại hoặc sai mật khẩu. Vui lòng đăng ký nếu chưa có tài khoản.');
                     }
@@ -1067,7 +1144,7 @@
                 }
 
                 localStorage.setItem('mindconnect:auth', JSON.stringify(result.data));
-                localStorage.setItem('mindconnect:role', currentRole);
+                localStorage.setItem('mindconnect:role', requestedRole);
                 window.location.href = currentRole === 'student' ? 'student.html' : 'school.html';
             } catch (error) {
                 status.innerText = `${error.message}`;
