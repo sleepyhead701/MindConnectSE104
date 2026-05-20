@@ -1,4 +1,4 @@
-const openAIChatService = require('../services/OpenAIChatService');
+const aiChatService = require('../services/OpenAIChatService');
 const riskDetectionService = require('../services/RiskDetectionService');
 const mongoose = require('mongoose');
 const ChatMessage = require('../models/ChatMessage');
@@ -55,7 +55,7 @@ const supportChat = async (req, res, next) => {
       });
     }
 
-    const result = await openAIChatService.generateSupportReply({
+    const result = await aiChatService.generateSupportReply({
       message,
       history: Array.isArray(history) ? history : []
     });

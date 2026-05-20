@@ -26,7 +26,7 @@ Nguoi dung dua Use Case Diagram va yeu cau:
 
 - Doi chieu web hien tai voi Use Case Diagram.
 - Bo sung cac chuc nang web chua co.
-- Them OpenAI/ChatGPT API vao khung Chat AI ho tro tam ly cho sinh vien.
+- Them Groq API vao khung Chat AI ho tro tam ly cho sinh vien.
 - Chat AI phai dung dung muc dich ban dau: sinh vien tam su voi AI, AI dua loi khuyen phu hop va goi y tai nguyen/video/podcast/bai tap tho.
 - Kiem tra xem web da du cac chuc nang trong Use Case Diagram chua.
 - Voi nhung gi chua co hoac moi mock, hay lam tiep de prototype co the chay end-to-end.
@@ -41,11 +41,11 @@ Nguoi dung dua Use Case Diagram va yeu cau:
 | Login                             | Da noi UI login voi backend auth. Neu tai khoan chua co, tu tao tai khoan demo theo role.                       |
 | Home / Feed bai viet              | Co UI va da co API `/api/feed` de load diary feed tu backend. Van co fallback mock khi backend khong chay.      |
 | Viet nhat ky                      | Co UI va da luu qua `POST /api/diaries`.                                                                        |
-| AI Tag Suggest                    | Da them endpoint `POST /api/diaries/tags`, co goi OpenAI neu co API key, fallback rule-based neu khong co.      |
+| AI Tag Suggest                    | Da them endpoint `POST /api/diaries/tags`, co goi Groq neu co API key, fallback rule-based neu khong co.      |
 | Resource Library                  | Co san danh sach Video, Blog, Book, Podcast, Cong cu tho.                                                       |
 | Breathing Exercise                | Co trong frontend.                                                                                              |
 | Emotion Stats                     | Co UI, van con mot phan mock, nhung da lien ket voi risk alerts local/backend de hien thi risk gan nhat.        |
-| Chat AI                           | Da noi OpenAI qua backend `POST /chat/support`; frontend khong goi OpenAI truc tiep de tranh lo API key.        |
+| Chat AI                           | Da noi Groq qua backend `POST /chat/support`; frontend khong goi Groq truc tiep de tranh lo API key.        |
 | Phat hien rui ro / canh bao tu tu | Da co logic detect keyword tu Chat, Diary, Quick Test; luu localStorage va sync len backend `/api/risk-alerts`. |
 | Book Consult                      | Da co modal dat lich va goi backend `POST /api/bookings`.                                                       |
 | Logout                            | Co redirect ve `index.html`.                                                                                    |
@@ -96,7 +96,7 @@ Da them cac nhom logic moi:
   - Feed van giu mock fallback neu backend khong chay.
 - Diary:
   - `analyzeDiary()` nay goi `/api/diaries/tags` de lay AI tags.
-  - Neu OpenAI/backend loi, fallback ve rule-based tags.
+  - Neu Groq/backend loi, fallback ve rule-based tags.
   - `confirmAndPost()` goi `/api/diaries` de luu diary.
 - Risk detection:
   - `detectRiskSignal()`
@@ -107,8 +107,8 @@ Da them cac nhom logic moi:
 - Chat AI:
   - `callChatBotAPI()` goi `POST /chat/support`.
   - Gui lich su chat gan nhat.
-  - Tin nhan critical risk khong dua sang OpenAI truoc; dung fallback safety reply de uu tien an toan.
-  - `buildFallbackChatReply()` goi y tai nguyen neu backend/OpenAI loi.
+  - Tin nhan critical risk khong dua sang Groq truoc; dung fallback safety reply de uu tien an toan.
+  - `buildFallbackChatReply()` goi y tai nguyen neu backend/Groq loi.
   - `formatChatMessage()` escape HTML va auto-link URL tu AI.
 - Booking:
   - Modal co id `booking-time` va `booking-note`.
@@ -171,7 +171,7 @@ Thay doi:
 - Them fallback in-memory auth neu MongoDB chua ket noi, phuc vu demo nhanh.
 - `index.js` khong bat buoc `JWT_SECRET` trong development; neu thieu thi dung fallback dev secret va warning.
 
-### OpenAI Chat
+### Groq Chat
 
 Files moi:
 
@@ -183,15 +183,15 @@ Files moi:
 Chuc nang:
 
 - `POST /chat/support`
-- Goi OpenAI Responses API qua backend.
-- API key chi nam trong backend env `OPENAI_API_KEY`, khong lo ra frontend.
+- Goi Groq Chat Completions API qua backend.
+- API key chi nam trong backend env `GROQ_API_KEY`, khong lo ra frontend.
 - Prompt duoc thiet ke cho AI ho tro tam ly sinh vien:
   - Lang nghe.
   - Khong chan doan.
   - Khong ke thuoc.
   - Khong thay the chuyen gia.
   - Neu co dau hieu tu hai/tu tu thi uu tien safety, khuyen goi hotline/nguoi tin cay/dich vu khan cap.
-- OpenAI duoc cung cap danh sach tai nguyen MindConnect de goi y dung:
+- Groq duoc cung cap danh sach tai nguyen MindConnect de goi y dung:
   - Video thien 5 phut giam lo au.
   - Blog vuot qua burnout mua thi.
   - Book Hieu ve trai tim.
@@ -269,8 +269,8 @@ PORT=3000
 SKIP_DB_CONNECT=true
 REQUIRE_MONGODB=false
 JWT_SECRET=dev-secret
-OPENAI_API_KEY=sk-your-openai-api-key
-OPENAI_MODEL=gpt-5.5
+GROQ_API_KEY=gsk-your-groq-api-key
+GROQ_MODEL=llama-3.3-70b-versatile
 CORS_ORIGIN=http://localhost:5500,http://127.0.0.1:5500
 ```
 
@@ -289,7 +289,7 @@ Mo `index.html` bang Live Server.
 Luong test khuyen nghi:
 
 1. Dang nhap role Sinh vien.
-2. Vao Chat, nhap tam su. Neu co `OPENAI_API_KEY`, AI tra loi tu OpenAI. Neu loi, frontend fallback van tra loi co goi y tai nguyen.
+2. Vao Chat, nhap tam su. Neu co `GROQ_API_KEY`, AI tra loi tu Groq. Neu Groq/backend loi, frontend bao ro chua ket noi Groq API thay vi gia lap cau tra loi AI.
 3. Vao Diary, viet nhat ky va bam Phan tich AI. Tags se lay tu `/api/diaries/tags` hoac fallback rule-based.
 4. Dang nhat ky. Diary duoc luu backend va hien tren Home feed.
 5. Dat lich tham van. Booking duoc tao trong backend.
@@ -320,8 +320,8 @@ Cac phan da lam nham hoan thien use case demo, chua phai production:
 Thay doi nay bien MindConnect tu prototype UI tinh thanh prototype end-to-end:
 
 - Login frontend da noi backend auth.
-- Student Diary, AI Tag Suggest, Chat AI OpenAI, Risk Alert, Booking da co API backend.
+- Student Diary, AI Tag Suggest, Chat AI Groq, Risk Alert, Booking da co API backend.
 - Admin Dashboard doc du lieu tong hop tu backend thay vi chi mock/localStorage.
-- OpenAI API duoc goi an toan tu backend, khong expose key tren browser.
-- Van giu fallback local/mock de demo khong bi vo khi backend, MongoDB hoac OpenAI API chua san sang.
+- Groq API duoc goi an toan tu backend, khong expose key tren browser.
+- Van giu fallback local/mock de demo khong bi vo khi backend, MongoDB hoac Groq API chua san sang.
 

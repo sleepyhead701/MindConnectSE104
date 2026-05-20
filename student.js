@@ -479,24 +479,24 @@ function setChatSuggestion(text) {
 async function loadFeedFromBackend() {
     try {
         const diaries = await apiRequest('/api/feed');
-        if (!Array.isArray(diaries) || diaries.length === 0) return;
+        if (Array.isArray(diaries) && diaries.length > 0) {
+            userFeed = diaries.map(diary => ({
+                id: diary.id,
+                author: diary.author_alias || 'Tôi',
+                time: new Date(diary.created_at).toLocaleString('vi-VN'),
+                content: formatDiaryContent(diary.title, diary.content),
+                tags: diary.tags || [],
+                likes: 0,
+                comments: 0,
+                isUser: true
+            }));
 
-        userFeed = diaries.map(diary => ({
-            id: diary.id,
-            author: diary.author_alias || 'Tôi',
-            time: new Date(diary.created_at).toLocaleString('vi-VN'),
-            content: formatDiaryContent(diary.title, diary.content),
-            tags: diary.tags || [],
-            likes: 0,
-            comments: 0,
-            isUser: true
-        }));
-
-        renderStudentHome();
-        setBackendReadyState(true);
+            renderStudentHome();
+        }
     } catch (error) {
         // Keep built-in demo feed when backend is unavailable.
-        setBackendReadyState(true); // Temporarily allow user to interact with the interface in demo mode.
+    } finally {
+        setBackendReadyState(true);
     }
 }
 
@@ -759,10 +759,17 @@ async function callChatBotAPI(message) {
     const result = await response.json().catch(() => ({}));
 
     if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Chat API request failed');
+        const error = new Error(result.error || 'Chat API request failed');
+        error.statusCode = response.status;
+        throw error;
     }
 
-    return result.data.reply;
+    const reply = String(result.data?.reply || '').trim();
+    if (!reply) {
+        throw new Error('Chat API returned an empty reply');
+    }
+
+    return reply;
 }
 
 function buildFallbackChatReply(txt, riskAlert) {
@@ -782,6 +789,24 @@ function buildFallbackChatReply(txt, riskAlert) {
     }
 
     return `Cảm ơn bạn đã chia sẻ. Mình luôn ở đây lắng nghe bạn; bạn có thể kể rõ hơn chuyện gì đang làm bạn nặng lòng nhất không? ${suggestion}`;
+}
+
+function buildChatConnectionErrorReply(error) {
+    const message = String(error?.message || '')
+        .replace(/sk-[A-Za-z0-9_-]+/g, 'sk-...');
+    const isMissingKey = message.includes('GROQ_API_KEY');
+    const reason = isMissingKey
+        ? 'backend chưa có GROQ_API_KEY thật'
+        : 'backend hoặc Groq API đang trả lỗi';
+    const detail = message && !isMissingKey
+        ? `\nChi tiết kỹ thuật: ${message.slice(0, 220)}`
+        : '';
+
+    return [
+        `Mình chưa kết nối được Groq API thật lúc này (${reason}), nên mình sẽ không giả vờ trả lời như AI thật.`,
+        'Bạn hãy kiểm tra backend đang chạy, file backend/.env có GROQ_API_KEY thật, rồi restart backend và thử gửi lại tin nhắn.',
+        `Khi kết nối đúng, câu trả lời sẽ được tạo trực tiếp từ Groq theo từng nội dung bạn nhắn, không dùng câu fallback lặp lại.${detail}`
+    ].join('\n');
 }
 
 async function analyzeDiary() {
@@ -1227,12 +1252,13 @@ async function sendMsg() {
             if (box) box.scrollTop = box.scrollHeight;
         }, 0);
     } catch (error) {
+        console.error('Chat API failed:', error);
         const indicator = document.getElementById('ai-typing-indicator');
         if (indicator) indicator.remove();
 
         chatHistory.push({
             sender: 'ai',
-            text: buildFallbackChatReply(txt, riskAlert)
+            text: buildChatConnectionErrorReply(error)
         });
         renderChat();
         setTimeout(() => {

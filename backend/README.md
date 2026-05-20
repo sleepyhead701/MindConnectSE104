@@ -23,12 +23,12 @@ cp .env.example .env
 
 2. Update `.env` with your settings:
 - `MONGODB_URI`: Your MongoDB connection string
-- `SKIP_DB_CONNECT`: Set to `true` if you only want to run the OpenAI chatbot without MongoDB
+- `SKIP_DB_CONNECT`: Set to `true` if you only want to run the Groq chatbot without MongoDB
 - `REQUIRE_MONGODB`: Set to `true` if the server should stop when MongoDB is unavailable
 - `JWT_SECRET`: A secure random string for token signing (change this!)
 - `JWT_EXPIRES_IN`: Token expiration time (default: 7d)
-- `OPENAI_API_KEY`: OpenAI API key used by the student support chatbot
-- `OPENAI_MODEL`: OpenAI model for chat replies (default: `gpt-5.5`)
+- `GROQ_API_KEY`: Groq API key used by the student support chatbot. This must be a real key, not the placeholder from `.env.example`.
+- `GROQ_MODEL`: Groq model for chat replies (default: `llama-3.3-70b-versatile`)
 - `CORS_ORIGIN`: Allowed frontend origins, comma-separated
 
 ## Running the Server
@@ -101,7 +101,7 @@ Authenticate a user.
 Use the `Authorization: Bearer <token>` header to access protected routes.
 
 ### POST /chat/support
-Generate a mental-wellness support reply for the student chatbot. This endpoint calls OpenAI from the backend so the API key is never exposed in the browser.
+Generate a mental-wellness support reply for the student chatbot. This endpoint calls Groq from the backend so the API key is never exposed in the browser.
 
 **Request:**
 ```json
@@ -120,7 +120,7 @@ Generate a mental-wellness support reply for the student chatbot. This endpoint 
   "success": true,
   "data": {
     "reply": "Mình nghe thấy bạn đang chịu nhiều áp lực...",
-    "model": "gpt-5.5",
+    "model": "llama-3.3-70b-versatile",
     "response_id": "resp_..."
   }
 }
@@ -131,7 +131,7 @@ These endpoints power the prototype use cases from the frontend. They use MongoD
 
 - `GET /api/feed`: latest student diary posts for the home feed
 - `POST /api/diaries`: save a diary entry
-- `POST /api/diaries/tags`: ask OpenAI to suggest diary tags
+- `POST /api/diaries/tags`: ask Groq to suggest diary tags
 - `GET /api/risk-alerts`: list high-risk alerts
 - `POST /api/risk-alerts`: create a risk alert from Diary, Chat AI, or Quick Test
 - `PATCH /api/risk-alerts/:id`: update alert status

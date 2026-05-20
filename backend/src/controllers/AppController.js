@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Diary = require('../models/Diary');
 const RiskAlert = require('../models/RiskAlert');
 const Booking = require('../models/Booking');
-const openAIChatService = require('../services/OpenAIChatService');
+const aiChatService = require('../services/OpenAIChatService');
 const riskDetectionService = require('../services/RiskDetectionService');
 
 const memoryStore = {
@@ -96,7 +96,7 @@ const suggestDiaryTags = async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'Diary content is required' });
     }
 
-    const result = await openAIChatService.suggestDiaryTags({ title, content });
+    const result = await aiChatService.suggestDiaryTags({ title, content });
 
     const riskSignal = riskDetectionService.detectRiskSignal(`${title} ${content}`);
     let riskAlert = null;

@@ -1,8 +1,8 @@
 const https = require('https');
 
-const OPENAI_API_HOST = 'api.openai.com';
-const OPENAI_RESPONSES_PATH = '/v1/responses';
-const DEFAULT_MODEL = 'gpt-5.5';
+const GROQ_API_HOST = 'api.groq.com';
+const GROQ_CHAT_COMPLETIONS_PATH = '/openai/v1/chat/completions';
+const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
 
 const SUPPORT_RESOURCES = [
   {
@@ -38,17 +38,23 @@ const SUPPORT_RESOURCES = [
 ];
 
 const SUPPORT_INSTRUCTIONS = `
-Bạn là trợ lý AI hỗ trợ tâm lý cho sinh viên trong ứng dụng MindConnect.
-Mục tiêu: lắng nghe, phản hồi ấm áp, ngắn gọn, thực tế và hướng sinh viên đến nguồn hỗ trợ phù hợp.
+Bạn là MindConnect AI, trợ lý trò chuyện hỗ trợ sức khỏe tinh thần cho sinh viên.
+Mục tiêu: trò chuyện tự nhiên, lắng nghe thật, phản hồi theo đúng điều người dùng vừa nói, và đưa ra một bước nhỏ có thể làm ngay.
+
+Phong cách trả lời:
+- Luôn trả lời bằng tiếng Việt, ấm áp, cụ thể, không sáo rỗng.
+- Không dùng một câu mở đầu cố định cho mọi lượt. Không lặp lại mẫu "Cảm ơn bạn đã chia sẻ..." nếu nội dung không cần.
+- Bám sát chi tiết trong tin nhắn mới và lịch sử gần nhất; nếu người dùng nói về deadline, cô đơn, mất ngủ, cần người nói chuyện, hoặc gửi nội dung không rõ nghĩa thì phản hồi khác nhau.
+- Nếu tin nhắn quá ngắn hoặc khó hiểu như một dãy số, hãy nói nhẹ nhàng rằng bạn chưa hiểu và hỏi lại một câu cụ thể.
+- Trả lời 4-7 câu ngắn. Có thể dùng 2-3 gạch đầu dòng khi đưa bài tập hoặc kế hoạch nhỏ.
+- Chỉ gợi ý tài nguyên MindConnect khi thật sự liên quan; không ép người dùng xem Resources ở mọi câu.
 
 Quy tắc an toàn:
 - Không chẩn đoán bệnh, không kê thuốc, không thay thế chuyên gia tâm lý/bác sĩ.
-- Nếu người dùng có dấu hiệu tự hại, tự tử, hoặc nguy hiểm tức thời: phản hồi ưu tiên an toàn ngay lập tức, khuyến nghị gọi hotline 1900.1267, liên hệ người tin cậy, hoặc dịch vụ khẩn cấp tại địa phương.
+- Nếu người dùng có dấu hiệu tự hại, tự tử, hoặc nguy hiểm tức thời: ưu tiên an toàn ngay lập tức, khuyến nghị gọi hotline 1900.1267, liên hệ người tin cậy, hoặc dịch vụ khẩn cấp tại địa phương.
 - Không hứa giữ bí mật tuyệt đối khi có nguy cơ an toàn.
 - Không đưa hướng dẫn tự hại hoặc mô tả phương pháp gây hại.
-- Khi phù hợp, gợi ý 1-2 tài nguyên từ danh sách MindConnect bên dưới. Không bịa tài nguyên ngoài danh sách.
 - Khi gợi ý link, ghi URL dạng plain text để giao diện tự biến thành link.
-- Luôn trả lời bằng tiếng Việt, thân thiện, tối đa 5 câu, có thể gợi ý một bước nhỏ cụ thể.
 `.trim();
 
 function postJson(path, payload, apiKey) {
@@ -56,7 +62,7 @@ function postJson(path, payload, apiKey) {
     const body = JSON.stringify(payload);
     const req = https.request(
       {
-        hostname: OPENAI_API_HOST,
+        hostname: GROQ_API_HOST,
         path,
         method: 'POST',
         headers: {
@@ -76,12 +82,12 @@ function postJson(path, payload, apiKey) {
             parsed = raw ? JSON.parse(raw) : {};
           } catch (error) {
             error.statusCode = 502;
-            error.message = 'OpenAI returned a non-JSON response';
+            error.message = 'Groq returned a non-JSON response';
             return reject(error);
           }
 
           if (res.statusCode < 200 || res.statusCode >= 300) {
-            const error = new Error(parsed.error?.message || 'OpenAI API request failed');
+            const error = new Error(parsed.error?.message || 'Groq API request failed');
             error.statusCode = res.statusCode || 502;
             error.details = parsed;
             return reject(error);
@@ -93,7 +99,7 @@ function postJson(path, payload, apiKey) {
     );
 
     req.on('timeout', () => {
-      req.destroy(new Error('OpenAI API request timed out'));
+      req.destroy(new Error('Groq API request timed out'));
     });
     req.on('error', reject);
     req.write(body);
@@ -108,58 +114,67 @@ function sanitizeText(value, maxLength = 1200) {
     .slice(0, maxLength);
 }
 
-function buildConversationInput(message, history = []) {
-  const recentHistory = Array.isArray(history) ? history.slice(-8) : [];
-  const formattedHistory = recentHistory
-    .map(item => {
-      const role = item.role === 'assistant' ? 'AI' : 'Sinh viên';
-      return `${role}: ${sanitizeText(item.content, 500)}`;
-    })
-    .filter(line => line.length > 12)
-    .join('\n');
-  const resourceCatalog = SUPPORT_RESOURCES
-    .map(resource => `- ${resource.type}: ${resource.title} | phù hợp: ${resource.best_for} | link: ${resource.url}`)
-    .join('\n');
+function getGroqApiKey({ required = true } = {}) {
+  const apiKey = String(process.env.GROQ_API_KEY || '').trim();
+  const isPlaceholder = apiKey === 'gsk-your-groq-api-key' || apiKey.includes('your-groq-api-key');
 
-  return [
-    `Tài nguyên MindConnect có thể gợi ý:\n${resourceCatalog}`,
-    formattedHistory ? `Lịch sử hội thoại gần nhất:\n${formattedHistory}` : 'Chưa có lịch sử hội thoại.',
-    `Tin nhắn mới của sinh viên:\n${sanitizeText(message)}`
-  ].join('\n\n');
-}
+  if (!apiKey || isPlaceholder) {
+    if (!required) return '';
 
-function extractOutputText(response) {
-  if (response.output_text) return response.output_text.trim();
-
-  if (!Array.isArray(response.output)) return '';
-
-  return response.output
-    .flatMap(item => item.content || [])
-    .map(part => part.text || '')
-    .join('\n')
-    .trim();
-}
-
-async function generateSupportReply({ message, history }) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    const error = new Error('OPENAI_API_KEY is not configured');
+    const error = new Error('GROQ_API_KEY is not configured. Add a real Groq API key in backend/.env and restart the backend.');
     error.statusCode = 500;
     throw error;
   }
 
+  return apiKey;
+}
+
+function buildResourceCatalog() {
+  return SUPPORT_RESOURCES
+    .map(resource => `- ${resource.type}: ${resource.title} | phù hợp: ${resource.best_for} | link: ${resource.url}`)
+    .join('\n');
+}
+
+function buildSupportInstructions() {
+  return `${SUPPORT_INSTRUCTIONS}\n\nTài nguyên MindConnect có thể gợi ý khi phù hợp:\n${buildResourceCatalog()}`;
+}
+
+function buildConversationInput(message, history = []) {
+  const recentHistory = Array.isArray(history) ? history.slice(-8) : [];
+  const historyMessages = recentHistory
+    .map(item => {
+      const role = item.role === 'assistant' ? 'assistant' : 'user';
+      const content = sanitizeText(item.content, 900);
+      return content ? { role, content } : null;
+    })
+    .filter(Boolean);
+
+  return [
+    { role: 'system', content: buildSupportInstructions() },
+    ...historyMessages,
+    { role: 'user', content: sanitizeText(message, 1600) }
+  ];
+}
+
+function extractChatCompletionText(response) {
+  return String(response.choices?.[0]?.message?.content || '').trim();
+}
+
+async function generateSupportReply({ message, history }) {
+  const apiKey = getGroqApiKey();
+
   const payload = {
-    model: process.env.OPENAI_MODEL || DEFAULT_MODEL,
-    instructions: SUPPORT_INSTRUCTIONS,
-    input: buildConversationInput(message, history),
-    max_output_tokens: 450
+    model: process.env.GROQ_MODEL || DEFAULT_MODEL,
+    messages: buildConversationInput(message, history),
+    temperature: 0.7,
+    max_completion_tokens: 650
   };
 
-  const response = await postJson(OPENAI_RESPONSES_PATH, payload, apiKey);
-  const reply = extractOutputText(response);
+  const response = await postJson(GROQ_CHAT_COMPLETIONS_PATH, payload, apiKey);
+  const reply = extractChatCompletionText(response);
 
   if (!reply) {
-    const error = new Error('OpenAI returned an empty response');
+    const error = new Error('Groq returned an empty response');
     error.statusCode = 502;
     throw error;
   }
@@ -193,27 +208,33 @@ function fallbackDiaryTags(text) {
 
 async function suggestDiaryTags({ title, content }) {
   const text = `${title || ''}\n${content || ''}`.trim();
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = getGroqApiKey({ required: false });
 
   if (!apiKey) {
     return { tags: fallbackDiaryTags(text), model: 'fallback' };
   }
 
   const payload = {
-    model: process.env.OPENAI_MODEL || DEFAULT_MODEL,
-    instructions: [
-      'Bạn phân loại nhật ký sinh viên cho app MindConnect.',
-      'Trả về JSON hợp lệ dạng {"tags":["..."]}.',
-      'Chỉ chọn tối đa 4 tag ngắn bằng tiếng Việt.',
-      'Ưu tiên các tag: Học tập, Lo âu, Mối quan hệ, Sức khỏe, Cô đơn, Mất ngủ, Tài chính, Hướng nghiệp, Tâm sự.'
-    ].join(' '),
-    input: sanitizeText(text, 3000),
-    max_output_tokens: 180
+    model: process.env.GROQ_MODEL || DEFAULT_MODEL,
+    messages: [
+      {
+        role: 'system',
+        content: [
+          'Bạn phân loại nhật ký sinh viên cho app MindConnect.',
+          'Trả về JSON hợp lệ dạng {"tags":["..."]}.',
+          'Chỉ chọn tối đa 4 tag ngắn bằng tiếng Việt.',
+          'Ưu tiên các tag: Học tập, Lo âu, Mối quan hệ, Sức khỏe, Cô đơn, Mất ngủ, Tài chính, Hướng nghiệp, Tâm sự.'
+        ].join(' ')
+      },
+      { role: 'user', content: sanitizeText(text, 3000) }
+    ],
+    temperature: 0.2,
+    max_completion_tokens: 180
   };
 
   try {
-    const response = await postJson(OPENAI_RESPONSES_PATH, payload, apiKey);
-    const output = extractOutputText(response);
+    const response = await postJson(GROQ_CHAT_COMPLETIONS_PATH, payload, apiKey);
+    const output = extractChatCompletionText(response);
     const parsed = JSON.parse(output);
     const tags = Array.isArray(parsed.tags)
       ? parsed.tags.map(tag => sanitizeText(tag, 40)).filter(Boolean).slice(0, 4)
@@ -231,5 +252,6 @@ async function suggestDiaryTags({ title, content }) {
 
 module.exports = {
   generateSupportReply,
-  suggestDiaryTags
+  suggestDiaryTags,
+  isGroqConfigured: () => Boolean(getGroqApiKey({ required: false }))
 };
