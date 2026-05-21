@@ -1,268 +1,19 @@
 // student.js - FULL VERSION (MERGED)
 
 // --- 1. DỮ LIỆU & TRẠNG THÁI (STATE) ---
-const defaultChatHistory = [
-    { sender: 'ai', text: 'Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?' }
-];
-
-class userProfile {
-    constructor(name, email, avatarUrl, bio) {
-        this.name = name;
-        this.email = email;
-        this.avatarUrl = avatarUrl;
-        this.bio = bio;
-    }
-}
-
-class userSession {
-    constructor(name, email) {
-        this.name = name;
-        this.email = email;
-    }
-}
-
-const currentUser = new userSession('Durian', 'student@example.com');
-
-// Tạo list user profiles (dự phòng cho tính năng mở rộng sau này, hiện chỉ có 2 profile)
-const usersDB = [
-    new userProfile('Durian', 'student@example.com', 'https://quillandpad.com/wp-content/uploads/2023/02/durian-fruit.jpg', 'Sinh viên năm 8 Đại học Bách Khoa Hà Nội, ngành CNTT, đam mê công nghệ và thích ăn sầu riêng.'),
-    new userProfile('Luriam', 'hoshino@beta.com', 'https://vn.portal-pokemon.com/play/resources/pokedex/img/pm/1e83fbcb00ab179cc89db5c53baea3e72d5942ad.png', 'Sinh viên năm 2 Đại học Bách Khoa Hà Nội, ngành Khoa học Máy tính, yêu thích lập trình và trò chơi.'),
-    new userProfile('Sleepyhead', 'sleepyhead701@gmail.com', 'https://avatars.githubusercontent.com/u/169965772?v=4', 'Sinh viên năm 3 Đại học Bách Khoa Hà Nội, ngành Khoa học Máy tính, yêu thích nghiên cứu và phát triển phần mềm.'),
-    new userProfile('MindConnect AI', 'mindconnect@mindconnect.com', 'logo.png', 'AI hỗ trợ học tập của MindConnect.')
-];
-
-class Comment {
-    constructor(id, author, date, content, likes = [0, 0, 0, 0, 0], replies = []) {
-        this.id = id;
-        this.author = author;
-        this.date = date;
-        this.content = content;
-        this.likes = likes;
-        this.isLiked = false;
-        this.replies = replies;
-    }
-}
-
-class FeedUser {
-    constructor(id, author, date, content, tags = [], likes = [0, 0, 0, 0, 0], comments = 0, isUser = false) {
-        this.id = id;
-        this.author = author;
-        this.date = date;
-        this.content = content;
-        this.tags = tags;
-        this.likes = likes;
-        this.isLiked = false;
-        this.comments = comments;
-        this.isUser = isUser;
-        this.commentObjects = [];
-    }
-}
-
-const defaultUserFeed = [
-    { 
-        id: 1, 
-        author: 'Sleepyhead', 
-        date: '2024-11-01T14:30:00Z', 
-        content: 'Cảm thấy áp lực deadline quá... Có ai biết cách quản lý thời gian hiệu quả không?', 
-        tags: ['Áp lực học tập', 'Cần lời khuyên'], 
-        likes: [5, 3, 2, 1, 0], 
-        comments: 2, 
-        isUser: false,
-            commentObjects: [
-                new Comment(1, 'Corn Candy', '2024-11-01T15:00:00Z', 'Mình cũng đang gặp vấn đề tương tự. Mình thường chia nhỏ công việc ra và đặt deadline ảo cho từng phần.', [2, 0, 0, 0, 0]),
-                new Comment(2, 'MindConnect AI', '2024-11-01T15:05:00Z', 'Bạn có thể thử phương pháp Pomodoro: làm việc 25 phút, nghỉ 5 phút. Sau 4 lần, nghỉ dài hơn. Mình cũng có thể gợi ý một số công cụ quản lý thời gian nếu bạn muốn!', [3, 0, 0, 0, 0])
-            ]
-    },
-    { 
-        id: 2,
-        author: 'Luriam', 
-        date: '2025-12-22T09:15:00Z', 
-        content: 'Hôm nay mình đã thử bài tập thở mà AI gợi ý, cảm giác khá ổn đấy! Ai muốn thử cùng mình không?',
-        tags: ['Thở', 'Giảm stress'], 
-        likes: [3, 1, 0, 0, 0], 
-        comments: 1, 
-        isUser: false,
-        commentObjects: [
-            new Comment(3, 'MindConnect AI', '2025-12-22T09:30:00Z', 'Chúc bạn có một ngày tốt lành!', [1, 0, 0, 0, 0])
-        ]
-    }
-];
-
-const resourcesDB = [
-    {
-        type: 'Video',
-        title: 'Thiền 5 phút giảm lo âu',
-        duration: '5 phút',
-        img: 'https://img.youtube.com/vi/inpok4MKVLM/mqdefault.jpg',
-        url: 'https://www.youtube.com/watch?v=inpok4MKVLM'
-    },
-    {
-        type: 'Blog',
-        title: 'Cách vượt qua căng thẳng trước kỳ thi',
-        duration: '5 phút đọc',
-        img: 'https://suckhoedoisong.qltns.mediacdn.vn/thumb_w/640/324455921873985536/2023/4/26/cang-thang-truoc-ky-thi-16824842727412019885995.png',
-        url: 'https://suckhoedoisong.vn/chuyen-gia-chi-cach-vuot-qua-cang-thang-truoc-ky-thi-169230426121339076.htm'
-    },
-    {
-        type: 'Blog',
-        title: 'WHO - Mental disorders',
-        duration: 'Nguồn học thuật',
-        img: 'https://www.who.int/ResourcePackages/WHO/assets/dist/images/logos/en/h-logo-blue.svg',
-        url: 'https://www.who.int/news-room/fact-sheets/detail/mental-disorders'
-    },
-    {
-        type: 'Blog',
-        title: 'NIMH - Anxiety Disorders',
-        duration: 'Nguồn học thuật',
-        img: 'https://www.nimh.nih.gov/themes/custom/nimh/logo.svg',
-        url: 'https://www.nimh.nih.gov/health/topics/anxiety-disorders'
-    },
-    {
-        type: 'Blog',
-        title: 'Wikipedia - Mental disorder',
-        duration: 'Bách khoa tham khảo',
-        img: 'https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png',
-        url: 'https://en.wikipedia.org/wiki/Mental_disorder'
-    },
-    {
-        type: 'Book',
-        title: 'Hiểu về trái tim - Minh Niệm',
-        duration: '12 chương',
-        img: 'https://tramsach.vn/wp-content/uploads/2024/11/gioi-thieu-sach.jpg',
-        url: 'https://thuvienhoasen.org/images/file/y5sBQGYE1QgQAHou/hieu-ve-trai-tim.pdf'
-    },
-    {
-        type: 'Podcast',
-        title: 'Radio Cảm Xúc #12 - Chữa lành',
-        duration: '32 phút',
-        img: 'https://i.scdn.co/image/ab67656300005f1ff6bed7462a8b94b0fb452114',
-        url: 'https://open.spotify.com/episode/63VvDWyELyutySrZSRU1Hq'
-    },
-    {
-        type: 'Công cụ',
-        title: 'Bài tập thở giảm Stress',
-        duration: '4 bài tập',
-        img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTlg1wCwbYTPH8TCqBnzGjRLEhlmNuhdWy44A&s',
-        action: 'renderBreathingSpace'
-    },
-    {
-        type: 'Công cụ',
-        title: 'Quản lý thời gian Pomodoro',
-        duration: 'App',
-        img: 'https://images.unsplash.com/photo-1495364141860-b0d03eccd065?w=800&q=80',
-        url: 'https://pomodoro.pomodorotechnique.com/'
-    }
-];
-
-const RISK_ALERTS_KEY = 'mindconnect:risk-alerts';
-const PUBLIC_FEED_KEY = 'mindconnect:public-feed';
-const PRIVATE_DIARY_KEY = 'mindconnect:private-diary';
-const STUDENT_PROFILE_KEY = 'mindconnect:student-profile';
-const CUSTOM_RESOURCES_KEY = 'mindconnect:custom-resources';
-const API_BASE_URL = 'http://localhost:3000';
-const CHAT_API_URL = `${API_BASE_URL}/chat/support`;
-
-let chatHistory = defaultChatHistory;
-let userFeed = loadPublicFeed();
-let privateDiaryEntries = loadPrivateDiaryEntries();
-let currentResource = resourcesDB;
-let backendReady = false;
-let currentMoodScore = 4;
-
-function setBackendReadyState(isReady) {
-    backendReady = isReady;
-}
-
-function relativeTimeFrom(dateInput) {
-    const date = new Date(dateInput);
-    const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-    if (diff < 60) return "Vừa xong";
-    if (diff < 3600) return `${Math.floor(diff / 60)}p trước`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
-    if (diff < 2592000) return `${Math.floor(diff / 86400)} ngày trước`;
-    if (diff < 31536000) return `${Math.floor(diff / 2592000)} tháng trước`;
-    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-}
-
-function getAuthSession() {
-    try {
-        return JSON.parse(localStorage.getItem('mindconnect:auth'))
-            || JSON.parse(localStorage.getItem('authSession'))
-            || null;
-    } catch (error) {
-        return null;
-    }
-}
+import { 
+    loadJson, savePrivateDiaryEntries, getStudentSession,
+    getAuthSession, getResourcesDB, addResource, savePublicFeed,
+    getBackendReadyState, setBackendReadyState, getStudentStorageKey,
+    getStudentProfileKey, getUserFeed, addUserFeed, findUserBySession, 
+    findUserByName, saveJson, getStudentProfile, getUserProfile,
+    getPrivateDiaryEntries
+    } from './student/state.js';
+import { escapeHtml, apiRequest } from './student/utils.js';
 
 function getAuthHeaders() {
     const session = getAuthSession();
     return session?.token ? { Authorization: `Bearer ${session.token}` } : {};
-}
-
-async function apiRequest(path, options = {}) {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...getAuthHeaders(),
-            ...(options.headers || {})
-        }
-    });
-    const result = await response.json().catch(() => ({}));
-
-    if (!response.ok || result.success === false) {
-        throw new Error(result.error || 'API request failed');
-    }
-
-    return result.data;
-}
-
-function getStudentSession() {
-    return getAuthSession() || currentUser || { name: 'Người dùng ẩn danh', email: 'student@example.com' };
-}
-
-function loadJson(key, fallback) {
-    try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-    } catch (error) {
-        return fallback;
-    }
-}
-
-function saveJson(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
-}
-
-function getStudentStorageId() {
-    const session = getStudentSession();
-    return String(
-        session?.user?.email ||
-        session?.email ||
-        session?.name ||
-        currentUser.email ||
-        'guest'
-    ).trim().toLowerCase().replace(/[^a-z0-9@._-]/g, '-');
-}
-
-function getStudentStorageKey(baseKey) {
-    return `${baseKey}:${getStudentStorageId()}`;
-}
-
-function loadPublicFeed() {
-    return loadJson(PUBLIC_FEED_KEY, defaultUserFeed);
-}
-
-function savePublicFeed() {
-    saveJson(PUBLIC_FEED_KEY, userFeed);
-}
-
-function loadPrivateDiaryEntries() {
-    return loadJson(getStudentStorageKey(PRIVATE_DIARY_KEY), []);
-}
-
-function savePrivateDiaryEntries() {
-    saveJson(getStudentStorageKey(PRIVATE_DIARY_KEY), privateDiaryEntries);
 }
 
 function loadCustomResources() {
@@ -270,38 +21,16 @@ function loadCustomResources() {
 }
 
 function saveCustomResources() {
-    const customResources = resourcesDB.filter(resource => resource.isCustom);
+    const customResources = getResourcesDB().filter(resource => resource.isCustom);
     saveJson(CUSTOM_RESOURCES_KEY, customResources);
 }
 
-function getStudentProfile() {
-    const session = getStudentSession();
-    const savedProfile = loadJson(getStudentStorageKey(STUDENT_PROFILE_KEY), {});
-    const fallbackName = session?.user?.name || session?.name || session?.user?.email || session?.email || currentUser.name;
-
-    return {
-        name: savedProfile.name || session?.user?.name || session?.name || fallbackName || 'Người dùng ẩn danh',
-        email: session?.user?.email || session?.email || currentUser.email,
-        avatarUrl: savedProfile.avatarUrl || 'logo.png',
-        bio: savedProfile.bio || '',
-        displayName: savedProfile.name || session?.user?.name || session?.name || fallbackName
-    };
-}
-
 function saveStudentProfile(profile) {
-    saveJson(getStudentStorageKey(STUDENT_PROFILE_KEY), {
+    saveJson(getStudentStorageKey(getStudentProfileKey()), {
         name: String(profile.name || '').trim() || 'Người dùng ẩn danh',
         avatarUrl: profile.avatarUrl || 'logo.png',
         bio: profile.bio || ''
     });
-}
-
-function renderAvatar(name, avatarUrl, index = 0) {
-    if (avatarUrl) {
-        return `<div class="mc-avatar"><img src="${escapeHtml(avatarUrl)}" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;"></div>`;
-    }
-
-    return `<div class="mc-avatar ${getFeedGradient(index)}">${escapeHtml(getInitials(name))}</div>`;
 }
 
 function getAuthorAvatar(item, index) {
@@ -310,57 +39,13 @@ function getAuthorAvatar(item, index) {
     return profile?.avatarUrl || '';
 }
 
-function addManualTag(inputId, containerId) {
-    const input = document.getElementById(inputId);
-    const container = document.getElementById(containerId);
-    if (!input || !container) return;
-
-    const tags = input.value
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(Boolean);
-
-    tags.forEach(tag => {
-        const existing = Array.from(container.querySelectorAll('.tag-chip'))
-            .some(chip => chip.dataset.tag?.toLowerCase() === tag.toLowerCase());
-        if (existing) return;
-
-        container.insertAdjacentHTML('beforeend', `
-            <span class="tag-chip selected manual-tag-chip" data-tag="${escapeHtml(tag)}">
-                ${escapeHtml(tag)}
-                <button type="button" aria-label="Xóa tag" onclick="this.parentElement.remove()">×</button>
-            </span>
-        `);
-    });
-    input.value = '';
-}
-
-function getManualTags(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return [];
-    return Array.from(container.querySelectorAll('.tag-chip'))
-        .map(chip => chip.dataset.tag || chip.textContent.replace('×', '').trim())
-        .filter(Boolean);
-}
-
-resourcesDB.push(...loadCustomResources());
+import { addManualTag, getManualTags } from './student/tags.js';
 
 function getSupportLocation() {
     return 'Phòng tham vấn 102 - Khu B';
 }
 
-function trackInteraction(type, targetId = '', metadata = {}) {
-    apiRequest('/api/interactions', {
-        method: 'POST',
-        body: JSON.stringify({
-            type,
-            target_id: String(targetId || ''),
-            metadata
-        })
-    }).catch(() => {
-        // Interaction analytics are best-effort and should never block the student flow.
-    });
-}
+import { trackInteraction } from './student/analytics.js';
 
 const riskDetectionRules = [
     {
@@ -536,7 +221,7 @@ function hideLoadingScreen() {
 }
 
 function blockIfBackendNotReady() {
-    if (backendReady) return false;
+    if (getBackendReadyState()) return false;
     setTimeout(() => showNotification('⏳ Backend chưa sẵn sàng, vui lòng chỉ xem giao diện.'), 1000 );
     return true;
 }
@@ -560,46 +245,8 @@ function showNotification(text) {
     }
 }
 
-function updateNav(idx) {
-    // 0:Home, 1:Diary, 2:Resources, 3:Stats, 4:Chat
-    document.querySelectorAll('.nav-icon').forEach((el, i) => {
-        const navIndex = Number(el.dataset.navIndex ?? i);
-        el.classList.toggle('active', navIndex === idx);
-        el.classList.remove('nav-tab-bounce');
-        if (navIndex === idx) {
-            void el.offsetWidth;
-            el.classList.add('nav-tab-bounce');
-        }
-    });
-}
-
-function animateMainContentSwap() {
-    const container = document.getElementById('student-main-content');
-    if (!container) return;
-
-    container.classList.remove('content-fade-in');
-    void container.offsetWidth;
-    container.classList.add('content-fade-in');
-
-    if (!document.getElementById('student-tab-animations')) {
-        const style = document.createElement('style');
-        style.id = 'student-tab-animations';
-        style.textContent = `
-            .content-fade-in { animation: contentFadeIn 0.5s ease-out; }
-            .nav-tab-bounce { animation: navTabBounce 0.5s ease-out; }
-            @keyframes contentFadeIn {
-                from { opacity: 0; transform: translateY(8px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            @keyframes navTabBounce {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.12); }
-                100% { transform: scale(1); }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-}
+import { updateNav } from './student/updateNav.js';
+import { animateMainContentSwap } from './student/animations.js';
 
 function navigateResourceMenu(routeKey) {
     const routes = {
@@ -624,15 +271,6 @@ function navigateResourceMenu(routeKey) {
     renderResources();
 }
 
-function escapeHtml(value) {
-    return String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
 function formatChatMessage(value) {
     return escapeHtml(value)
         .replace(
@@ -648,25 +286,7 @@ function formatDiaryContent(title, content) {
     return safeTitle ? `<strong>${safeTitle}</strong><br>${safeContent}` : safeContent;
 }
 
-function getInitials(name) {
-    return String(name || 'SV')
-        .trim()
-        .split(/\s+/)
-        .slice(0, 2)
-        .map(part => part[0])
-        .join('')
-        .toUpperCase() || 'SV';
-}
-
-function getFeedGradient(index) {
-    const gradients = ['mc-avatar-rose', 'mc-avatar-coral', 'mc-avatar-amber', 'mc-avatar-slate'];
-    return gradients[index % gradients.length];
-}
-
-function formatFeedTime(value) {
-    const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? escapeHtml(value || '') : relativeTimeFrom(value);
-}
+import { formatFeedTime, getFeedGradient, getInitials } from './student/utils.js';
 
 function stripHtml(value) {
     return String(value || '').replace(/<[^>]*>/g, ' ');
@@ -717,11 +337,12 @@ function getFallbackResourceSuggestion(txt) {
 window.submitComment = function(postIndex, content) {
     const profile = getStudentProfile();
     const userName = profile.displayName || profile.name;
-    const post = userFeed[postIndex];
-    if (!userFeed[postIndex].commentObjects) {
-        userFeed[postIndex].commentObjects = [];
+    const post = getUserFeed()[postIndex];
+    if (!getUserFeed()[postIndex].commentObjects) {
+        getUserFeed()[postIndex].commentObjects = [];
+        
     }
-    userFeed[postIndex].commentObjects.push({
+    getUserFeed()[postIndex].commentObjects.push({
         author: userName,
         author_avatar: profile.avatarUrl,
         owner_email: profile.email,
@@ -737,279 +358,12 @@ window.submitComment = function(postIndex, content) {
     renderStudentHome();
 };
 
-function updateStudentProfileBadge() {
-    const badge = document.getElementById('profileAvatar');
-    if (!badge) return;
-
-    const profile = getStudentProfile();
-    badge.title = profile.displayName || profile.name;
-    if (profile.avatarUrl) {
-        badge.innerHTML = `<img src="${escapeHtml(profile.avatarUrl)}" alt="" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-        return;
-    }
-
-    badge.textContent = getInitials(profile.displayName || profile.name || 'SV');
-}
-
-function getUserProfile(name) {
-    const profile = getStudentProfile();
-    if (name && (name === profile.name || name === profile.displayName || name === 'Tôi')) {
-        return new userProfile(profile.displayName || profile.name, profile.email, profile.avatarUrl, profile.bio);
-    }
-    return usersDB.find(u => u.name === name) || null;
-}
-
-function publishFeedPost() {
-    const content = document.getElementById('feed-post-content')?.value.trim() || '';
-    const tagInput = document.getElementById('feed-tag-input');
-    if (tagInput?.value.trim()) addManualTag('feed-tag-input', 'feed-tag-container');
-    const tags = getManualTags('feed-tag-container');
-
-    if (content.length < 3) {
-        alert('Bạn hãy viết nội dung bài đăng trước nhé.');
-        return;
-    }
-
-    if (!tags.length) {
-        alert('Bạn cần thêm ít nhất 1 tag trước khi đăng bài lên News feed.');
-        return;
-    }
-
-    const profile = getStudentProfile();
-    const post = {
-        id: `feed-${Date.now()}`,
-        author: profile.displayName || profile.name,
-        author_avatar: profile.avatarUrl,
-        owner_email: profile.email,
-        date: new Date().toISOString(),
-        content,
-        tags,
-        likes: 0,
-        comments: 0,
-        isUser: true,
-        commentObjects: []
-    };
-
-    userFeed.unshift(post);
-    savePublicFeed();
-    trackInteraction('post', post.id, {
-        source: 'public-feed',
-        tags,
-        content_length: content.length
-    });
-    renderStudentHome();
-}
-
-function renderStudentHome() {
-    const container = document.getElementById('student-main-content');
-    updateNav(0);
-    animateMainContentSwap();
-
-    const feedHtml = userFeed.map((post, index) => {
-        const postDate = post.date || post.time;
-        const comments = Array.isArray(post.commentObjects) ? post.commentObjects : [];
-        const commentCount = comments.length || post.comments || 0;
-        const postBody = escapeHtml(post.content);
-
-        const commentsHtml = comments.length > 0
-            ? `
-                <div class="mc-reply-list">
-                    ${comments.map(c => `
-                        <div class="mc-reply-card">
-                            ${renderAvatar(c.author, c.author_avatar || getUserProfile(c.author)?.avatarUrl, index)}
-                            <div class="mc-reply-content-box">
-                                <div class="mc-reply-meta">
-                                    <strong>${escapeHtml(c.author)}</strong>
-                                <span>${formatFeedTime(c.date)}</span>
-                            </div>
-                            <p>${escapeHtml(c.content)}</p>
-                            <div style="margin-top: 8px; position: relative; display: inline-block;" class="mc-reaction-wrapper" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
-                                <button type="button" aria-label="Thả tim" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 16px; color: #666; transition: transform 0.2s;" onclick="this.classList.toggle('mc-liked'); const num = this.querySelector('.mc-like-count'); if(this.classList.contains('mc-liked')){ num.textContent = parseInt(num.textContent) + 1; this.style.color = 'var(--deep-rose)'; this.style.transform = 'scale(1.2)'; setTimeout(() => this.style.transform = 'scale(1)', 200); } else { num.textContent = parseInt(num.textContent) - 1; this.style.color = '#666'; this.querySelector('.mc-reaction-icon').textContent = '♥'; }"><span class="mc-reaction-icon">♥</span> <span class="mc-like-count">${Array.isArray(c.likes) ? c.likes.length : (c.likes || 0)}</span></button>
-                                <div class="mc-reaction-popup" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 5px 10px; gap: 10px; z-index: 10;">
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='👍'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">👍</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='❤️'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">❤️</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😂'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😂</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😮'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😮</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😢'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😢</span>
-                                </div>
-                            </div>
-                        </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `
-            : '';
-
-        return `
-            <article class="mc-feed-card" data-post-id="${escapeHtml(post.id || `post-${index}`)}">
-                <div class="mc-feed-content">
-                    ${renderAvatar(post.author, getAuthorAvatar(post, index), index)}
-                    <div class="mc-feed-main">
-                        <div class="mc-feed-meta">
-                            <h3>${escapeHtml(post.author)}</h3>
-                            <span>${formatFeedTime(postDate)}</span>
-                        </div>
-                        <p class="mc-feed-text">${postBody}</p>
-
-                        ${post.tags && post.tags.length > 0 ?
-                            `<div class="mc-tag-row">${post.tags.map(t => `<span>#${escapeHtml(t)}</span>`).join('')}</div>`
-                            : ''}
-
-                        <div class="mc-feed-actions">
-                            <div class="mc-reaction-wrapper" style="position: relative; display: inline-block;" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
-                                <button type="button" aria-label="Thả tim" style="transition: transform 0.2s;" onclick="this.classList.toggle('mc-liked'); const num = this.querySelector('.mc-like-count'); if(this.classList.contains('mc-liked')){ num.textContent = parseInt(num.textContent) + 1; this.style.color = 'var(--deep-rose)'; this.style.transform = 'scale(1.2)'; setTimeout(() => this.style.transform = 'scale(1)', 200); } else { num.textContent = parseInt(num.textContent) - 1; this.style.color = ''; this.querySelector('.mc-reaction-icon').textContent = '♥'; }"><span class="mc-reaction-icon">♥</span> <span class="mc-like-count">${Array.isArray(post.likes) ? post.likes.length : (post.likes || 0)}</span></button>
-                                <div class="mc-reaction-popup" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 5px 10px; gap: 10px; z-index: 10;">
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='👍'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">👍</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='❤️'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">❤️</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😂'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😂</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😮'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😮</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" onclick="const btn=this.parentElement.previousElementSibling; btn.querySelector('.mc-reaction-icon').textContent='😢'; btn.style.color='var(--deep-rose)'; if(!btn.classList.contains('mc-liked')) { btn.classList.add('mc-liked'); btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1; } this.parentElement.style.display='none';">😢</span>
-                                </div>
-                            </div>
-                            <button type="button" aria-label="Bình luận" onclick="const box = this.parentElement.nextElementSibling; box.style.display = box.style.display === 'none' ? 'block' : 'none';"><span>💬</span> ${commentCount}</button>
-                            <button type="button" aria-label="Chia sẻ"><span>➦</span></button>
-                        </div>
-                        <div class="mc-comment-input-box" style="display: none; margin-top: 16px;">
-                            <input type="text" class="mc-input" placeholder="Viết bình luận của bạn..." style="margin-bottom: 8px; padding: 10px 14px; font-size: 14px;">
-                            <button type="button" class="mc-btn mc-btn-primary" style="min-height: 32px; padding: 6px 14px; font-size: 13px;" onclick="if(this.previousElementSibling.value) { window.submitComment(${index}, this.previousElementSibling.value); this.previousElementSibling.value = ''; }">Gửi bình luận</button>
-                        </div>
-                    </div>
-                </div>
-                ${commentsHtml}
-            </article>
-        `;
-    }).join('');
-
-    container.innerHTML = `
-        <section class="mc-page mc-home-page">
-            <div class="mc-page-header mc-page-header-row">
-                <div>
-                    <p class="mc-kicker">Cộng đồng</p>
-                    <h1>News feed</h1>
-                    <p>Chia sẻ ẩn danh, lắng nghe nhau.</p>
-                </div>
-                <button class="mc-btn mc-btn-outline" type="button" onclick="renderStudentDiary()">+ Viết Nhật ký</button>
-            </div>
-            <div class="mc-panel" style="margin-bottom: 18px;">
-                <label class="mc-field-label" for="feed-post-content">Đăng bài lên News feed</label>
-                <textarea id="feed-post-content" class="mc-textarea" style="min-height:90px;" placeholder="Chia sẻ với cộng đồng..."></textarea>
-                <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-                    <input id="feed-tag-input" class="mc-input" style="flex:1; min-width:180px;" placeholder="Thêm tag, ví dụ: Stress, Học tập">
-                    <button class="mc-btn mc-btn-outline" type="button" onclick="addManualTag('feed-tag-input', 'feed-tag-container')">+ Tag</button>
-                    <button class="mc-btn mc-btn-primary" type="button" onclick="publishFeedPost()">Đăng lên Home</button>
-                </div>
-                <div id="feed-tag-container" class="mc-tag-row" style="margin-top:10px;"></div>
-            </div>
-            <div class="mc-feed-list">
-                ${feedHtml}
-            </div>
-        </section>
-    `;
-    container.querySelectorAll('.mc-feed-card .mc-reaction-wrapper > button').forEach(button => {
-        button.addEventListener('click', () => {
-            const card = button.closest('.mc-feed-card');
-            trackInteraction('reaction', card?.dataset.postId || 'feed-post', { surface: 'home-feed' });
-        }, { capture: true });
-    });
-}
+import { updateStudentProfileBadge, renderStudentHome } from './student/NewsFeed.js';
 
 // ==============================================
 // 4. DIARY (QUICK TEST + NOTION EDITOR + AI TAG)
 // ==============================================
-function renderStudentDiary() {
-    const container = document.getElementById('student-main-content');
-    updateNav(1);
-    animateMainContentSwap();
-
-    const moodItems = [
-        { score: 5, label: 'Tuyệt vời', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.7-4.4-9.1-8.1C.8 9.6 2.5 5.3 6.2 5c2-.2 3.5.8 4.4 2.3C11.5 5.8 13 4.8 15 5c3.7.3 5.4 4.6 3.3 7.9C15.9 16.6 12 21 12 21Z"/></svg>', tone: 'rose' },
-        { score: 4, label: 'Ổn', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.3 10.2a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7ZM15.7 10.2a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7Z"/><path d="M7.4 14.1c1 2.1 2.6 3.1 4.6 3.1s3.6-1 4.6-3.1c.3-.6-.1-1.3-.8-1.3H8.2c-.7 0-1.1.7-.8 1.3Z"/></svg>', tone: 'amber' },
-        { score: 3, label: 'Bình thường', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.2 10.2a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6ZM15.8 10.2a1.3 1.3 0 1 0 0-2.6 1.3 1.3 0 0 0 0 2.6Z"/><path d="M8 15.1h8c.6 0 1-.4 1-1s-.4-1-1-1H8c-.6 0-1 .4-1 1s.4 1 1 1Z"/></svg>', tone: 'stone' },
-        { score: 2, label: 'Mệt mỏi', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.8 10.1 5.9 8.7c-.5-.4-.6-1-.2-1.4.4-.5 1-.6 1.5-.2l1.9 1.4c.5.4.6 1 .2 1.4-.4.5-1 .6-1.5.2ZM16.2 10.1l1.9-1.4c.5-.4.6-1 .2-1.4-.4-.5-1-.6-1.5-.2l-1.9 1.4c-.5.4-.6 1-.2 1.4.4.5 1 .6 1.5.2Z"/><path d="M8.2 16.6c1-1.3 2.2-1.9 3.8-1.9s2.8.6 3.8 1.9c.4.5 1.1.5 1.5.1.4-.4.4-1 0-1.5-1.4-1.7-3.2-2.6-5.3-2.6s-3.9.9-5.3 2.6c-.4.5-.4 1.1 0 1.5.4.4 1.1.4 1.5-.1Z"/></svg>', tone: 'slate' },
-        { score: 1, label: 'Tệ', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c4.7 0 8.5 3.8 8.5 8.5s-3.8 8.5-8.5 8.5S3.5 16.7 3.5 12 7.3 3.5 12 3.5Zm-1.1 4.2.4 5.7c0 .4.3.7.7.7s.7-.3.7-.7l.4-5.7c0-.7-.5-1.2-1.1-1.2s-1.1.5-1.1 1.2ZM12 17.7a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7Z"/></svg>', tone: 'violet' }
-    ];
-
-    const recentHtml = privateDiaryEntries.slice(0, 6).map((entry, index) => `
-        <button type="button" class="mc-recent-entry" style="width:100%; text-align:left; border:0; cursor:pointer;" onclick="openDiaryEntryModal('${escapeHtml(entry.id)}')">
-            <div class="mc-recent-top">
-                <span class="mc-recent-dot ${getFeedGradient(index)}">${escapeHtml(String(entry.mood_score || currentMoodScore))}</span>
-                <strong>${formatFeedTime(entry.date || entry.time)}</strong>
-            </div>
-            <p><strong>${escapeHtml(entry.title || 'Không có tiêu đề')}</strong></p>
-            <p>${escapeHtml(stripHtml(entry.content)).slice(0, 120)}${stripHtml(entry.content).length > 120 ? '...' : ''}</p>
-        </button>
-    `).join('');
-
-    container.innerHTML = `
-        <section class="mc-page">
-            <div class="mc-page-header">
-                <p class="mc-kicker">Nhật ký riêng tư</p>
-                <h1>Hôm nay bạn thấy thế nào?</h1>
-                <p>Chỉ bạn nhìn thấy. Nội dung này không xuất hiện trên News feed.</p>
-            </div>
-
-            <div class="mc-diary-grid">
-                <div class="mc-panel mc-diary-editor">
-                    <div class="quick-test-section mc-mood-section">
-                        <label class="mc-field-label">Cảm xúc hiện tại</label>
-                        <div class="mc-mood-grid">
-                            ${moodItems.map(item => `
-                                <button class="mood-card ${item.score === 4 ? 'active' : ''}" type="button" onclick="selectMood(${item.score}, this)">
-                                    <span class="mood-mark mood-${item.tone}">${item.icon}</span>
-                                    <span>${item.label}</span>
-                                </button>
-                            `).join('')}
-                        </div>
-                        <div id="quick-test-msg" class="mc-mood-msg"></div>
-                    </div>
-
-                    <label class="mc-field-label" for="diary-title">Tiêu đề</label>
-                    <input type="text" id="diary-title" class="notion-title mc-input" placeholder="Tiêu đề...">
-
-                    <label class="mc-field-label" for="diary-content">Hôm nay của bạn</label>
-                    <textarea id="diary-content" class="notion-body mc-textarea" placeholder="Viết những suy nghĩ riêng tư của bạn..."></textarea>
-
-                    <label class="mc-field-label" for="diary-tag-input">Tag bắt buộc</label>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <input id="diary-tag-input" class="mc-input" style="flex:1; min-width:180px;" placeholder="Ví dụ: Stress, Học tập, Mất ngủ">
-                        <button class="mc-btn mc-btn-outline" type="button" onclick="addManualTag('diary-tag-input', 'diary-tag-container')">+ Tag</button>
-                    </div>
-                    <div id="diary-tag-container" class="mc-tag-row" style="margin-top:10px;"></div>
-
-                    <div class="mc-editor-actions" id="action-area">
-                        <button class="mc-btn mc-btn-primary" type="button" onclick="savePrivateDiary()">Lưu nhật ký riêng tư</button>
-                    </div>
-                </div>
-
-                <aside class="mc-panel mc-recent-panel">
-                    <h3>Nhật ký gần đây</h3>
-                    <div class="mc-recent-list">${recentHtml || '<p class="mc-empty">Chưa có nhật ký nào.</p>'}</div>
-                </aside>
-            </div>
-        </section>
-    `;
-}
-
-function selectMood(score, elem) {
-    currentMoodScore = Number(score) || currentMoodScore;
-    document.querySelectorAll('.emoji-btn, .mood-card').forEach(e => e.classList.remove('active'));
-    elem.classList.add('active');
-    
-    const msg = document.getElementById('quick-test-msg');
-    if(score === 1) {
-        createRiskAlert('Quick Test', 'Sinh viên chọn mức cảm xúc rất thấp trong Quick Test', {
-            force: true,
-            label: 'Cảnh báo cảm xúc rất thấp',
-            severity: 'high',
-            excerpt: 'Quick Test ghi nhận mức cảm xúc 1/5.'
-        });
-        msg.innerHTML = `Mình đã ghi nhận mức cảm xúc rất thấp và gửi cảnh báo ẩn danh cho tổ tham vấn. <u onclick="openBookingModal()" style="cursor:pointer; font-weight:bold;">Đặt lịch hỗ trợ</u>`;
-    } else if(score <= 2) {
-        msg.innerHTML = `Bạn ổn không? <u onclick="renderStudentStats()" style="cursor:pointer; font-weight:bold;">Xem thống kê</u> hoặc <u onclick="renderResources()" style="cursor:pointer; font-weight:bold;">nghe nhạc</u> nhé.`;
-    } else {
-        msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score==5?"Rất tốt":(score==4?"Tốt":"Bình thường"));
-    }
-}
+import { renderStudentDiary } from './student/Diary.js';
 
 function getChatApiHistory() {
     return chatHistory.slice(0, -1).slice(-8).map(msg => ({
@@ -1117,7 +471,7 @@ async function savePrivateDiary() {
         date: new Date().toISOString()
     };
 
-    privateDiaryEntries.unshift(entry);
+    getPrivateDiaryEntries().unshift(entry);
     savePrivateDiaryEntries();
 
     try {
@@ -1141,7 +495,7 @@ async function savePrivateDiary() {
 }
 
 function openDiaryEntryModal(entryId) {
-    const entry = privateDiaryEntries.find(item => String(item.id) === String(entryId));
+    const entry = getPrivateDiaryEntries().find(item => String(item.id) === String(entryId));
     if (!entry) return;
 
     const existing = document.getElementById('diary-entry-modal');
@@ -1400,7 +754,7 @@ function renderProfileLegacy() {
     }
 
     // Tìm thông tin người dùng dựa trên username trên session, nếu có
-    const currentUserProfile = usersDB.find(u => u.name === session.name) || {
+    const currentUserProfile = findUserBySession(session) || {
         name: session.name,
         email: session.email,
         avatarUrl: 'logo.png'
@@ -1763,7 +1117,7 @@ function getWeekdayLabel(date) {
 }
 
 function getEmotionSourcesForCurrentUser() {
-    const diarySources = privateDiaryEntries.map(entry => ({
+    const diarySources = getPrivateDiaryEntries().map(entry => ({
         id: entry.id,
         type: 'diary',
         title: entry.title || 'Nhật ký riêng tư',
