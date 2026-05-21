@@ -104,6 +104,27 @@ const resourcesDB = [
         url: 'https://suckhoedoisong.vn/chuyen-gia-chi-cach-vuot-qua-cang-thang-truoc-ky-thi-169230426121339076.htm'
     },
     {
+        type: 'Blog',
+        title: 'WHO - Mental disorders',
+        duration: 'Nguồn học thuật',
+        img: 'https://www.who.int/ResourcePackages/WHO/assets/dist/images/logos/en/h-logo-blue.svg',
+        url: 'https://www.who.int/news-room/fact-sheets/detail/mental-disorders'
+    },
+    {
+        type: 'Blog',
+        title: 'NIMH - Anxiety Disorders',
+        duration: 'Nguồn học thuật',
+        img: 'https://www.nimh.nih.gov/themes/custom/nimh/logo.svg',
+        url: 'https://www.nimh.nih.gov/health/topics/anxiety-disorders'
+    },
+    {
+        type: 'Blog',
+        title: 'Wikipedia - Mental disorder',
+        duration: 'Bách khoa tham khảo',
+        img: 'https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png',
+        url: 'https://en.wikipedia.org/wiki/Mental_disorder'
+    },
+    {
         type: 'Book',
         title: 'Hiểu về trái tim - Minh Niệm',
         duration: '12 chương',
@@ -134,13 +155,19 @@ const resourcesDB = [
 ];
 
 const RISK_ALERTS_KEY = 'mindconnect:risk-alerts';
+const PUBLIC_FEED_KEY = 'mindconnect:public-feed';
+const PRIVATE_DIARY_KEY = 'mindconnect:private-diary';
+const STUDENT_PROFILE_KEY = 'mindconnect:student-profile';
+const CUSTOM_RESOURCES_KEY = 'mindconnect:custom-resources';
 const API_BASE_URL = 'http://localhost:3000';
 const CHAT_API_URL = `${API_BASE_URL}/chat/support`;
 
 let chatHistory = defaultChatHistory;
-let userFeed = defaultUserFeed;
+let userFeed = loadPublicFeed();
+let privateDiaryEntries = loadPrivateDiaryEntries();
 let currentResource = resourcesDB;
 let backendReady = false;
+let currentMoodScore = 4;
 
 function setBackendReadyState(isReady) {
     backendReady = isReady;
@@ -159,7 +186,9 @@ function relativeTimeFrom(dateInput) {
 
 function getAuthSession() {
     try {
-        return JSON.parse(localStorage.getItem('mindconnect:auth')) || null;
+        return JSON.parse(localStorage.getItem('mindconnect:auth'))
+            || JSON.parse(localStorage.getItem('authSession'))
+            || null;
     } catch (error) {
         return null;
     }
@@ -186,6 +215,151 @@ async function apiRequest(path, options = {}) {
     }
 
     return result.data;
+}
+
+function getStudentSession() {
+    return getAuthSession() || currentUser || { name: 'Người dùng ẩn danh', email: 'student@example.com' };
+}
+
+function loadJson(key, fallback) {
+    try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+    } catch (error) {
+        return fallback;
+    }
+}
+
+function saveJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getStudentStorageId() {
+    const session = getStudentSession();
+    return String(
+        session?.user?.email ||
+        session?.email ||
+        session?.name ||
+        currentUser.email ||
+        'guest'
+    ).trim().toLowerCase().replace(/[^a-z0-9@._-]/g, '-');
+}
+
+function getStudentStorageKey(baseKey) {
+    return `${baseKey}:${getStudentStorageId()}`;
+}
+
+function loadPublicFeed() {
+    return loadJson(PUBLIC_FEED_KEY, defaultUserFeed);
+}
+
+function savePublicFeed() {
+    saveJson(PUBLIC_FEED_KEY, userFeed);
+}
+
+function loadPrivateDiaryEntries() {
+    return loadJson(getStudentStorageKey(PRIVATE_DIARY_KEY), []);
+}
+
+function savePrivateDiaryEntries() {
+    saveJson(getStudentStorageKey(PRIVATE_DIARY_KEY), privateDiaryEntries);
+}
+
+function loadCustomResources() {
+    return loadJson(CUSTOM_RESOURCES_KEY, []);
+}
+
+function saveCustomResources() {
+    const customResources = resourcesDB.filter(resource => resource.isCustom);
+    saveJson(CUSTOM_RESOURCES_KEY, customResources);
+}
+
+function getStudentProfile() {
+    const session = getStudentSession();
+    const savedProfile = loadJson(getStudentStorageKey(STUDENT_PROFILE_KEY), {});
+    const fallbackName = session?.user?.name || session?.name || session?.user?.email || session?.email || currentUser.name;
+
+    return {
+        name: savedProfile.name || session?.user?.name || session?.name || fallbackName || 'Người dùng ẩn danh',
+        email: session?.user?.email || session?.email || currentUser.email,
+        avatarUrl: savedProfile.avatarUrl || 'logo.png',
+        bio: savedProfile.bio || '',
+        displayName: savedProfile.name || session?.user?.name || session?.name || fallbackName
+    };
+}
+
+function saveStudentProfile(profile) {
+    saveJson(getStudentStorageKey(STUDENT_PROFILE_KEY), {
+        name: String(profile.name || '').trim() || 'Người dùng ẩn danh',
+        avatarUrl: profile.avatarUrl || 'logo.png',
+        bio: profile.bio || ''
+    });
+}
+
+function renderAvatar(name, avatarUrl, index = 0) {
+    if (avatarUrl) {
+        return `<div class="mc-avatar"><img src="${escapeHtml(avatarUrl)}" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;"></div>`;
+    }
+
+    return `<div class="mc-avatar ${getFeedGradient(index)}">${escapeHtml(getInitials(name))}</div>`;
+}
+
+function getAuthorAvatar(item, index) {
+    if (item?.author_avatar) return item.author_avatar;
+    const profile = getUserProfile(item?.author);
+    return profile?.avatarUrl || '';
+}
+
+function addManualTag(inputId, containerId) {
+    const input = document.getElementById(inputId);
+    const container = document.getElementById(containerId);
+    if (!input || !container) return;
+
+    const tags = input.value
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(Boolean);
+
+    tags.forEach(tag => {
+        const existing = Array.from(container.querySelectorAll('.tag-chip'))
+            .some(chip => chip.dataset.tag?.toLowerCase() === tag.toLowerCase());
+        if (existing) return;
+
+        container.insertAdjacentHTML('beforeend', `
+            <span class="tag-chip selected manual-tag-chip" data-tag="${escapeHtml(tag)}">
+                ${escapeHtml(tag)}
+                <button type="button" aria-label="Xóa tag" onclick="this.parentElement.remove()">×</button>
+            </span>
+        `);
+    });
+    input.value = '';
+}
+
+function getManualTags(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return [];
+    return Array.from(container.querySelectorAll('.tag-chip'))
+        .map(chip => chip.dataset.tag || chip.textContent.replace('×', '').trim())
+        .filter(Boolean);
+}
+
+resourcesDB.push(...loadCustomResources());
+
+function getSupportLocation() {
+    return 'Phòng tham vấn 102 - Khu B';
+}
+
+function trackInteraction(type, targetId = '', metadata = {}) {
+    apiRequest('/api/interactions', {
+        method: 'POST',
+        body: JSON.stringify({
+            type,
+            target_id: String(targetId || ''),
+            metadata
+        })
+    }).catch(() => {
+        // Interaction analytics are best-effort and should never block the student flow.
+    });
 }
 
 const riskDetectionRules = [
@@ -302,6 +476,7 @@ function renderCrisisSupportNotice(alert) {
 window.onload = function() {
     setBackendReadyState(false);
     showLoadingScreen(); // Hiển thị màn hình
+    updateStudentProfileBadge();
     loadFeedFromBackend();
     hideLoadingScreen();
     renderStudentHome(); // Mặc định vào trang chủ
@@ -367,6 +542,9 @@ function blockIfBackendNotReady() {
 }
 
 function logout() {
+    localStorage.removeItem('mindconnect:auth');
+    localStorage.removeItem('mindconnect:role');
+    localStorage.removeItem('authSession');
     window.location.href = 'index.html';
 }
 
@@ -503,23 +681,9 @@ function setChatSuggestion(text) {
 
 async function loadFeedFromBackend() {
     try {
-        const diaries = await apiRequest('/api/feed');
-        if (Array.isArray(diaries) && diaries.length > 0) {
-            userFeed = diaries.map(diary => ({
-                id: diary.id,
-                author: diary.author_alias || 'Tôi',
-                time: new Date(diary.created_at).toLocaleString('vi-VN'),
-                content: formatDiaryContent(diary.title, diary.content),
-                tags: diary.tags || [],
-                likes: 0,
-                comments: 0,
-                isUser: true
-            }));
-
-            renderStudentHome();
-        }
+        await fetch(`${API_BASE_URL}/`);
     } catch (error) {
-        // Keep built-in demo feed when backend is unavailable.
+        // Keep the local public feed available when backend is unavailable.
     } finally {
         setBackendReadyState(true);
     }
@@ -551,22 +715,89 @@ function getFallbackResourceSuggestion(txt) {
 // 3. HOME (GIAO DIỆN LAI THREADS)
 // ==============================================
 window.submitComment = function(postIndex, content) {
-    const userName = (typeof currentUser !== 'undefined' && currentUser && currentUser.name) ? currentUser.name : 'Luriam';
+    const profile = getStudentProfile();
+    const userName = profile.displayName || profile.name;
+    const post = userFeed[postIndex];
     if (!userFeed[postIndex].commentObjects) {
         userFeed[postIndex].commentObjects = [];
     }
     userFeed[postIndex].commentObjects.push({
         author: userName,
+        author_avatar: profile.avatarUrl,
+        owner_email: profile.email,
+        isUser: true,
         content: content,
         date: new Date().toISOString(),
         likes: 0
     });
-    localStorage.setItem('userFeed', JSON.stringify(userFeed));
+    trackInteraction('comment', post?.id || `post-${postIndex}`, {
+        content_length: String(content || '').length
+    });
+    savePublicFeed();
     renderStudentHome();
 };
 
+function updateStudentProfileBadge() {
+    const badge = document.getElementById('profileAvatar');
+    if (!badge) return;
+
+    const profile = getStudentProfile();
+    badge.title = profile.displayName || profile.name;
+    if (profile.avatarUrl) {
+        badge.innerHTML = `<img src="${escapeHtml(profile.avatarUrl)}" alt="" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        return;
+    }
+
+    badge.textContent = getInitials(profile.displayName || profile.name || 'SV');
+}
+
 function getUserProfile(name) {
+    const profile = getStudentProfile();
+    if (name && (name === profile.name || name === profile.displayName || name === 'Tôi')) {
+        return new userProfile(profile.displayName || profile.name, profile.email, profile.avatarUrl, profile.bio);
+    }
     return usersDB.find(u => u.name === name) || null;
+}
+
+function publishFeedPost() {
+    const content = document.getElementById('feed-post-content')?.value.trim() || '';
+    const tagInput = document.getElementById('feed-tag-input');
+    if (tagInput?.value.trim()) addManualTag('feed-tag-input', 'feed-tag-container');
+    const tags = getManualTags('feed-tag-container');
+
+    if (content.length < 3) {
+        alert('Bạn hãy viết nội dung bài đăng trước nhé.');
+        return;
+    }
+
+    if (!tags.length) {
+        alert('Bạn cần thêm ít nhất 1 tag trước khi đăng bài lên News feed.');
+        return;
+    }
+
+    const profile = getStudentProfile();
+    const post = {
+        id: `feed-${Date.now()}`,
+        author: profile.displayName || profile.name,
+        author_avatar: profile.avatarUrl,
+        owner_email: profile.email,
+        date: new Date().toISOString(),
+        content,
+        tags,
+        likes: 0,
+        comments: 0,
+        isUser: true,
+        commentObjects: []
+    };
+
+    userFeed.unshift(post);
+    savePublicFeed();
+    trackInteraction('post', post.id, {
+        source: 'public-feed',
+        tags,
+        content_length: content.length
+    });
+    renderStudentHome();
 }
 
 function renderStudentHome() {
@@ -578,14 +809,14 @@ function renderStudentHome() {
         const postDate = post.date || post.time;
         const comments = Array.isArray(post.commentObjects) ? post.commentObjects : [];
         const commentCount = comments.length || post.comments || 0;
-        const postBody = post.isUser ? post.content : escapeHtml(post.content);
+        const postBody = escapeHtml(post.content);
 
         const commentsHtml = comments.length > 0
             ? `
                 <div class="mc-reply-list">
                     ${comments.map(c => `
                         <div class="mc-reply-card">
-                            <div class="mc-avatar ${getUserProfile(c.author)?.avatarUrl ? '' : getFeedGradient(index)}">${getUserProfile(c.author)?.avatarUrl ? `<img src="${escapeHtml(getUserProfile(c.author).avatarUrl)}" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : escapeHtml(getInitials(c.author))}</div>
+                            ${renderAvatar(c.author, c.author_avatar || getUserProfile(c.author)?.avatarUrl, index)}
                             <div class="mc-reply-content-box">
                                 <div class="mc-reply-meta">
                                     <strong>${escapeHtml(c.author)}</strong>
@@ -610,9 +841,9 @@ function renderStudentHome() {
             : '';
 
         return `
-            <article class="mc-feed-card">
+            <article class="mc-feed-card" data-post-id="${escapeHtml(post.id || `post-${index}`)}">
                 <div class="mc-feed-content">
-                    <div class="mc-avatar ${getUserProfile(post.author)?.avatarUrl ? '' : getFeedGradient(index)}">${getUserProfile(post.author)?.avatarUrl ? `<img src="${escapeHtml(getUserProfile(post.author).avatarUrl)}" alt="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` : escapeHtml(getInitials(post.author))}</div>
+                    ${renderAvatar(post.author, getAuthorAvatar(post, index), index)}
                     <div class="mc-feed-main">
                         <div class="mc-feed-meta">
                             <h3>${escapeHtml(post.author)}</h3>
@@ -659,11 +890,27 @@ function renderStudentHome() {
                 </div>
                 <button class="mc-btn mc-btn-outline" type="button" onclick="renderStudentDiary()">+ Viết Nhật ký</button>
             </div>
+            <div class="mc-panel" style="margin-bottom: 18px;">
+                <label class="mc-field-label" for="feed-post-content">Đăng bài lên News feed</label>
+                <textarea id="feed-post-content" class="mc-textarea" style="min-height:90px;" placeholder="Chia sẻ với cộng đồng..."></textarea>
+                <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                    <input id="feed-tag-input" class="mc-input" style="flex:1; min-width:180px;" placeholder="Thêm tag, ví dụ: Stress, Học tập">
+                    <button class="mc-btn mc-btn-outline" type="button" onclick="addManualTag('feed-tag-input', 'feed-tag-container')">+ Tag</button>
+                    <button class="mc-btn mc-btn-primary" type="button" onclick="publishFeedPost()">Đăng lên Home</button>
+                </div>
+                <div id="feed-tag-container" class="mc-tag-row" style="margin-top:10px;"></div>
+            </div>
             <div class="mc-feed-list">
                 ${feedHtml}
             </div>
         </section>
     `;
+    container.querySelectorAll('.mc-feed-card .mc-reaction-wrapper > button').forEach(button => {
+        button.addEventListener('click', () => {
+            const card = button.closest('.mc-feed-card');
+            trackInteraction('reaction', card?.dataset.postId || 'feed-post', { surface: 'home-feed' });
+        }, { capture: true });
+    });
 }
 
 // ==============================================
@@ -682,14 +929,15 @@ function renderStudentDiary() {
         { score: 1, label: 'Tệ', icon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c4.7 0 8.5 3.8 8.5 8.5s-3.8 8.5-8.5 8.5S3.5 16.7 3.5 12 7.3 3.5 12 3.5Zm-1.1 4.2.4 5.7c0 .4.3.7.7.7s.7-.3.7-.7l.4-5.7c0-.7-.5-1.2-1.1-1.2s-1.1.5-1.1 1.2ZM12 17.7a1.35 1.35 0 1 0 0-2.7 1.35 1.35 0 0 0 0 2.7Z"/></svg>', tone: 'violet' }
     ];
 
-    const recentHtml = userFeed.slice(0, 3).map((entry, index) => `
-        <div class="mc-recent-entry">
+    const recentHtml = privateDiaryEntries.slice(0, 6).map((entry, index) => `
+        <button type="button" class="mc-recent-entry" style="width:100%; text-align:left; border:0; cursor:pointer;" onclick="openDiaryEntryModal('${escapeHtml(entry.id)}')">
             <div class="mc-recent-top">
-                <span class="mc-recent-dot ${getFeedGradient(index)}">${escapeHtml(getInitials(entry.author))}</span>
+                <span class="mc-recent-dot ${getFeedGradient(index)}">${escapeHtml(String(entry.mood_score || currentMoodScore))}</span>
                 <strong>${formatFeedTime(entry.date || entry.time)}</strong>
             </div>
+            <p><strong>${escapeHtml(entry.title || 'Không có tiêu đề')}</strong></p>
             <p>${escapeHtml(stripHtml(entry.content)).slice(0, 120)}${stripHtml(entry.content).length > 120 ? '...' : ''}</p>
-        </div>
+        </button>
     `).join('');
 
     container.innerHTML = `
@@ -697,7 +945,7 @@ function renderStudentDiary() {
             <div class="mc-page-header">
                 <p class="mc-kicker">Nhật ký riêng tư</p>
                 <h1>Hôm nay bạn thấy thế nào?</h1>
-                <p>Chỉ bạn nhìn thấy. AI sẽ phân tích ẩn danh để gợi ý phù hợp.</p>
+                <p>Chỉ bạn nhìn thấy. Nội dung này không xuất hiện trên News feed.</p>
             </div>
 
             <div class="mc-diary-grid">
@@ -719,21 +967,22 @@ function renderStudentDiary() {
                     <input type="text" id="diary-title" class="notion-title mc-input" placeholder="Tiêu đề...">
 
                     <label class="mc-field-label" for="diary-content">Hôm nay của bạn</label>
-                    <textarea id="diary-content" class="notion-body mc-textarea" placeholder="Viết những suy nghĩ của bạn, nhấn '/' để AI gợi ý..."></textarea>
+                    <textarea id="diary-content" class="notion-body mc-textarea" placeholder="Viết những suy nghĩ riêng tư của bạn..."></textarea>
 
-                    <div id="ai-suggestion-area" class="ai-tag-box mc-ai-tag-box hidden">
-                        <div class="mc-ai-tag-title">AI đề xuất Tag</div>
-                        <div id="tag-container"></div>
-                        <button class="mc-btn mc-btn-primary mc-full-width" type="button" onclick="confirmAndPost()">Xác nhận & Đăng</button>
+                    <label class="mc-field-label" for="diary-tag-input">Tag bắt buộc</label>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <input id="diary-tag-input" class="mc-input" style="flex:1; min-width:180px;" placeholder="Ví dụ: Stress, Học tập, Mất ngủ">
+                        <button class="mc-btn mc-btn-outline" type="button" onclick="addManualTag('diary-tag-input', 'diary-tag-container')">+ Tag</button>
                     </div>
+                    <div id="diary-tag-container" class="mc-tag-row" style="margin-top:10px;"></div>
 
                     <div class="mc-editor-actions" id="action-area">
-                        <button class="mc-btn mc-btn-primary" type="button" onclick="analyzeDiary()">Phân tích AI</button>
+                        <button class="mc-btn mc-btn-primary" type="button" onclick="savePrivateDiary()">Lưu nhật ký riêng tư</button>
                     </div>
                 </div>
 
                 <aside class="mc-panel mc-recent-panel">
-                    <h3>Gần đây</h3>
+                    <h3>Nhật ký gần đây</h3>
                     <div class="mc-recent-list">${recentHtml || '<p class="mc-empty">Chưa có nhật ký nào.</p>'}</div>
                 </aside>
             </div>
@@ -742,6 +991,7 @@ function renderStudentDiary() {
 }
 
 function selectMood(score, elem) {
+    currentMoodScore = Number(score) || currentMoodScore;
     document.querySelectorAll('.emoji-btn, .mood-card').forEach(e => e.classList.remove('active'));
     elem.classList.add('active');
     
@@ -835,78 +1085,40 @@ function buildChatConnectionErrorReply(error) {
 }
 
 async function analyzeDiary() {
-    if (blockIfBackendNotReady()) return;
-
-    const content = document.getElementById('diary-content').value;
-    const title = document.getElementById('diary-title').value;
-    if(content.length < 5) return alert("Hãy viết dài hơn một chút nhé!");
-
-    const btn = document.querySelector('#action-area button');
-    btn.innerText = "⏳ Đang đọc..."; 
-    btn.disabled = true;
-
-    try {
-        let suggestedTags = [];
-
-        try {
-            const result = await apiRequest('/api/diaries/tags', {
-                method: 'POST',
-                body: JSON.stringify({ title, content })
-            });
-            suggestedTags = Array.isArray(result.tags) ? result.tags : [];
-        } catch (error) {
-            if(content.includes("thi") || content.includes("điểm") || content.includes("học")) suggestedTags.push("Học tập");
-            if(content.includes("buồn") || content.includes("khóc")) suggestedTags.push("Lo âu");
-            if(content.includes("bạn") || content.includes("cãi")) suggestedTags.push("Mối quan hệ");
-        }
-
-        const riskAlert = createRiskAlert('Diary', `${title} ${content}`, { diary_title: title || 'Không có tiêu đề' });
-        if(riskAlert) suggestedTags.unshift(riskAlert.label);
-        if(suggestedTags.length === 0) suggestedTags.push("Tâm sự");
-
-        document.getElementById('action-area').classList.add('hidden');
-        const tagBox = document.getElementById('ai-suggestion-area');
-        tagBox.classList.remove('hidden');
-        tagBox.dataset.riskAlertCreated = riskAlert ? 'true' : 'false';
-        
-        const tagContainer = document.getElementById('tag-container');
-        tagContainer.innerHTML = suggestedTags.map(tag => 
-            `<span class="tag-chip selected" onclick="toggleTag(this)">${tag}</span>`
-        ).join('') + `<span class="tag-chip" onclick="toggleTag(this)">+ Khác</span>`;
-
-        if(riskAlert) {
-            tagBox.insertAdjacentHTML('afterbegin', renderCrisisSupportNotice(riskAlert));
-            showNotification("Đã gửi cảnh báo ẩn danh đến tổ tham vấn.");
-        }
-    } catch (error) {
-        alert("Không thể phân tích nhật ký lúc này. Bạn thử lại sau nhé.");
-        btn.innerText = "✨ Phân tích AI";
-        btn.disabled = false;
-    }
+    return savePrivateDiary();
 }
 
 function toggleTag(el) { el.classList.toggle('selected'); }
 
-async function confirmAndPost() {
-    if (blockIfBackendNotReady()) return;
+async function savePrivateDiary() {
+    const title = document.getElementById('diary-title')?.value.trim() || '';
+    const content = document.getElementById('diary-content')?.value.trim() || '';
+    const tagInput = document.getElementById('diary-tag-input');
+    if (tagInput?.value.trim()) addManualTag('diary-tag-input', 'diary-tag-container');
+    const finalTags = getManualTags('diary-tag-container');
 
-    const title = document.getElementById('diary-title').value;
-    const content = document.getElementById('diary-content').value;
-    const finalTags = [];
-    document.querySelectorAll('.tag-chip.selected').forEach(el => finalTags.push(el.innerText));
-    const tagBox = document.getElementById('ai-suggestion-area');
-    const riskAlert = tagBox?.dataset.riskAlertCreated === 'true'
-        ? null
-        : createRiskAlert('Diary Post', `${title} ${content}`, { diary_title: title || 'Không có tiêu đề' });
+    if (content.length < 5) {
+        alert('Hãy viết nhật ký dài hơn một chút nhé.');
+        return;
+    }
 
-    userFeed.unshift({
-        id: Date.now(),
-        author: 'Tôi',
-        time: 'Vừa xong',
-        content: formatDiaryContent(title, content),
+    if (!finalTags.length) {
+        alert('Bạn cần thêm ít nhất 1 tag trước khi lưu nhật ký.');
+        return;
+    }
+
+    const riskAlert = createRiskAlert('Diary', `${title} ${content}`, { diary_title: title || 'Không có tiêu đề' });
+    const entry = {
+        id: `diary-${Date.now()}`,
+        title,
+        content,
         tags: finalTags,
-        likes: 0, comments: 0, isUser: true
-    });
+        mood_score: currentMoodScore,
+        date: new Date().toISOString()
+    };
+
+    privateDiaryEntries.unshift(entry);
+    savePrivateDiaryEntries();
 
     try {
         await apiRequest('/api/diaries', {
@@ -914,22 +1126,148 @@ async function confirmAndPost() {
             body: JSON.stringify({
                 title,
                 content,
-                tags: finalTags
+                tags: finalTags,
+                mood_score: currentMoodScore
             })
         });
     } catch (error) {
-        // The local feed still reflects the diary in offline/demo mode.
+        // Private local diary remains saved even if backend analytics are unavailable.
     }
 
-    alert(riskAlert || tagBox?.dataset.riskAlertCreated === 'true'
-        ? "Đã lưu nhật ký và gửi cảnh báo ẩn danh cho tổ tham vấn."
-        : "✅ Đã lưu nhật ký & Gửi dữ liệu ẩn danh về trường!");
-    renderStudentHome();
+    alert(riskAlert
+        ? 'Đã lưu nhật ký riêng tư và gửi cảnh báo ẩn danh cho tổ tham vấn.'
+        : 'Đã lưu nhật ký riêng tư.');
+    renderStudentDiary();
+}
+
+function openDiaryEntryModal(entryId) {
+    const entry = privateDiaryEntries.find(item => String(item.id) === String(entryId));
+    if (!entry) return;
+
+    const existing = document.getElementById('diary-entry-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'diary-entry-modal';
+    modal.className = 'modal-overlay';
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    modal.innerHTML = `
+        <div class="modal-content" style="max-height:90vh; overflow:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:16px;">
+                <div>
+                    <p class="mc-kicker" style="margin:0 0 4px;">Nhật ký riêng tư</p>
+                    <h3 style="margin:0; color:var(--deep-rose); font-family:var(--font-heading);">${escapeHtml(entry.title || 'Không có tiêu đề')}</h3>
+                    <p style="margin:6px 0 0; color:#777; font-size:13px;">${formatFeedTime(entry.date)} · Mood ${escapeHtml(entry.mood_score || '-')} / 5</p>
+                </div>
+                <button type="button" aria-label="Đóng" onclick="document.getElementById('diary-entry-modal')?.remove()" style="border:0;background:transparent;font-size:24px;cursor:pointer;color:#999;">&times;</button>
+            </div>
+            <div class="mc-tag-row" style="margin-bottom:14px;">
+                ${(entry.tags || []).map(tag => `<span>#${escapeHtml(tag)}</span>`).join('')}
+            </div>
+            <p style="white-space:pre-wrap; line-height:1.7; color:var(--mc-ink);">${escapeHtml(entry.content)}</p>
+        </div>
+    `;
+    document.querySelector('.mobile-frame')?.appendChild(modal);
+}
+
+async function confirmAndPost() {
+    return savePrivateDiary();
 }
 
 // ==============================================
 // 5. RESOURCES (TÀI NGUYÊN)
 // ==============================================
+function trackResourceOpen(index) {
+    const resource = currentResource[index];
+    if (!resource) return;
+    trackInteraction('resource_view', resource.title, {
+        type: resource.type,
+        title: resource.title
+    });
+}
+
+function normalizeResourceType(url, requestedType) {
+    if (requestedType && requestedType !== 'Tự nhận diện') return requestedType;
+    const lowerUrl = String(url || '').toLowerCase();
+    if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) return 'Video';
+    if (lowerUrl.includes('spotify.com')) return 'Podcast';
+    if (lowerUrl.endsWith('.pdf')) return 'Book';
+    return 'Blog';
+}
+
+function addCustomResource() {
+    const url = document.getElementById('resource-url')?.value.trim() || '';
+    const title = document.getElementById('resource-title')?.value.trim() || '';
+    const requestedType = document.getElementById('resource-type')?.value || 'Tự nhận diện';
+
+    let parsedUrl;
+    try {
+        parsedUrl = new URL(url);
+    } catch (error) {
+        alert('Bạn cần nhập link resource hợp lệ.');
+        return;
+    }
+
+    if (!title) {
+        alert('Bạn cần đặt tên cho resource trước khi import.');
+        return;
+    }
+
+    const resource = {
+        type: normalizeResourceType(parsedUrl.href, requestedType),
+        title,
+        duration: 'User import',
+        img: 'logo.png',
+        url: parsedUrl.href,
+        isCustom: true
+    };
+
+    resourcesDB.unshift(resource);
+    saveCustomResources();
+    showNotification('Đã import resource bằng link.');
+    renderResources(resource.type);
+}
+
+function requestResourceByNeed() {
+    const query = document.getElementById('resource-request-input')?.value.trim() || '';
+    const resultBox = document.getElementById('resource-request-result');
+    if (!resultBox) return;
+
+    if (!query) {
+        resultBox.innerHTML = '<p class="mc-empty">Bạn hãy nhập nhu cầu cần tìm tài nguyên.</p>';
+        return;
+    }
+
+    const normalized = normalizeVietnamese(query);
+    const matches = resourcesDB.filter(resource => {
+        const haystack = normalizeVietnamese(`${resource.title} ${resource.type} ${resource.duration}`);
+        return normalized.split(/\s+/).some(token => token.length > 2 && haystack.includes(token));
+    }).slice(0, 4);
+
+    if (matches.length) {
+        resultBox.innerHTML = matches.map(resource => `
+            <a href="${escapeHtml(resource.url || '#')}" target="_blank" rel="noopener noreferrer" class="feedback-item positive" style="display:block; text-decoration:none;">
+                <strong>${escapeHtml(resource.title)}</strong>
+                <p class="feedback-text">${escapeHtml(resource.type)} · ${escapeHtml(resource.duration || '')}</p>
+            </a>
+        `).join('');
+        return;
+    }
+
+    const externalSearch = `https://scholar.google.com/scholar?q=${encodeURIComponent(query + ' mental health')}`;
+    const wikiSearch = `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(query)}`;
+    resultBox.innerHTML = `
+        <div class="feedback-item improvement">
+            <strong>Chưa có resource phù hợp trong thư viện.</strong>
+            <p class="feedback-text">Bạn có thể tìm nguồn học thuật bên ngoài, sau đó import link vào Resources.</p>
+            <div class="feedback-action">
+                <a class="btn-link" target="_blank" rel="noopener noreferrer" href="${externalSearch}">Google Scholar</a>
+                <a class="btn-link" target="_blank" rel="noopener noreferrer" href="${wikiSearch}">Wikipedia</a>
+            </div>
+        </div>
+    `;
+}
+
 function renderResources(filterType = 'Tất cả') {
     const container = document.getElementById('student-main-content');
     updateNav(2);
@@ -947,11 +1285,11 @@ function renderResources(filterType = 'Tất cả') {
                 onclick="renderResources('${t}')">${escapeHtml(t)}</button>
     `).join('');
 
-    const cardsHtml = filteredDB.map(res => {
+    const cardsHtml = filteredDB.map((res, index) => {
         const href = res.url || '#';
         const actionAttr = res.action
-            ? `onclick="${res.action}(); return false;" href="#"`
-            : `href="${escapeHtml(href)}" ${href === '#' ? '' : 'target="_blank" rel="noopener noreferrer"'}`;
+            ? `onclick="trackResourceOpen(${index}); ${res.action}(); return false;" href="#"`
+            : `onclick="trackResourceOpen(${index})" href="${escapeHtml(href)}" ${href === '#' ? '' : 'target="_blank" rel="noopener noreferrer"'}`;
 
         return `
             <a ${actionAttr} class="res-link mc-resource-link">
@@ -974,7 +1312,31 @@ function renderResources(filterType = 'Tất cả') {
             <div class="mc-page-header">
                 <p class="mc-kicker">Kho tài nguyên</p>
                 <h1>Tài nguyên cho <span>tâm hồn.</span></h1>
-                <p>Thiền, podcast, sách và công cụ được tuyển chọn để đồng hành cùng bạn.</p>
+                <p>Import resource bằng link, ưu tiên nguồn chính thống và học thuật cho nội dung tâm lý.</p>
+            </div>
+            <div class="mc-panel" style="margin-bottom:18px;">
+                <label class="mc-field-label" for="resource-request-input">Request resource theo nhu cầu</label>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                    <input id="resource-request-input" class="mc-input" style="flex:1; min-width:220px;" placeholder="Ví dụ: mất ngủ, anxiety, stress deadline">
+                    <button class="mc-btn mc-btn-outline" type="button" onclick="requestResourceByNeed()">Gợi ý resource</button>
+                </div>
+                <div id="resource-request-result" class="feedback-list"></div>
+            </div>
+            <div class="mc-panel" style="margin-bottom:18px;">
+                <label class="mc-field-label" for="resource-url">Import resource bằng link</label>
+                <div class="mc-resource-import-row">
+                    <input id="resource-url" class="mc-input" placeholder="https://...">
+                    <input id="resource-title" class="mc-input" placeholder="Tên resource">
+                    <select id="resource-type" class="mc-input">
+                        <option>Tự nhận diện</option>
+                        <option>Blog</option>
+                        <option>Video</option>
+                        <option>Podcast</option>
+                        <option>Book</option>
+                        <option>Công cụ</option>
+                    </select>
+                    <button class="mc-btn mc-btn-primary" type="button" onclick="addCustomResource()">Import</button>
+                </div>
             </div>
             <div class="filter-bar mc-filter-bar">${filterHtml}</div>
             <div class="resource-grid mc-resource-grid">
@@ -1022,23 +1384,27 @@ function startBreathing() {
     }, 4000);
 }
 
-function getAuthSession() {
-    return JSON.parse(localStorage.getItem('authSession')) || currentUser || { name: 'Người dùng ẩn danh', email: 'student@example.com' };
+function getProfileSession() {
+    return getStudentSession();
 }
 
 
-function renderProfile() {
+function renderProfileLegacy() {
     const container = document.getElementById('student-main-content');
     updateNav(-1);
     animateMainContentSwap();
 
-    const session = getAuthSession();
+    const session = getProfileSession();
     if (!session || !session.name) {
         session.name = 'Người dùng ẩn danh';
     }
 
     // Tìm thông tin người dùng dựa trên username trên session, nếu có
-    currentUserProfile = usersDB.find(u => u.name === session.name) || {};
+    const currentUserProfile = usersDB.find(u => u.name === session.name) || {
+        name: session.name,
+        email: session.email,
+        avatarUrl: 'logo.png'
+    };
 
 
     container.innerHTML = `
@@ -1053,7 +1419,7 @@ function renderProfile() {
                     <img src="${escapeHtml(currentUserProfile.avatarUrl)}" alt="Avatar" class="user-profile-badge" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
                     <div>
                         <h2 style="margin: 0; font-family: var(--font-heading); color: var(--mc-ink);">${escapeHtml(session.name)}</h2>
-                        <p style="margin: 4px 0 0; color: var(--mc-ink-soft);">${escapeHtml(currentUserProfile.email)}</p>
+                        <p style="margin: 4px 0 0; color: var(--mc-ink-soft);">${escapeHtml(currentUserProfile.email || session.email)}</p>
                     </div>
                 </div>
                 
@@ -1064,9 +1430,10 @@ function renderProfile() {
                 
                 <div style="margin-bottom: 20px;">
                     <label class="mc-field-label">Email trường</label>
-                    <input type="email" class="mc-input" value="${escapeHtml(currentUserProfile.email)}" disabled>
+                    <input type="email" class="mc-input" value="${escapeHtml(currentUserProfile.email || session.email)}" disabled>
                 </div>
                 
+                <button class="mc-btn mc-btn-primary" style="width: 100%; margin-top: 10px;" onclick="openFeedbackModal({ source_type: 'app' })">Gửi feedback cho nhà trường</button>
                 <button class="mc-btn mc-btn-outline" style="width: 100%; margin-top: 10px;" onclick="logout()">Đăng xuất</button>
             </div>
         </section>
@@ -1076,7 +1443,7 @@ function renderProfile() {
 // ==============================================
 // 6. STATS (THỐNG KÊ DYNAMIC)
 // ==============================================
-function renderStudentStats() {
+function renderStudentStatsLegacy() {
     const container = document.getElementById('student-main-content');
     updateNav(3);
     animateMainContentSwap();
@@ -1139,7 +1506,7 @@ function renderStudentStats() {
                 <div class="mc-panel mc-insight-card" style="border-left-color:${alertColor};">
                     <div class="mc-insight-icon">AI</div>
                     <div>
-                        <h3>Phân tích AI</h3>
+                        <h3>Tổng quan</h3>
                         <p>${escapeHtml(aiMessage)}</p>
                     </div>
                 </div>
@@ -1159,10 +1526,430 @@ function renderStudentStats() {
 
             <div class="mc-action-grid">
                 <button class="mc-btn mc-btn-outline" type="button" onclick="renderResources()">Xem Tài nguyên</button>
+                <button class="mc-btn mc-btn-outline" type="button" onclick="openFeedbackModal({ source_type: 'feedback' })">Gửi feedback</button>
                 ${riskLevel !== 'low' ? `<button class="mc-btn mc-btn-primary" type="button" onclick="openBookingModal()">Đặt lịch ngay</button>` : ''}
             </div>
         </section>
     `;
+}
+
+function getCurrentProfileNames(profile = getStudentProfile()) {
+    const session = getStudentSession();
+    return new Set([
+        'Tôi',
+        currentUser.name,
+        session?.name,
+        session?.user?.name,
+        profile.name,
+        profile.displayName
+    ].filter(Boolean));
+}
+
+function isOwnedFeedPost(post) {
+    const profile = getStudentProfile();
+    if (post?.owner_email && profile.email) {
+        return String(post.owner_email).toLowerCase() === String(profile.email).toLowerCase();
+    }
+
+    const names = getCurrentProfileNames(profile);
+    return Boolean(post?.isUser && names.has(post.author));
+}
+
+function syncAuthProfileName(displayName) {
+    const session = getAuthSession();
+    if (!session) return;
+
+    const nextSession = { ...session };
+    if ('name' in nextSession) nextSession.name = displayName;
+    if (nextSession.user) nextSession.user = { ...nextSession.user, name: displayName };
+
+    localStorage.setItem('mindconnect:auth', JSON.stringify(nextSession));
+}
+
+function handleAvatarUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedAvatarTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    if (!allowedAvatarTypes.includes(file.type)) {
+        alert('Vui lòng chọn ảnh PNG, JPG, WebP hoặc GIF để làm avatar.');
+        return;
+    }
+
+    if (file.size > 1.5 * 1024 * 1024) {
+        alert('Avatar nên nhỏ hơn 1.5MB để trình duyệt lưu ổn định.');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+        const preview = document.getElementById('profile-avatar-preview');
+        if (!preview) return;
+        preview.src = reader.result;
+        preview.dataset.avatarUrl = reader.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function saveProfileSettings() {
+    const previousProfile = getStudentProfile();
+    const previousNames = getCurrentProfileNames(previousProfile);
+    const nameInput = document.getElementById('profile-display-name');
+    const bioInput = document.getElementById('profile-bio');
+    const avatarPreview = document.getElementById('profile-avatar-preview');
+    const nextName = nameInput?.value.trim() || '';
+
+    if (nextName.length < 2) {
+        alert('Tên hiển thị cần có ít nhất 2 ký tự.');
+        return;
+    }
+
+    const updatedProfile = {
+        name: nextName,
+        email: previousProfile.email,
+        avatarUrl: avatarPreview?.dataset.avatarUrl || avatarPreview?.getAttribute('src') || previousProfile.avatarUrl || 'logo.png',
+        bio: bioInput?.value.trim() || ''
+    };
+
+    saveStudentProfile(updatedProfile);
+    syncAuthProfileName(updatedProfile.name);
+    currentUser.name = updatedProfile.name;
+    currentUser.email = updatedProfile.email || currentUser.email;
+
+    userFeed = userFeed.map(post => {
+        const ownsPost = isOwnedFeedPost(post) || previousNames.has(post.author);
+        const nextPost = { ...post };
+
+        if (ownsPost) {
+            nextPost.author = updatedProfile.name;
+            nextPost.author_avatar = updatedProfile.avatarUrl;
+            nextPost.owner_email = updatedProfile.email;
+            nextPost.isUser = true;
+        }
+
+        if (Array.isArray(nextPost.commentObjects)) {
+            nextPost.commentObjects = nextPost.commentObjects.map(comment => {
+                const ownsComment = comment?.isUser || previousNames.has(comment?.author) || (
+                    comment?.owner_email &&
+                    updatedProfile.email &&
+                    String(comment.owner_email).toLowerCase() === String(updatedProfile.email).toLowerCase()
+                );
+                return ownsComment
+                    ? {
+                        ...comment,
+                        author: updatedProfile.name,
+                        author_avatar: updatedProfile.avatarUrl,
+                        owner_email: updatedProfile.email,
+                        isUser: true
+                    }
+                    : comment;
+            });
+        }
+
+        return nextPost;
+    });
+    savePublicFeed();
+
+    updateStudentProfileBadge();
+    showNotification('Đã cập nhật hồ sơ cá nhân.');
+    renderProfile();
+}
+
+function renderProfile() {
+    const container = document.getElementById('student-main-content');
+    updateNav(-1);
+    animateMainContentSwap();
+
+    const profile = getStudentProfile();
+    const avatarUrl = profile.avatarUrl || 'logo.png';
+
+    container.innerHTML = `
+        <section class="mc-page">
+            <div class="mc-page-header">
+                <p class="mc-kicker">Thông tin cá nhân</p>
+                <h1>User <span>Profile</span></h1>
+                <p>Đổi tên hiển thị, avatar và phần giới thiệu xuất hiện trên News feed.</p>
+            </div>
+
+            <div class="mc-panel mc-profile-panel">
+                <div class="mc-profile-editor">
+                    <div class="mc-profile-avatar-block">
+                        <img
+                            id="profile-avatar-preview"
+                            src="${escapeHtml(avatarUrl)}"
+                            data-avatar-url="${escapeHtml(avatarUrl)}"
+                            alt="Avatar"
+                            class="mc-profile-avatar"
+                        >
+                        <input id="profile-avatar-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onchange="handleAvatarUpload(event)">
+                        <label class="mc-btn mc-btn-outline" for="profile-avatar-input">Upload avatar</label>
+                    </div>
+
+                    <div class="mc-profile-fields">
+                        <label class="mc-field-label" for="profile-display-name">Tên hiển thị</label>
+                        <input id="profile-display-name" type="text" class="mc-input" value="${escapeHtml(profile.displayName || profile.name)}" maxlength="40">
+
+                        <label class="mc-field-label" for="profile-email">Email tài khoản</label>
+                        <input id="profile-email" type="email" class="mc-input" value="${escapeHtml(profile.email || '')}" disabled>
+
+                        <label class="mc-field-label" for="profile-bio">Giới thiệu ngắn</label>
+                        <textarea id="profile-bio" class="mc-textarea mc-profile-bio" maxlength="220">${escapeHtml(profile.bio || '')}</textarea>
+
+                        <div class="mc-action-grid mc-profile-actions">
+                            <button class="mc-btn mc-btn-primary" type="button" onclick="saveProfileSettings()">Lưu hồ sơ</button>
+                            <button class="mc-btn mc-btn-outline" type="button" onclick="openFeedbackModal({ source_type: 'app' })">Gửi feedback</button>
+                            <button class="mc-btn mc-btn-outline" type="button" onclick="logout()">Đăng xuất</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    `;
+}
+
+function normalizeEmotionText(text) {
+    return String(text || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
+
+function getEmotionScore(source) {
+    const text = normalizeEmotionText(`${source.title || ''} ${source.content || ''} ${(source.tags || []).join(' ')}`);
+    const negativeSignals = [
+        ['tuyet vong', 24], ['tu hai', 28], ['khong muon song', 28], ['khung hoang', 22],
+        ['burnout', 18], ['kiet suc', 18], ['mat ngu', 14], ['lo au', 16],
+        ['cang thang', 15], ['stress', 15], ['ap luc', 14], ['so hai', 13],
+        ['co don', 12], ['chan nan', 12], ['khoc', 10], ['deadline', 8], ['khong tot', 8]
+    ];
+    const positiveSignals = [
+        ['binh yen', 16], ['nhe nhang', 14], ['on hon', 13], ['on dinh', 13],
+        ['vui', 12], ['tot', 10], ['hy vong', 12], ['cam on', 10],
+        ['thu gian', 10], ['nghi ngoi', 8], ['thanh cong', 8], ['duoc hon', 8]
+    ];
+
+    let score = Number.isFinite(Number(source.mood_score))
+        ? Math.min(95, Math.max(12, Number(source.mood_score) * 18 + 8))
+        : 58;
+
+    negativeSignals.forEach(([signal, weight]) => {
+        if (text.includes(signal)) score -= weight;
+    });
+    positiveSignals.forEach(([signal, weight]) => {
+        if (text.includes(signal)) score += weight;
+    });
+
+    return Math.round(Math.min(96, Math.max(8, score)));
+}
+
+function getEmotionTone(score) {
+    if (score < 40) return { tone: 'danger', label: 'Căng thẳng', color: '#d32f2f' };
+    if (score < 60) return { tone: 'neutral', label: 'Dao động', color: '#f0a85f' };
+    if (score < 78) return { tone: 'rose', label: 'Ổn định', color: 'var(--accent-pink)' };
+    return { tone: 'amber', label: 'Tích cực', color: 'var(--success)' };
+}
+
+function getLocalDateKey(dateInput) {
+    const date = dateInput ? new Date(dateInput) : new Date();
+    if (Number.isNaN(date.getTime())) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function getWeekdayLabel(date) {
+    return ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()];
+}
+
+function getEmotionSourcesForCurrentUser() {
+    const diarySources = privateDiaryEntries.map(entry => ({
+        id: entry.id,
+        type: 'diary',
+        title: entry.title || 'Nhật ký riêng tư',
+        content: entry.content || '',
+        tags: Array.isArray(entry.tags) ? entry.tags : [],
+        mood_score: entry.mood_score,
+        date: entry.date || new Date().toISOString()
+    }));
+
+    const postSources = userFeed
+        .filter(isOwnedFeedPost)
+        .map(post => ({
+            id: post.id,
+            type: 'post',
+            title: 'Bài đăng Home',
+            content: post.content || '',
+            tags: Array.isArray(post.tags) ? post.tags : [],
+            date: post.date || post.time || new Date().toISOString()
+        }));
+
+    return [...diarySources, ...postSources]
+        .map(source => ({ ...source, score: getEmotionScore(source) }))
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+function buildWeeklyEmotionStats(sources) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const days = Array.from({ length: 7 }, (_, index) => {
+        const day = new Date(today);
+        day.setDate(today.getDate() - (6 - index));
+        const key = getLocalDateKey(day);
+        const daySources = sources.filter(source => getLocalDateKey(source.date) === key);
+        const average = daySources.length
+            ? Math.round(daySources.reduce((sum, source) => sum + source.score, 0) / daySources.length)
+            : 0;
+        const tone = getEmotionTone(average || 50);
+
+        return {
+            key,
+            d: getWeekdayLabel(day),
+            value: daySources.length ? average : 24,
+            label: daySources.length ? tone.label : 'Chưa có dữ liệu',
+            tone: tone.tone,
+            empty: daySources.length === 0,
+            count: daySources.length
+        };
+    });
+
+    const filledDays = days.filter(day => !day.empty);
+    const average = filledDays.length
+        ? Math.round(filledDays.reduce((sum, day) => sum + day.value, 0) / filledDays.length)
+        : 0;
+
+    return { days, average, filledDays: filledDays.length };
+}
+
+function buildTodayEmotionInsight(sources) {
+    const todayKey = getLocalDateKey(new Date());
+    const todaySources = sources.filter(source => getLocalDateKey(source.date) === todayKey);
+    const diaryCount = todaySources.filter(source => source.type === 'diary').length;
+    const postCount = todaySources.filter(source => source.type === 'post').length;
+
+    if (!todaySources.length) {
+        return {
+            sources: [],
+            score: 0,
+            tone: getEmotionTone(50),
+            message: 'Hôm nay chưa có Diary hoặc bài đăng Home của bạn để AI phân tích. Khi bạn ghi nhật ký hoặc đăng bài, thống kê sẽ cập nhật theo đúng dữ liệu của bạn.',
+            sourceSummary: '0 Diary, 0 bài đăng Home'
+        };
+    }
+
+    const score = Math.round(todaySources.reduce((sum, source) => sum + source.score, 0) / todaySources.length);
+    const tone = getEmotionTone(score);
+    const message = score < 40
+        ? 'Dữ liệu hôm nay cho thấy bạn đang chịu áp lực rõ rệt. Hãy ưu tiên nghỉ ngơi ngắn, giảm bớt việc phụ và cân nhắc đặt lịch tư vấn nếu cảm giác này kéo dài.'
+        : score < 60
+            ? 'Cảm xúc hôm nay có dao động. Bạn nên ghi thêm vài dòng Diary để gọi tên điều đang làm mình nặng lòng và chọn một việc nhỏ có thể hoàn thành ngay.'
+            : score < 78
+                ? 'Cảm xúc hôm nay khá ổn định. Hãy duy trì nhịp sinh hoạt hiện tại, nghỉ giữa các phiên học và tiếp tục theo dõi các tín hiệu căng thẳng.'
+                : 'Cảm xúc hôm nay đang tích cực. Bạn có thể ghi lại điều đã giúp mình ổn hơn để dùng lại trong những ngày căng thẳng.';
+
+    return {
+        sources: todaySources,
+        score,
+        tone,
+        message,
+        sourceSummary: `${diaryCount} Diary, ${postCount} bài đăng Home`
+    };
+}
+
+async function refreshTodayStatsAI(todaySources, fallbackInsight) {
+    const insightBox = document.getElementById('today-ai-insight');
+    if (!insightBox || !todaySources.length || !backendReady) return;
+
+    const payload = todaySources.map(source => {
+        const sourceName = source.type === 'diary' ? 'Diary riêng tư' : 'Bài đăng Home của user';
+        return `${sourceName}: ${source.title}\nTags: ${(source.tags || []).join(', ')}\nText: ${source.content}`;
+    }).join('\n\n').slice(0, 1500);
+
+    try {
+        const result = await apiRequest('/chat/support', {
+            method: 'POST',
+            body: JSON.stringify({
+                message: `Bạn là AI phân tích cảm xúc cho MindConnect. Chỉ dựa trên dữ liệu hôm nay của chính người dùng dưới đây, không nhắc tới comment của người khác. Trả lời bằng tiếng Việt, 2-3 câu, đưa một lời khuyên cụ thể và nhẹ nhàng.\n\n${payload}`,
+                history: []
+            })
+        });
+
+        if (result?.reply && document.getElementById('today-ai-insight') === insightBox) {
+            insightBox.textContent = result.reply;
+        }
+    } catch (error) {
+        insightBox.textContent = `${fallbackInsight.message} Phần này đang dùng phân tích cục bộ vì backend AI chưa phản hồi.`;
+    }
+}
+
+function renderStudentStats() {
+    const container = document.getElementById('student-main-content');
+    updateNav(3);
+    animateMainContentSwap();
+
+    const sources = getEmotionSourcesForCurrentUser();
+    const weekly = buildWeeklyEmotionStats(sources);
+    const todayInsight = buildTodayEmotionInsight(sources);
+    const totalDiary = sources.filter(source => source.type === 'diary').length;
+    const totalPosts = sources.filter(source => source.type === 'post').length;
+
+    const barsHtml = weekly.days.map(day => `
+        <div class="mc-chart-day">
+            <div class="mc-chart-track">
+                <div class="mc-chart-bar ${day.empty ? 'future' : `tone-${day.tone}`}" style="height:${day.value}%" title="${escapeHtml(day.label)}"></div>
+            </div>
+            <span>${day.d}</span>
+        </div>
+    `).join('');
+
+    container.innerHTML = `
+        <section class="mc-page">
+            <div class="mc-page-header">
+                <p class="mc-kicker">Tuần này</p>
+                <h1>Thống kê <span>Cảm xúc</span></h1>
+                <p>Chỉ dùng Diary riêng tư và bài đăng Home của chính bạn. Comment của người khác không được tính.</p>
+            </div>
+
+            <div class="mc-panel mc-stats-chart">
+                <div class="mc-chart-header">
+                    <div>
+                        <h3>Cảm xúc 7 ngày qua</h3>
+                        <p>Điểm trung bình: <strong>${weekly.average ? `${weekly.average} / 100` : 'Chưa có dữ liệu'}</strong></p>
+                    </div>
+                    <span class="mc-trend-pill">${weekly.filledDays}/7 ngày có dữ liệu thật</span>
+                </div>
+                <div class="mc-chart-grid">${barsHtml}</div>
+                <p class="mc-chart-note">Nguồn: ${totalDiary} Diary riêng tư và ${totalPosts} bài đăng Home của bạn.</p>
+            </div>
+
+            <div class="mc-insight-grid">
+                <div class="mc-panel mc-insight-card" style="border-left-color:${todayInsight.tone.color};">
+                    <div class="mc-insight-icon">AI</div>
+                    <div>
+                        <h3>Phân tích AI hôm nay</h3>
+                        <p id="today-ai-insight">${escapeHtml(todayInsight.message)}</p>
+                    </div>
+                </div>
+
+                <div class="mc-panel mc-insight-card" style="border-left-color:#f0a85f;">
+                    <div class="mc-insight-icon muted">i</div>
+                    <div>
+                        <h3>Nguồn dữ liệu</h3>
+                        <p>${escapeHtml(todayInsight.sourceSummary)} trong ngày hiện tại. Stats không đọc comment của người khác và không lấy bài Diary đưa lên Home.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mc-action-grid">
+                <button class="mc-btn mc-btn-outline" type="button" onclick="renderStudentDiary()">Ghi Diary</button>
+                <button class="mc-btn mc-btn-outline" type="button" onclick="renderStudentHome()">Đăng Home</button>
+                ${todayInsight.score && todayInsight.score < 45 ? `<button class="mc-btn mc-btn-primary" type="button" onclick="openBookingModal()">Đặt lịch tư vấn</button>` : ''}
+            </div>
+        </section>
+    `;
+
+    refreshTodayStatsAI(todayInsight.sources, todayInsight);
 }
 
 // ==============================================
@@ -1231,6 +2018,10 @@ async function sendMsg() {
     const txt = input.value.trim();
     if(!txt) return;
 
+    trackInteraction('chat', 'chat-support', {
+        message_length: txt.length
+    });
+
     chatHistory.push({ sender: 'user', text: txt });
     renderChat();
     const activeInput = document.getElementById('chat-input');
@@ -1297,6 +2088,100 @@ async function sendMsg() {
 // ==============================================
 // 8. BOOKING MODAL (LOGIC CŨ ĐÃ KHÔI PHỤC)
 // ==============================================
+function openFeedbackModal(context = {}) {
+    const existing = document.getElementById('student-feedback-modal');
+    if (existing) existing.remove();
+
+    const beforeScore = Number(context.before_mood_score || currentMoodScore || 3);
+    const afterScore = Number(context.after_mood_score || currentMoodScore || 3);
+    const modal = document.createElement('div');
+    modal.id = 'student-feedback-modal';
+    modal.className = 'modal-overlay';
+    modal.dataset.sourceType = context.source_type || 'feedback';
+    modal.dataset.bookingId = context.booking_id || '';
+    modal.onclick = function(e) { if (e.target === modal) closeFeedbackModal(); };
+
+    modal.innerHTML = `
+        <div class="modal-content" style="max-height: 90vh; overflow:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom: 16px;">
+                <div>
+                    <h3 style="color: var(--deep-rose); font-family: var(--font-heading); margin:0;">Gửi feedback ẩn danh</h3>
+                    <p style="margin:4px 0 0; color:#666; font-size:13px;">Nhà trường sẽ dùng phản hồi này để đo hiệu quả hỗ trợ.</p>
+                </div>
+                <button type="button" onclick="closeFeedbackModal()" aria-label="Đóng" style="font-size: 24px; cursor:pointer; color: #999; border:0; background:transparent;">&times;</button>
+            </div>
+
+            <label class="mc-field-label" for="feedback-report">Bạn muốn báo cáo hoặc chia sẻ điều gì?</label>
+            <textarea id="feedback-report" class="mc-textarea" style="min-height:90px;" placeholder="Ví dụ: Sau buổi tư vấn mình thấy nhẹ hơn, hoặc mình vẫn còn gặp khó khăn..."></textarea>
+
+            <label class="mc-field-label" for="feedback-rating" style="margin-top:14px;">Đánh giá ngắn về hỗ trợ/tài nguyên</label>
+            <textarea id="feedback-rating" class="mc-textarea" style="min-height:70px;" placeholder="Điều gì hữu ích? Điều gì cần cải thiện?"></textarea>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;">
+                <div>
+                    <label class="mc-field-label" for="feedback-before">Trước hỗ trợ</label>
+                    <select id="feedback-before" class="mc-input">
+                        ${[1, 2, 3, 4, 5].map(score => `<option value="${score}" ${score === beforeScore ? 'selected' : ''}>${score}/5</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label class="mc-field-label" for="feedback-after">Sau hỗ trợ</label>
+                    <select id="feedback-after" class="mc-input">
+                        ${[1, 2, 3, 4, 5].map(score => `<option value="${score}" ${score === afterScore ? 'selected' : ''}>${score}/5</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+
+            <button class="mc-btn mc-btn-primary" style="width:100%; margin-top:18px;" type="button" onclick="submitStudentFeedback()">Gửi phản hồi</button>
+        </div>
+    `;
+    document.querySelector('.mobile-frame')?.appendChild(modal);
+}
+
+function closeFeedbackModal() {
+    const modal = document.getElementById('student-feedback-modal');
+    if (modal) modal.remove();
+}
+
+async function submitStudentFeedback() {
+    if (blockIfBackendNotReady()) return;
+
+    const modal = document.getElementById('student-feedback-modal');
+    const reportText = document.getElementById('feedback-report')?.value.trim() || '';
+    const ratingText = document.getElementById('feedback-rating')?.value.trim() || '';
+    const beforeScore = Number(document.getElementById('feedback-before')?.value || currentMoodScore);
+    const afterScore = Number(document.getElementById('feedback-after')?.value || currentMoodScore);
+
+    if (!reportText && !ratingText) {
+        alert('Bạn hãy nhập nội dung feedback hoặc báo cáo trước khi gửi nhé.');
+        return;
+    }
+
+    try {
+        const feedback = await apiRequest('/api/feedback', {
+            method: 'POST',
+            body: JSON.stringify({
+                source_type: modal?.dataset.sourceType || 'feedback',
+                booking_id: modal?.dataset.bookingId || '',
+                report_text: reportText,
+                rating_text: ratingText,
+                mood_score: afterScore,
+                before_mood_score: beforeScore,
+                after_mood_score: afterScore
+            })
+        });
+        currentMoodScore = afterScore || currentMoodScore;
+        trackInteraction('feedback', feedback?.id || 'student-feedback', {
+            surface: 'feedback-modal',
+            source_type: modal?.dataset.sourceType || 'feedback'
+        });
+        closeFeedbackModal();
+        alert('Đã gửi feedback ẩn danh cho nhà trường. Cảm ơn bạn đã chia sẻ.');
+    } catch (error) {
+        alert(`Không gửi được feedback lúc này: ${error.message}`);
+    }
+}
+
 function openBookingModal() {
     const modal = document.createElement('div');
     modal.id = 'booking-modal';
@@ -1341,12 +2226,19 @@ async function handleConfirmBooking() {
     closeBookingModal();
 
     try {
-        await apiRequest('/api/bookings', {
+        const booking = await apiRequest('/api/bookings', {
             method: 'POST',
             body: JSON.stringify({
                 requested_time: requestedTime,
-                note
+                note,
+                location: getSupportLocation(),
+                before_mood_score: currentMoodScore
             })
+        });
+        trackInteraction('booking', booking?.id || requestedTime || Date.now(), {
+            requested_time: requestedTime,
+            location: getSupportLocation(),
+            before_mood_score: currentMoodScore
         });
     } catch (error) {
         const localBookingAlert = {
@@ -1360,12 +2252,14 @@ async function handleConfirmBooking() {
             student_alias: 'SV ẩn danh',
             class_name: 'CNTT_K48',
             department: 'CNTT',
+            location: getSupportLocation(),
+            before_mood_score: currentMoodScore,
             excerpt: note || 'Sinh viên yêu cầu đặt lịch tham vấn.'
         };
         saveRiskAlerts([localBookingAlert, ...getRiskAlerts()]);
     }
 
     setTimeout(() => {
-        alert("✅ Đã gửi yêu cầu thành công!\nCán bộ tham vấn sẽ liên hệ lại với bạn qua SĐT hoặc Email trong vòng 24h.");
+        alert("✅ Đã gửi yêu cầu thành công!\nCán bộ tham vấn sẽ liên hệ lại với bạn qua SĐT hoặc Email trong vòng 24h.\nSau buổi hỗ trợ, bạn có thể vào Profile để gửi feedback ẩn danh.");
     }, 300);
 }

@@ -10,6 +10,10 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     default: 'SV ẩn danh'
   },
+  student_id_hash: {
+    type: String,
+    default: 'SV-ANON'
+  },
   class_name: {
     type: String,
     default: 'CNTT_K48'
@@ -17,6 +21,28 @@ const bookingSchema = new mongoose.Schema({
   department: {
     type: String,
     default: 'CNTT'
+  },
+  location: {
+    type: String,
+    default: 'Phòng tham vấn 102 - Khu B'
+  },
+  urgency_score: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 60
+  },
+  before_mood_score: {
+    type: Number,
+    min: 1,
+    max: 5,
+    default: null
+  },
+  after_mood_score: {
+    type: Number,
+    min: 1,
+    max: 5,
+    default: null
   },
   requested_time: {
     type: Date,

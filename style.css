@@ -554,17 +554,8 @@ input {
 .trend-down { background: #e8f5e9; color: #2e7d32; } /* Giảm tốt */
 .trend-good-up { background: #e8f5e9; color: #2e7d32; } /* Tăng tốt (Engagement) */
 
-/* Hotspot & Heatmap */
+/* Analysis */
 .analysis-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
-.heatmap-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.heatmap-table td, .heatmap-table th { padding: 10px; border: 1px solid #eee; text-align: center; }
-.hm-cell { width: 40px; height: 30px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; margin: 0 auto;}
-/* Heatmap Colors */
-.hm-1 { background: #88D498; } /* Low */
-.hm-2 { background: #aed581; }
-.hm-3 { background: #FFB347; } /* Med */
-.hm-4 { background: #ff8a65; }
-.hm-5 { background: #FF6961; } /* High */
 
 /* Intervention ROI */
 .roi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
@@ -663,6 +654,11 @@ input {
 .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
 .bg-high { background: #ffebee; color: #d32f2f; }
 .bg-med { background: #fff3e0; color: #ef6c00; }
+.bg-low { background: #e8f5e9; color: #2e7d32; }
+.engagement-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.engagement-cell { border: 1px solid #f0f0f0; border-radius: 8px; padding: 12px; background: #fff; }
+.engagement-cell span { display: block; color: #777; font-size: 12px; margin-bottom: 6px; }
+.engagement-cell strong { color: var(--text-dark); font-size: 22px; }
 
 /* 6. BOOKING MODAL */
 .modal-overlay {
@@ -1072,17 +1068,6 @@ input {
 .btn-link:hover { background: #fff0f5; color: var(--deep-rose); }
 .data-badge { background: var(--primary-pink); color: var(--deep-rose); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 10px; }
 
-/* === HEATMAP === */
-.heatmap-legend { display: flex; gap: 12px; align-items: center; }
-.legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #888; }
-.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-.legend-dot.low { background: var(--success); }
-.legend-dot.med { background: var(--warning); }
-.legend-dot.high { background: var(--danger); }
-.heatmap-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.heatmap-table td, .heatmap-table th { padding: 10px 8px; border-bottom: 1px solid #f5f5f5; text-align: center; }
-.heatmap-table th { color: #888; font-weight: 500; font-size: 12px; }
-.hm-cell { min-width: 60px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 11px; margin: 0 auto; }
 .dept-badge { background: #f0f0f0; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
 
 /* === TOPICS LIST === */
@@ -1600,6 +1585,22 @@ input {
     color: white;
 }
 
+.manual-tag-chip {
+    align-items: center;
+    gap: 7px;
+}
+
+.manual-tag-chip button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 900;
+    line-height: 1;
+    padding: 0;
+}
+
 .mc-editor-actions {
     display: flex;
     justify-content: flex-end;
@@ -1746,6 +1747,12 @@ input {
     font-weight: 800;
 }
 
+.mc-resource-import-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(160px, 0.8fr) 140px auto;
+    gap: 8px;
+}
+
 .mc-breathing-panel {
     max-width: 620px;
     margin: 0 auto;
@@ -1765,6 +1772,47 @@ input {
 
 .mc-stats-chart {
     padding: 26px;
+}
+
+.mc-profile-panel {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 26px;
+}
+
+.mc-profile-editor {
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: 26px;
+    align-items: start;
+}
+
+.mc-profile-avatar-block {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+}
+
+.mc-profile-avatar {
+    width: 128px;
+    height: 128px;
+    border: 4px solid white;
+    border-radius: 50%;
+    box-shadow: var(--mc-shadow-soft, 0 20px 55px rgba(212, 46, 112, 0.16));
+    object-fit: cover;
+}
+
+.mc-profile-fields {
+    display: grid;
+    gap: 12px;
+}
+
+.mc-profile-bio {
+    min-height: 96px;
+}
+
+.mc-profile-actions {
+    margin-top: 8px;
 }
 
 .mc-chart-header {
@@ -2058,8 +2106,13 @@ input {
     }
 
     .mc-diary-grid,
-    .mc-insight-grid {
+    .mc-insight-grid,
+    .mc-profile-editor {
         grid-template-columns: 1fr;
+    }
+
+    .mc-profile-avatar-block {
+        justify-items: start;
     }
 
     .mc-resource-grid {
@@ -2074,6 +2127,10 @@ input {
 
     .mc-resource-grid,
     .mc-action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mc-resource-import-row {
         grid-template-columns: 1fr;
     }
 

@@ -119,17 +119,6 @@
         .btn-link:hover { background: #fff0f5; color: var(--deep-rose); }
         .data-badge { background: var(--primary-pink); color: var(--deep-rose); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 10px; }
 
-        /* === HEATMAP === */
-        .heatmap-legend { display: flex; gap: 12px; align-items: center; }
-        .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #888; }
-        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .legend-dot.low { background: var(--success); }
-        .legend-dot.med { background: var(--warning); }
-        .legend-dot.high { background: var(--danger); }
-        .heatmap-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .heatmap-table td, .heatmap-table th { padding: 10px 8px; border-bottom: 1px solid #f5f5f5; text-align: center; }
-        .heatmap-table th { color: #888; font-weight: 500; font-size: 12px; }
-        .hm-cell { min-width: 60px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 11px; margin: 0 auto; }
         .dept-badge { background: #f0f0f0; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
 
         /* === TOPICS LIST === */
@@ -324,8 +313,8 @@
                                     <span class="kpi-label">Chỉ số Cảm xúc</span>
                                     <span class="kpi-trend trend-good">▬ 0%</span>
                                 </div>
-                                <div class="kpi-value" id="metric-sentiment" style="color: var(--success);">7.8</div>
-                                <div class="kpi-sub">trên 10 · Ổn định</div>
+                                <div class="kpi-value" id="metric-sentiment" style="color: var(--success);">...</div>
+                                <div class="kpi-sub">Đang tải dữ liệu thật</div>
                                 <div class="kpi-sparkline">
                                     <svg viewBox="0 0 100 30" class="sparkline"><polyline fill="none" stroke="var(--success)" stroke-width="2" points="0,25 15,20 30,22 45,15 60,18 75,10 90,12 100,8"/></svg>
                                 </div>
@@ -335,8 +324,8 @@
                                     <span class="kpi-label">SV Rủi ro Cao</span>
                                     <span class="kpi-trend trend-bad">▲ +1.2%</span>
                                 </div>
-                                <div class="kpi-value" id="metric-risk-rate" style="color: var(--danger);">4.2%</div>
-                                <div class="kpi-sub">48 sinh viên / 1,143 SV</div>
+                                <div class="kpi-value" id="metric-risk-rate" style="color: var(--danger);">...</div>
+                                <div class="kpi-sub">Đang tải dữ liệu thật</div>
                                 <div class="kpi-sparkline">
                                     <svg viewBox="0 0 100 30" class="sparkline"><polyline fill="none" stroke="var(--danger)" stroke-width="2" points="0,20 15,18 30,22 45,15 60,20 75,12 90,18 100,10"/></svg>
                                 </div>
@@ -346,8 +335,8 @@
                                     <span class="kpi-label">Gắn kết App</span>
                                     <span class="kpi-trend trend-good">▲ +15%</span>
                                 </div>
-                                <div class="kpi-value" id="metric-engagement" style="color: var(--accent-pink);">1,250</div>
-                                <div class="kpi-sub">Lượt tương tác / tuần</div>
+                                <div class="kpi-value" id="metric-engagement" style="color: var(--accent-pink);">...</div>
+                                <div class="kpi-sub">Đang tải dữ liệu thật</div>
                                 <div class="kpi-sparkline">
                                     <svg viewBox="0 0 100 30" class="sparkline"><polyline fill="none" stroke="var(--accent-pink)" stroke-width="2" points="0,25 15,22 30,20 45,18 60,15 75,12 90,10 100,5"/></svg>
                                 </div>
@@ -357,8 +346,8 @@
                                     <span class="kpi-label">Giảm Stress</span>
                                     <span class="kpi-trend trend-good">✓ Tích cực</span>
                                 </div>
-                                <div class="kpi-value" id="metric-intervention" style="color: var(--primary-pink);">-35%</div>
-                                <div class="kpi-sub">Sau can thiệp</div>
+                                <div class="kpi-value" id="metric-intervention" style="color: var(--primary-pink);">...</div>
+                                <div class="kpi-sub">Đang tải dữ liệu thật</div>
                                 <div class="kpi-progress">
                                     <div class="progress-ring">
                                         <svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="24" fill="none" stroke="#f0f0f0" stroke-width="5"/><circle cx="30" cy="30" r="24" fill="none" stroke="var(--primary-pink)" stroke-width="5" stroke-dasharray="150.8" stroke-dashoffset="98" stroke-linecap="round" transform="rotate(-90 30 30)"/></svg>
@@ -370,29 +359,23 @@
 
                         <!-- Two-Column Grid -->
                         <div class="dashboard-grid">
-                            <!-- Heatmap -->
-                            <div class="dash-card">
+                            <!-- App Engagement -->
+                            <div class="dash-card" id="engagement-breakdown-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><span class="card-icon">🔥</span> Bản đồ Nhiệt Căng thẳng</h3>
-                                    <div class="heatmap-legend">
-                                        <span class="legend-item"><span class="legend-dot low"></span>Thấp</span>
-                                        <span class="legend-item"><span class="legend-dot med"></span>TB</span>
-                                        <span class="legend-item"><span class="legend-dot high"></span>Cao</span>
-                                    </div>
+                                    <h3 class="card-title"><span class="card-icon">▦</span> Gắn kết App</h3>
+                                    <span class="data-badge">Live</span>
                                 </div>
                                 <div class="card-body">
-                                    <table class="heatmap-table">
-                                        <thead>
-                                            <tr><th>Khoa / Viện</th><th>Lo âu</th><th>Stress</th><th>Trầm cảm</th><th>Kiệt sức</th></tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr><td><span class="dept-badge">CNTT</span></td><td><div class="hm-cell hm-4">Cao</div></td><td><div class="hm-cell hm-5">Rất Cao</div></td><td><div class="hm-cell hm-2">Thấp</div></td><td><div class="hm-cell hm-4">Cao</div></td></tr>
-                                            <tr><td><span class="dept-badge">Kinh tế</span></td><td><div class="hm-cell hm-3">TB</div></td><td><div class="hm-cell hm-3">TB</div></td><td><div class="hm-cell hm-1">Ổn</div></td><td><div class="hm-cell hm-2">Thấp</div></td></tr>
-                                            <tr><td><span class="dept-badge">Ngoại ngữ</span></td><td><div class="hm-cell hm-2">Thấp</div></td><td><div class="hm-cell hm-4">Cao</div></td><td><div class="hm-cell hm-1">Ổn</div></td><td><div class="hm-cell hm-1">Ổn</div></td></tr>
-                                            <tr><td><span class="dept-badge">Luật</span></td><td><div class="hm-cell hm-3">TB</div></td><td><div class="hm-cell hm-2">Thấp</div></td><td><div class="hm-cell hm-3">TB</div></td><td><div class="hm-cell hm-1">Ổn</div></td></tr>
-                                            <tr><td><span class="dept-badge">Y dược</span></td><td><div class="hm-cell hm-4">Cao</div></td><td><div class="hm-cell hm-4">Cao</div></td><td><div class="hm-cell hm-3">TB</div></td><td><div class="hm-cell hm-3">TB</div></td></tr>
-                                        </tbody>
-                                    </table>
+                                    <div class="engagement-grid">
+                                        <div class="engagement-cell"><span>Bài đăng</span><strong>0</strong></div>
+                                        <div class="engagement-cell"><span>Reaction / like</span><strong>0</strong></div>
+                                        <div class="engagement-cell"><span>Bình luận</span><strong>0</strong></div>
+                                        <div class="engagement-cell"><span>Chat AI</span><strong>0</strong></div>
+                                        <div class="engagement-cell"><span>Đặt lịch</span><strong>0</strong></div>
+                                        <div class="engagement-cell"><span>Feedback</span><strong>0</strong></div>
+                                        <div class="engagement-cell"><span>Xem tài nguyên</span><strong>0</strong></div>
+                                    </div>
+                                    <p class="chart-note">Tổng hợp tương tác từ news feed, reaction, comment, chat, booking, feedback và tài nguyên.</p>
                                 </div>
                             </div>
 
@@ -404,18 +387,9 @@
                                 </div>
                                 <div class="card-body">
                                     <ul id="top-topic-list" class="topic-list">
-                                        <li><span class="topic-num">1</span><span class="topic-name">Áp lực thi cử</span><span class="topic-pct">45%</span><span class="topic-trend trend-bad">▲</span></li>
-                                        <li><span class="topic-num">2</span><span class="topic-name">Hướng nghiệp</span><span class="topic-pct">20%</span><span class="topic-trend trend-good">▼</span></li>
-                                        <li><span class="topic-num">3</span><span class="topic-name">Mâu thuẫn bạn bè</span><span class="topic-pct">15%</span><span class="topic-trend neutral">▬</span></li>
-                                        <li><span class="topic-num">4</span><span class="topic-name">Tài chính cá nhân</span><span class="topic-pct">10%</span><span class="topic-trend trend-bad">▲</span></li>
-                                        <li><span class="topic-num">5</span><span class="topic-name">Mất ngủ</span><span class="topic-pct">10%</span><span class="topic-trend trend-bad">▲</span></li>
+                                        <li><span class="topic-name">Đang tải dữ liệu chủ đề thật...</span></li>
                                     </ul>
                                     <div class="topic-chart">
-                                        <div class="chart-bar"><div class="bar-fill" style="width:100%;background:var(--danger);"></div></div>
-                                        <div class="chart-bar"><div class="bar-fill" style="width:44%;background:var(--warning);"></div></div>
-                                        <div class="chart-bar"><div class="bar-fill" style="width:33%;background:var(--accent-pink);"></div></div>
-                                        <div class="chart-bar"><div class="bar-fill" style="width:22%;background:var(--deep-rose);opacity:0.7;"></div></div>
-                                        <div class="chart-bar"><div class="bar-fill" style="width:22%;background:#888;"></div></div>
                                     </div>
                                 </div>
                             </div>
@@ -431,28 +405,8 @@
                                         <thead>
                                             <tr><th>Tag hành vi</th><th>Số lượng</th><th>Tỷ lệ</th><th>Xu hướng</th><th>Đề xuất can thiệp</th></tr>
                                         </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td><span class="tag-chip-static">#Áp lực học tập</span></td>
-                                                <td><strong>142</strong></td>
-                                                <td><div class="mini-bar"><div class="mini-fill" style="width:100%"></div></div>32%</td>
-                                                <td><span class="trend-badge trend-bad">▲ Tăng mạnh</span></td>
-                                                <td>Tổ chức workshop quản lý thời gian</td>
-                                            </tr>
-                                            <tr>
-                                                <td><span class="tag-chip-static">#Mất ngủ</span></td>
-                                                <td><strong>89</strong></td>
-                                                <td><div class="mini-bar"><div class="mini-fill" style="width:63%"></div></div>20%</td>
-                                                <td><span class="trend-badge neutral">▬ Ổn định</span></td>
-                                                <td>Gửi thông báo về vệ sinh giấc ngủ</td>
-                                            </tr>
-                                            <tr>
-                                                <td><span class="tag-chip-static">#Cô đơn</span></td>
-                                                <td><strong>34</strong></td>
-                                                <td><div class="mini-bar"><div class="mini-fill" style="width:24%"></div></div>8%</td>
-                                                <td><span class="trend-badge trend-good">▼ Giảm</span></td>
-                                                <td>Duy trì CLB kết nối xã hội</td>
-                                            </tr>
+                                        <tbody id="ai-report-body">
+                                            <tr><td colspan="5" style="padding:16px; text-align:center; color:#888;">Đang tải AI Report từ dữ liệu thật...</td></tr>
                                         </tbody>
                                     </table>
                                 </div>

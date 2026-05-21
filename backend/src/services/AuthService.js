@@ -1,9 +1,30 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const userRepository = require('../repositories/UserRepository');
 
-const memoryUsers = [];
+const dataDir = path.resolve(__dirname, '../../data');
+const memoryUsersFile = path.join(dataDir, 'users.json');
+const loadMemoryUsers = () => {
+  try {
+    return JSON.parse(fs.readFileSync(memoryUsersFile, 'utf8').replace(/^\uFEFF/, ''));
+  } catch (error) {
+    return [];
+  }
+};
+const saveMemoryUsers = () => {
+  try {
+    fs.mkdirSync(dataDir, { recursive: true });
+    fs.writeFileSync(memoryUsersFile, JSON.stringify(memoryUsers, null, 2));
+  } catch (error) {
+    console.warn('Could not persist local users:', error.message);
+  }
+};
+
+const memoryUsers = loadMemoryUsers();
 const isDbConnected = () => mongoose.connection.readyState === 1;
 const roleAllowsPortal = (userRole, requestedRole) => {
   if (!requestedRole) {
@@ -33,11 +54,12 @@ class AuthService {
       const user = {
         _id: crypto.randomUUID(),
         email: normalizedEmail,
-        password,
+        password: await bcrypt.hash(password, 10),
         role: normalizedRole,
         created_at: new Date()
       };
       memoryUsers.push(user);
+      saveMemoryUsers();
 
       return {
         user: {
@@ -46,7 +68,7 @@ class AuthService {
           role: user.role,
           created_at: user.created_at
         },
-        token: this.generateToken(user._id, user.role)
+        token: this.generateToken(user._id, user.role, user.email)
       };
     }
 
@@ -57,7 +79,7 @@ class AuthService {
         role: normalizedRole
       });
 
-      const token = this.generateToken(user._id, user.role);
+      const token = this.generateToken(user._id, user.role, user.email);
 
       return {
         user: {
@@ -100,7 +122,13 @@ class AuthService {
 
     if (!isDbConnected()) {
       const user = memoryUsers.find(item => item.email === normalizedEmail);
-      if (!user || user.password !== password) {
+      const isPasswordValid = user
+        ? (String(user.password || '').startsWith('$2')
+          ? await bcrypt.compare(password, user.password)
+          : user.password === password)
+        : false;
+
+      if (!isPasswordValid) {
         const error = new Error('Invalid email or password');
         error.statusCode = 401;
         throw error;
@@ -115,7 +143,7 @@ class AuthService {
           role: user.role,
           created_at: user.created_at
         },
-        token: this.generateToken(user._id, user.role)
+        token: this.generateToken(user._id, user.role, user.email)
       };
     }
 
@@ -135,7 +163,7 @@ class AuthService {
 
     this.assertRoleAllowed(user.role, normalizedRequestedRole);
 
-    const token = this.generateToken(user._id, user.role);
+    const token = this.generateToken(user._id, user.role, user.email);
 
     return {
       user: {
@@ -148,9 +176,9 @@ class AuthService {
     };
   }
 
-  generateToken(userId, role) {
+  generateToken(userId, role, email) {
     return jwt.sign(
-      { userId, role },
+      { userId, role, email },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );

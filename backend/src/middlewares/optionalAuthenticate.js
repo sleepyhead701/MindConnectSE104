@@ -17,7 +17,7 @@ const optionalAuthenticate = async (req, res, next) => {
       req.user = {
         id: decoded.userId,
         role: decoded.role,
-        email: null
+        email: decoded.email || null
       };
       return next();
     }

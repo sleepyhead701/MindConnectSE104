@@ -8,6 +8,7 @@ const router = express.Router();
 router.get('/feed', optionalAuthenticate, appController.getFeed);
 router.post('/diaries', optionalAuthenticate, appController.createDiary);
 router.post('/diaries/tags', optionalAuthenticate, appController.suggestDiaryTags);
+router.post('/interactions', optionalAuthenticate, appController.createInteraction);
 
 // Risk alerts: Everyone can list/create (in prototype, student might need to create it implicitly, but admin lists them)
 // Wait, if student creates risk alerts, they only need optionalAuthenticate
@@ -18,6 +19,9 @@ router.patch('/risk-alerts/:id', optionalAuthenticate, requireRole(['school', 'a
 
 router.post('/bookings', optionalAuthenticate, appController.createBooking);
 router.patch('/bookings/:id', optionalAuthenticate, requireRole(['school', 'admin']), appController.updateBooking);
+
+router.get('/feedback', optionalAuthenticate, requireRole(['school', 'admin']), appController.listFeedback);
+router.post('/feedback', optionalAuthenticate, appController.createFeedback);
 
 router.get('/dashboard', optionalAuthenticate, requireRole(['school', 'admin']), appController.getDashboard);
 

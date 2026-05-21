@@ -34,6 +34,10 @@ const riskAlertSchema = new mongoose.Schema({
     type: String,
     default: 'SV ẩn danh'
   },
+  student_id_hash: {
+    type: String,
+    default: 'SV-ANON'
+  },
   class_name: {
     type: String,
     default: 'CNTT_K48'
@@ -41,6 +45,16 @@ const riskAlertSchema = new mongoose.Schema({
   department: {
     type: String,
     default: 'CNTT'
+  },
+  location: {
+    type: String,
+    default: 'Phòng tham vấn 102 - Khu B'
+  },
+  risk_score: {
+    type: Number,
+    min: 0,
+    max: 100,
+    default: 70
   },
   excerpt: {
     type: String,
