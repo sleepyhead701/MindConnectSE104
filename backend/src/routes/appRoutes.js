@@ -18,6 +18,7 @@ router.post('/risk-alerts', optionalAuthenticate, appController.createRiskAlert)
 router.patch('/risk-alerts/:id', optionalAuthenticate, requireRole(['school', 'admin']), appController.updateRiskAlert);
 
 router.post('/bookings', optionalAuthenticate, appController.createBooking);
+router.get('/bookings/my', optionalAuthenticate, appController.listMyBookings);
 router.patch('/bookings/:id', optionalAuthenticate, requireRole(['school', 'admin']), appController.updateBooking);
 
 router.get('/feedback', optionalAuthenticate, requireRole(['school', 'admin']), appController.listFeedback);

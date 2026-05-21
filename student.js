@@ -159,15 +159,26 @@ const PUBLIC_FEED_KEY = 'mindconnect:public-feed';
 const PRIVATE_DIARY_KEY = 'mindconnect:private-diary';
 const STUDENT_PROFILE_KEY = 'mindconnect:student-profile';
 const CUSTOM_RESOURCES_KEY = 'mindconnect:custom-resources';
+const CHAT_HISTORY_KEY = 'mindconnect:chat-history';
+const STUDENT_BOOKINGS_KEY = 'mindconnect:student-bookings';
 const API_BASE_URL = 'http://localhost:3000';
 const CHAT_API_URL = `${API_BASE_URL}/chat/support`;
+const SUPPORT_LOCATIONS = [
+    'Phòng tham vấn 102 - Khu B',
+    'Phòng Công tác Sinh viên - Khu A',
+    'Trung tâm Hỗ trợ Sinh viên - Tầng 3',
+    'Online qua Google Meet',
+    'Online qua Microsoft Teams'
+];
 
-let chatHistory = defaultChatHistory;
+let chatHistory = loadChatHistory();
+let studentBookings = loadStudentBookings();
 let userFeed = loadPublicFeed();
 let privateDiaryEntries = loadPrivateDiaryEntries();
 let currentResource = resourcesDB;
 let backendReady = false;
 let currentMoodScore = 4;
+let chatHistoryRemoteLoaded = false;
 
 function setBackendReadyState(isReady) {
     backendReady = isReady;
@@ -247,6 +258,67 @@ function getStudentStorageId() {
 
 function getStudentStorageKey(baseKey) {
     return `${baseKey}:${getStudentStorageId()}`;
+}
+
+function normalizeChatHistoryEntry(entry) {
+    if (!entry || typeof entry !== 'object') return null;
+    const sender = entry.sender === 'user' ? 'user' : 'ai';
+    const text = String(entry.text || '').trim();
+    if (!text) return null;
+    return {
+        sender,
+        text,
+        created_at: entry.created_at || new Date().toISOString()
+    };
+}
+
+function loadChatHistory() {
+    const saved = loadJson(getStudentStorageKey(CHAT_HISTORY_KEY), null);
+    if (Array.isArray(saved) && saved.length) {
+        const normalized = saved.map(normalizeChatHistoryEntry).filter(Boolean);
+        if (normalized.length) return normalized;
+    }
+    return defaultChatHistory.map(message => ({ ...message, created_at: new Date().toISOString() }));
+}
+
+function saveChatHistory() {
+    saveJson(getStudentStorageKey(CHAT_HISTORY_KEY), chatHistory.slice(-120));
+}
+
+function normalizeStudentBooking(booking = {}) {
+    return {
+        id: String(booking.id || booking._id || `local-booking-${Date.now()}`),
+        requested_time: booking.requested_time || booking.scheduled_at || null,
+        location: booking.location || getSupportLocation(),
+        note: booking.note || booking.excerpt || '',
+        status: booking.status || 'new',
+        before_mood_score: booking.before_mood_score ?? null,
+        after_mood_score: booking.after_mood_score ?? null,
+        rescheduled_from: booking.rescheduled_from || '',
+        rescheduled_at: booking.rescheduled_at || null,
+        created_at: booking.created_at || new Date().toISOString(),
+        updated_at: booking.updated_at || null
+    };
+}
+
+function loadStudentBookings() {
+    const saved = loadJson(getStudentStorageKey(STUDENT_BOOKINGS_KEY), []);
+    return Array.isArray(saved) ? saved.map(normalizeStudentBooking).filter(Boolean) : [];
+}
+
+function saveStudentBookings() {
+    saveJson(getStudentStorageKey(STUDENT_BOOKINGS_KEY), studentBookings.slice(0, 50));
+}
+
+function upsertStudentBooking(booking) {
+    const normalized = normalizeStudentBooking(booking);
+    studentBookings = [
+        normalized,
+        ...studentBookings.filter(item => String(item.id) !== String(normalized.id))
+    ].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    saveStudentBookings();
+    renderStudentBookingsList();
+    return normalized;
 }
 
 function loadPublicFeed() {
@@ -345,8 +417,42 @@ function getManualTags(containerId) {
 
 resourcesDB.push(...loadCustomResources());
 
-function getSupportLocation() {
-    return 'Phòng tham vấn 102 - Khu B';
+function getSupportLocation(value) {
+    const selected = String(value || '').trim();
+    return SUPPORT_LOCATIONS.includes(selected) ? selected : SUPPORT_LOCATIONS[0];
+}
+
+function renderSupportLocationOptions(selectedLocation = getSupportLocation()) {
+    return SUPPORT_LOCATIONS.map(location => `
+        <option value="${escapeHtml(location)}" ${location === selectedLocation ? 'selected' : ''}>
+            ${escapeHtml(location)}
+        </option>
+    `).join('');
+}
+
+function getBookingStatusLabel(status) {
+    const labels = {
+        new: 'Đang chờ',
+        scheduled: 'Đã xếp lịch',
+        rescheduled: 'Đã hẹn lại',
+        completed: 'Hoàn tất',
+        cancelled: 'Đã hủy',
+        offline: 'Lưu tạm trên máy'
+    };
+    return labels[status] || status || 'Đang chờ';
+}
+
+function formatBookingDateTime(value) {
+    if (!value) return 'Chưa chọn thời gian';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Chưa chọn thời gian';
+    return date.toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
 }
 
 function trackInteraction(type, targetId = '', metadata = {}) {
@@ -1662,6 +1768,7 @@ function renderProfile() {
 
     const profile = getStudentProfile();
     const avatarUrl = profile.avatarUrl || 'logo.png';
+    const bookingsHtml = renderStudentBookingsHtml(studentBookings);
 
     container.innerHTML = `
         <section class="mc-page">
@@ -1703,8 +1810,71 @@ function renderProfile() {
                     </div>
                 </div>
             </div>
+
+            <div class="mc-panel" style="margin-top:16px;">
+                <div class="mc-chart-header">
+                    <div>
+                        <h3>Lịch hẹn của tôi</h3>
+                        <p>Theo dõi các yêu cầu tham vấn bạn đã gửi cho nhà trường.</p>
+                    </div>
+                    <button class="mc-btn mc-btn-outline" type="button" onclick="refreshStudentBookings()">Làm mới</button>
+                </div>
+                <div id="student-booking-list">
+                    ${bookingsHtml}
+                </div>
+            </div>
         </section>
     `;
+    refreshStudentBookings({ silent: true });
+}
+
+function renderStudentBookingsHtml(bookings = []) {
+    if (!bookings.length) {
+        return `
+            <div style="padding:16px; border:1px dashed #ead7df; border-radius:12px; color:#777; background:#fffafa;">
+                Bạn chưa có lịch hẹn nào. Khi đặt lịch tham vấn, trạng thái lịch hẹn sẽ xuất hiện ở đây.
+            </div>
+        `;
+    }
+
+    return bookings.map(booking => `
+        <div style="padding:14px; border:1px solid #f0dfe6; border-radius:12px; margin-top:10px; background:#fff;">
+            <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
+                <div>
+                    <strong>${formatBookingDateTime(booking.requested_time)}</strong>
+                    <p style="margin:4px 0 0; color:#666; font-size:13px;">${escapeHtml(booking.location || getSupportLocation())}</p>
+                </div>
+                <span class="badge ${booking.status === 'completed' ? 'bg-low' : booking.status === 'rescheduled' ? 'bg-med' : 'bg-high'}">
+                    ${escapeHtml(getBookingStatusLabel(booking.status))}
+                </span>
+            </div>
+            ${booking.note ? `<p style="margin:10px 0 0; color:#555; font-size:13px;">${escapeHtml(booking.note)}</p>` : ''}
+            ${booking.rescheduled_from ? `<p style="margin:8px 0 0; color:#9a6b00; font-size:12px;">Lịch này được tạo từ một lần hẹn lại.</p>` : ''}
+        </div>
+    `).join('');
+}
+
+function renderStudentBookingsList() {
+    const list = document.getElementById('student-booking-list');
+    if (list) list.innerHTML = renderStudentBookingsHtml(studentBookings);
+}
+
+async function refreshStudentBookings(options = {}) {
+    if (!backendReady) return;
+    try {
+        const remoteBookings = await apiRequest('/api/bookings/my');
+        const hasAuthToken = Boolean(getAuthHeaders().Authorization);
+        if (Array.isArray(remoteBookings) && (remoteBookings.length || hasAuthToken)) {
+            studentBookings = remoteBookings.map(normalizeStudentBooking)
+                .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+            saveStudentBookings();
+            renderStudentBookingsList();
+        }
+    } catch (error) {
+        if (!options.silent) {
+            showNotification('Chưa tải được lịch hẹn từ backend, đang hiển thị dữ liệu local.');
+        }
+    }
 }
 
 function normalizeEmotionText(text) {
@@ -1955,10 +2125,11 @@ function renderStudentStats() {
 // ==============================================
 // 7. CHATBOT (LOGIC CŨ ĐÃ KHÔI PHỤC)
 // ==============================================
-function renderChat() {
+function renderChat(options = {}) {
     const container = document.getElementById('student-main-content');
     updateNav(4);
     animateMainContentSwap();
+    const shouldSyncHistory = options.syncHistory !== false;
 
     const suggestions = [
         'Mình đang căng thẳng vì deadline',
@@ -1984,6 +2155,13 @@ function renderChat() {
             </div>
 
             <div class="mc-chat-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+                    <div style="font-weight:700; color:var(--deep-rose);">Lịch sử chat của tôi</div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <span style="font-size:12px; color:#777;">${Math.max(chatHistory.length - 1, 0)} tin đã lưu</span>
+                        <button class="mc-btn mc-btn-outline" type="button" onclick="refreshChatHistoryFromBackend()">Tải lịch sử</button>
+                    </div>
+                </div>
                 <div id="chat-box" class="chat-box mc-chat-box">
                     ${messagesHtml}
                 </div>
@@ -2007,6 +2185,51 @@ function renderChat() {
         const box = document.getElementById('chat-box');
         if (box) box.scrollTop = box.scrollHeight;
     }, 0);
+
+    if (shouldSyncHistory && !chatHistoryRemoteLoaded) {
+        chatHistoryRemoteLoaded = true;
+        refreshChatHistoryFromBackend({ silent: true });
+    }
+}
+
+async function refreshChatHistoryFromBackend(options = {}) {
+    if (!backendReady) return;
+    try {
+        const remoteHistory = await apiRequest('/chat/history');
+        if (Array.isArray(remoteHistory) && remoteHistory.length) {
+            const rebuiltHistory = defaultChatHistory.map(message => ({
+                ...message,
+                created_at: message.created_at || new Date().toISOString()
+            }));
+
+            remoteHistory.forEach(item => {
+                if (item.user_message) {
+                    rebuiltHistory.push({
+                        sender: 'user',
+                        text: item.user_message,
+                        created_at: item.created_at
+                    });
+                }
+                if (item.ai_reply) {
+                    rebuiltHistory.push({
+                        sender: 'ai',
+                        text: item.ai_reply,
+                        created_at: item.created_at
+                    });
+                }
+            });
+
+            chatHistory = rebuiltHistory;
+            saveChatHistory();
+            renderChat({ syncHistory: false });
+        } else if (!options.silent) {
+            showNotification('Chưa có lịch sử chat từ backend. Mình vẫn giữ lịch sử local trên máy bạn.');
+        }
+    } catch (error) {
+        if (!options.silent) {
+            showNotification('Chưa tải được lịch sử chat từ backend, đang dùng lịch sử local.');
+        }
+    }
 }
 
 function handleEnter(e) { if (e.key === 'Enter') sendMsg(); }
@@ -2023,6 +2246,7 @@ async function sendMsg() {
     });
 
     chatHistory.push({ sender: 'user', text: txt });
+    saveChatHistory();
     renderChat();
     const activeInput = document.getElementById('chat-input');
     if(activeInput) activeInput.focus();
@@ -2063,6 +2287,7 @@ async function sendMsg() {
         if (indicator) indicator.remove();
 
         chatHistory.push({ sender: 'ai', text: aiResponse });
+        saveChatHistory();
         renderChat();
         setTimeout(() => {
             const box = document.getElementById('chat-box');
@@ -2077,6 +2302,7 @@ async function sendMsg() {
             sender: 'ai',
             text: buildChatConnectionErrorReply(error)
         });
+        saveChatHistory();
         renderChat();
         setTimeout(() => {
             const box = document.getElementById('chat-box');
@@ -2197,11 +2423,17 @@ function openBookingModal() {
             </div>
 
             <div class="info-row"><span class="label">📞 Hotline hỗ trợ:</span><a href="tel:19001234" class="val" style="text-decoration:none;">1900.1234</a></div>
-            <div class="info-row"><span class="label">📍 Địa điểm:</span><span class="val" style="font-size: 14px;">Phòng 102 - Khu B</span></div>
+            <div class="info-row"><span class="label">📍 Địa điểm:</span><span class="val" style="font-size: 14px;">Bạn có thể chọn địa điểm phù hợp bên dưới</span></div>
 
             <div style="margin-bottom: 15px;">
                 <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Chọn thời gian mong muốn:</label>
                 <input type="datetime-local" id="booking-time" style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Chọn địa điểm mong muốn:</label>
+                <select id="booking-location" class="mc-input">
+                    ${renderSupportLocationOptions()}
+                </select>
             </div>
             <div style="margin-bottom: 20px;">
                 <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Ghi chú (Không bắt buộc):</label>
@@ -2222,6 +2454,7 @@ async function handleConfirmBooking() {
     if (blockIfBackendNotReady()) return;
 
     const requestedTime = document.getElementById('booking-time')?.value || null;
+    const selectedLocation = getSupportLocation(document.getElementById('booking-location')?.value);
     const note = document.getElementById('booking-note')?.value || '';
     closeBookingModal();
 
@@ -2231,19 +2464,29 @@ async function handleConfirmBooking() {
             body: JSON.stringify({
                 requested_time: requestedTime,
                 note,
-                location: getSupportLocation(),
+                location: selectedLocation,
                 before_mood_score: currentMoodScore
             })
         });
+        upsertStudentBooking(booking);
         trackInteraction('booking', booking?.id || requestedTime || Date.now(), {
             requested_time: requestedTime,
-            location: getSupportLocation(),
+            location: selectedLocation,
             before_mood_score: currentMoodScore
         });
     } catch (error) {
-        const localBookingAlert = {
+        const localBooking = upsertStudentBooking({
             id: `BK-${Date.now()}`,
-            created_at: new Date().toISOString(),
+            requested_time: requestedTime,
+            note,
+            status: 'offline',
+            location: selectedLocation,
+            before_mood_score: currentMoodScore,
+            created_at: new Date().toISOString()
+        });
+        const localBookingAlert = {
+            id: localBooking.id,
+            created_at: localBooking.created_at,
             source: 'Booking',
             severity: 'medium',
             label: 'Yêu cầu tham vấn',
@@ -2252,7 +2495,7 @@ async function handleConfirmBooking() {
             student_alias: 'SV ẩn danh',
             class_name: 'CNTT_K48',
             department: 'CNTT',
-            location: getSupportLocation(),
+            location: selectedLocation,
             before_mood_score: currentMoodScore,
             excerpt: note || 'Sinh viên yêu cầu đặt lịch tham vấn.'
         };
@@ -2260,6 +2503,6 @@ async function handleConfirmBooking() {
     }
 
     setTimeout(() => {
-        alert("✅ Đã gửi yêu cầu thành công!\nCán bộ tham vấn sẽ liên hệ lại với bạn qua SĐT hoặc Email trong vòng 24h.\nSau buổi hỗ trợ, bạn có thể vào Profile để gửi feedback ẩn danh.");
+        alert(`✅ Đã gửi yêu cầu thành công!\nĐịa điểm: ${selectedLocation}\nCán bộ tham vấn sẽ liên hệ lại với bạn qua SĐT hoặc Email trong vòng 24h.\nBạn có thể vào Profile để xem lịch hẹn của mình.`);
     }, 300);
 }

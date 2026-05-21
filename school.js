@@ -4,7 +4,6 @@
 // 1. CONSTANTS & CONFIGURATION
 // ============================================
 const API_BASE_URL = 'http://localhost:3000';
-const RISK_ALERTS_KEY = 'mindconnect:risk-alerts';
 const DEFAULT_CONSULTATION_ROWS_ID = 'consultation-case-body';
 let dashboardState = null;
 let currentView = 'dashboard';
@@ -163,6 +162,42 @@ function formatFullDateTime(value) {
     });
 }
 
+function formatDateTimeLocalValue(date = new Date()) {
+    const pad = value => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function parseAdminDateTimeInput(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(raw)) {
+        return raw;
+    }
+
+    const vietnameseDate = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/);
+    if (vietnameseDate) {
+        const [, day, month, year, hour = '09', minute = '00'] = vietnameseDate;
+        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    }
+
+    const parsed = new Date(raw);
+    if (!Number.isNaN(parsed.getTime())) return formatDateTimeLocalValue(parsed);
+    return '';
+}
+
+function compareSupportQueueItems(a, b) {
+    const aRescheduled = a?.rescheduled_from ? 1 : 0;
+    const bRescheduled = b?.rescheduled_from ? 1 : 0;
+    if (aRescheduled !== bRescheduled) return aRescheduled - bRescheduled;
+
+    if (aRescheduled && bRescheduled) {
+        return new Date(a.created_at || a.scheduled_at || 0) - new Date(b.created_at || b.scheduled_at || 0);
+    }
+
+    return Number(b.score || 0) - Number(a.score || 0);
+}
+
 function getStatusLabel(status) {
     const labels = {
         new: 'Đang chờ',
@@ -182,86 +217,32 @@ function getScoreBadgeClass(score, severity) {
     return 'bg-low';
 }
 
-function getDashboardRiskQueue(fallbackAlerts = []) {
-    if (Array.isArray(dashboardState?.risk_queue) && dashboardState.risk_queue.length) {
-        return dashboardState.risk_queue;
-    }
+function getSupportQueue() {
+    const dashboardQueue = Array.isArray(dashboardState?.risk_queue) ? dashboardState.risk_queue : [];
+    const bookingQueue = dashboardQueue.filter(item => item.type === 'booking');
+    if (bookingQueue.length) return bookingQueue;
 
-    return fallbackAlerts.map(alert => ({
-        id: alert.id,
-        type: 'risk',
-        source: alert.source,
-        student_id_hash: alert.student_id_hash || alert.student_alias || 'SV-ANON',
-        location: alert.location || 'Phòng tham vấn 102 - Khu B',
-        scheduled_at: alert.created_at,
-        status: alert.status,
-        severity: alert.severity,
-        label: alert.label,
-        excerpt: alert.excerpt,
-        score: alert.risk_score || (alert.severity === 'critical' ? 95 : alert.severity === 'high' ? 78 : 55)
+    const bookings = Array.isArray(dashboardState?.bookings) ? dashboardState.bookings : [];
+    return bookings.map(booking => ({
+        id: booking.id || booking._id,
+        type: 'booking',
+        source: 'Booking',
+        student_id_hash: booking.student_id_hash || booking.student_alias || 'SV-ANON',
+        location: booking.location || 'Phòng tham vấn 102 - Khu B',
+        scheduled_at: booking.requested_time || booking.created_at,
+        created_at: booking.created_at,
+        rescheduled_from: booking.rescheduled_from || '',
+        rescheduled_at: booking.rescheduled_at || null,
+        status: booking.status,
+        severity: Number(booking.urgency_score || 0) >= 80 ? 'high' : 'medium',
+        label: 'Yêu cầu đặt lịch hỗ trợ',
+        excerpt: booking.note,
+        score: Number(booking.urgency_score || (booking.before_mood_score ? (6 - Number(booking.before_mood_score)) * 18 : 55))
     }));
 }
 
 // ============================================
-// 5. RISK ALERTS MANAGEMENT
-// ============================================
-function getRiskAlerts() {
-    try {
-        return JSON.parse(localStorage.getItem(RISK_ALERTS_KEY)) || [];
-    } catch (error) {
-        return [];
-    }
-}
-
-function saveRiskAlerts(alerts) {
-    localStorage.setItem(RISK_ALERTS_KEY, JSON.stringify(alerts));
-}
-
-function filterAlertsByTime(alerts, timeRange) {
-    if (timeRange === 'custom') return alerts;
-
-    const now = new Date();
-    return alerts.filter(alert => {
-        const createdAt = new Date(alert.created_at);
-        if (Number.isNaN(createdAt.getTime())) return false;
-
-        if (timeRange === 'today') {
-            return createdAt.toDateString() === now.toDateString();
-        }
-
-        const days = Number(timeRange);
-        if (!days) return true;
-        return createdAt >= new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-    });
-}
-
-function renderRiskAlertPanel(alerts) {
-    const panel = document.getElementById('risk-alert-panel');
-    const count = document.getElementById('risk-alert-count');
-    const list = document.getElementById('risk-alert-list');
-
-    if (!alerts || !alerts.length) {
-        if (panel) panel.classList.add('hidden');
-        if (list) list.innerHTML = '';
-        return;
-    }
-
-    panel.classList.remove('hidden');
-    count.innerText = `${alerts.length} cảnh báo`;
-    list.innerHTML = alerts.map(alert => `
-        <div class="risk-alert-item ${alert.severity === 'critical' ? 'critical' : ''}">
-            <div>
-                <strong>${escapeHtml(alert.label)}</strong>
-                <p>${escapeHtml(alert.excerpt || 'Không có trích đoạn')}</p>
-                <span>${escapeHtml(alert.source)} · ${escapeHtml(alert.class_name)} · ${formatAlertTime(alert.created_at)}</span>
-            </div>
-            <button class="btn-action-sm btn-success" onclick="markRiskAlert('${alert.id}', 'contacted')">Đã liên hệ</button>
-        </div>
-    `).join('');
-}
-
-// ============================================
-// 6. CONSULTATION CASES
+// 5. CONSULTATION CASES
 // ============================================
 function getDefaultConsultationRows() {
     const element = document.getElementById(DEFAULT_CONSULTATION_ROWS_ID);
@@ -326,12 +307,15 @@ function renderMetrics() {
     if (!metrics) return;
 
     const sentimentEl = document.getElementById('metric-sentiment');
-    const riskRateEl = document.getElementById('metric-risk-rate');
+    const supportRequestsEl = document.getElementById('metric-support-requests');
     const engagementEl = document.getElementById('metric-engagement');
     const interventionEl = document.getElementById('metric-intervention');
+    const pendingBookings = Array.isArray(dashboardState?.bookings)
+        ? dashboardState.bookings.filter(booking => !['completed', 'resolved', 'cancelled'].includes(booking.status)).length
+        : 0;
 
     if (sentimentEl) sentimentEl.innerText = `${metrics.sentiment}/10`;
-    if (riskRateEl) riskRateEl.innerText = `${metrics.high_risk_rate}%`;
+    if (supportRequestsEl) supportRequestsEl.innerText = String(pendingBookings);
     if (engagementEl) engagementEl.innerText = String(metrics.engagement);
     if (interventionEl) interventionEl.innerText = `${metrics.intervention_reduction}%`;
 }
@@ -347,86 +331,26 @@ function renderTopTopics() {
 }
 
 // ============================================
-// 9. RISK DASHBOARD MAIN RENDER
+// 9. DASHBOARD MAIN RENDER
 // ============================================
-function renderRiskDashboard() {
-    const timeRange = document.getElementById('timeSelect')?.value || '7';
-    const backendAlerts = Array.isArray(dashboardState?.alerts) ? dashboardState.alerts : [];
-    const localAlerts = filterAlertsByTime(getRiskAlerts(), timeRange);
-    const mergedById = new Map([...backendAlerts, ...localAlerts].map(alert => [alert.id, alert]));
-    const alerts = Array.from(mergedById.values())
-        .filter(alert => alert.status !== 'resolved');
-    const latestAlert = alerts[0];
-    const redAlertBox = document.getElementById('red-alert-box');
-
-    if (latestAlert) {
-        const latestLabel = latestAlert.label || 'Cảnh báo rủi ro';
-        redAlertBox.classList.remove('hidden');
-        document.getElementById('red-alert-title').innerText =
-            `${latestLabel.toUpperCase()}: ${latestAlert.class_name || latestAlert.department || 'Không rõ đơn vị'}`;
-        document.getElementById('red-alert-summary').innerText =
-            `${alerts.length} cảnh báo đang mở. Nguồn gần nhất: ${latestAlert.source || 'Không rõ'}, từ khóa: "${latestAlert.matched_keyword || 'N/A'}". Cần kích hoạt quy trình hỗ trợ.`;
-    } else {
-        redAlertBox.classList.add('hidden');
-    }
-
+function renderDashboardSections() {
     renderMetrics();
     renderTopTopics();
-    renderRiskAlertPanel(alerts);
-    renderConsultationCases(alerts);
-}
-
-// ============================================
-// 10. ALERT ACTIONS
-// ============================================
-async function markRiskAlert(alertId, status) {
-    const alerts = getRiskAlerts();
-    const target = alerts.find(alert => alert.id === alertId);
-    if (target) {
-        target.status = status;
-        target.updated_at = new Date().toISOString();
-        saveRiskAlerts(alerts);
-    }
-
-    try {
-        await apiRequest(`/api/risk-alerts/${alertId}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ status })
-        });
-    } catch (error) {
-        // Local status update remains the offline fallback.
-    }
-
-    updateDashboardData();
+    renderConsultationCases([]);
 }
 
 async function activateSupportForLatestAlert() {
-    const alerts = getRiskAlerts();
-    const backendAlerts = Array.isArray(dashboardState?.alerts) ? dashboardState.alerts : [];
-    const latestAlert = [...backendAlerts, ...alerts].find(alert => alert.status !== 'resolved');
+    const latestItem = getSupportQueue()
+        .filter(item => !['resolved', 'completed', 'cancelled'].includes(item.status))
+        .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))[0];
 
-    if (!latestAlert) {
-        alert('Không có cảnh báo động mới để kích hoạt.');
+    if (!latestItem) {
+        alert('Không có yêu cầu hỗ trợ đang chờ.');
         return;
     }
 
-    if (alerts.some(alert => alert.id === latestAlert.id)) {
-        latestAlert.status = 'contacted';
-        latestAlert.updated_at = new Date().toISOString();
-        saveRiskAlerts(alerts);
-    }
-
-    try {
-        await apiRequest(`/api/risk-alerts/${latestAlert.id}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ status: 'contacted' })
-        });
-    } catch (error) {
-        // Backend may be unavailable in demo mode.
-    }
-
-    alert('Đã gửi thông báo đến GVCN và Tổ tham vấn.');
-    updateDashboardData();
+    await markBooking(latestItem.id, 'scheduled');
+    alert('Đã kích hoạt quy trình hỗ trợ cho yêu cầu ưu tiên cao nhất.');
 }
 
 // ============================================
@@ -447,14 +371,14 @@ function updateDashboardData() {
             dashboardState = getEmptyDashboardState(error.message);
             renderDashboardError(error.message);
         }
-        renderRiskDashboard();
+        renderDashboardSections();
     }, 300);
 }
 
 // ============================================
 // 12. CONSULTATION HANDLER
 // ============================================
-function handleConsultation(status, rowId) {
+async function handleConsultation(status, rowId) {
     const row = document.getElementById(rowId);
     if (!row) return;
 
@@ -465,13 +389,11 @@ function handleConsultation(status, rowId) {
         const confirmSurvey = confirm("Xác nhận ca tư vấn THÀNH CÔNG?\nHệ thống sẽ tự động gửi Khảo sát đánh giá (Survey) cho sinh viên.");
         if (confirmSurvey) {
             row.style.backgroundColor = "#e8f5e9";
-            row.querySelector('td:last-child').innerHTML = `<span style="color:green; font-size:12px;">⏳ Đã gửi Survey (Hạn 3 ngày)</span>`;
-            if (alertId) markRiskAlert(alertId, 'resolved');
             if (bookingId) {
-                apiRequest(`/api/bookings/${bookingId}`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ status: 'completed' })
-                }).catch(() => {});
+                await markBooking(bookingId, 'completed');
+                row.remove();
+            } else {
+                row.querySelector('td:last-child').innerHTML = `<span style="color:green; font-size:12px;">⏳ Đã gửi Survey (Hạn 3 ngày)</span>`;
             }
 
             setTimeout(() => {
@@ -479,17 +401,39 @@ function handleConsultation(status, rowId) {
             }, 500);
         }
     } else {
-        const newDate = prompt("Tư vấn chưa hoàn tất. Vui lòng nhập ngày hẹn lại (DD/MM/YYYY):", "25/11/2025");
-        if (newDate) {
+        if (!bookingId) {
             row.style.backgroundColor = "#fff3e0";
-            row.querySelector('td:last-child').innerHTML = `<span style="color:#ef6c00; font-size:12px;">📅 Đã hẹn lại: ${newDate}</span>`;
-            if (alertId) markRiskAlert(alertId, 'rescheduled');
-            if (bookingId) {
-                apiRequest(`/api/bookings/${bookingId}`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ status: 'rescheduled' })
-                }).catch(() => {});
-            }
+            row.querySelector('td:last-child').innerHTML = `<span style="color:#ef6c00; font-size:12px;">📅 Đã ghi nhận cần hẹn lại</span>`;
+            return;
+        }
+
+        const defaultDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        defaultDate.setHours(9, 0, 0, 0);
+        const newDate = prompt("Tư vấn chưa hoàn tất. Nhập ngày giờ hẹn lại (YYYY-MM-DDTHH:mm hoặc DD/MM/YYYY HH:mm):", formatDateTimeLocalValue(defaultDate));
+        if (!newDate) return;
+
+        const requestedTime = parseAdminDateTimeInput(newDate);
+        if (!requestedTime) {
+            alert('Ngày giờ hẹn lại chưa hợp lệ.');
+            return;
+        }
+
+        const currentLocation = row.querySelector('[data-location-value]')?.dataset.locationValue || 'Phòng tham vấn 102 - Khu B';
+        const newLocation = prompt("Chọn/nhập địa điểm hẹn lại:", currentLocation);
+        if (!newLocation) return;
+
+        row.style.backgroundColor = "#fff3e0";
+        row.querySelector('td:last-child').innerHTML = `<span style="color:#ef6c00; font-size:12px;">📅 Đang tạo lịch hẹn mới...</span>`;
+
+        const result = await markBooking(bookingId, 'rescheduled', {
+            requested_time: requestedTime,
+            location: newLocation,
+            note: `Hẹn lại từ admin vào ${formatFullDateTime(requestedTime)} tại ${newLocation}`
+        });
+
+        if (result) {
+            row.remove();
+            showNotification('Đã tạo lịch hẹn mới và đưa xuống cuối hàng đợi.', 'success');
         }
     }
 }
@@ -514,9 +458,6 @@ function switchView(view) {
         case 'dashboard':
             renderDashboardView();
             break;
-        case 'alerts':
-            renderAlertsView();
-            break;
         case 'interventions':
             renderInterventionsView();
             break;
@@ -534,31 +475,7 @@ function renderDashboardView() {
 }
 
 function renderAlertsView() {
-    const content = document.getElementById('main-content');
-    if (!content) return;
-
-    content.innerHTML = `
-        <div class="dash-header">
-            <div>
-                <h2 style="color: var(--deep-rose);">Cảnh báo Rủi ro</h2>
-                <span style="color: #666; font-size: 14px;">Danh sách cảnh báo từ sinh viên</span>
-            </div>
-            <button class="btn btn-primary" onclick="renderDashboardView(); switchView('dashboard');">← Quay lại Dashboard</button>
-        </div>
-
-        <div class="alert-panel">
-            <div class="alert-panel-header">
-                <div>
-                    <h3>Luồng cảnh báo rủi ro</h3>
-                    <p>Cảnh báo được tạo tự động từ Diary, Chat AI hoặc Quick Test</p>
-                </div>
-                <span id="risk-alert-count" class="badge bg-high">0 cảnh báo</span>
-            </div>
-            <div id="risk-alert-list" class="alert-list"></div>
-        </div>
-    `;
-
-    updateDashboardData();
+    renderInterventionsView();
 }
 
 function renderInterventionsView() {
@@ -677,17 +594,20 @@ function renderMetrics() {
     if (!metrics) return;
 
     const sentimentEl = document.getElementById('metric-sentiment');
-    const riskRateEl = document.getElementById('metric-risk-rate');
+    const supportRequestsEl = document.getElementById('metric-support-requests');
     const engagementEl = document.getElementById('metric-engagement');
     const interventionEl = document.getElementById('metric-intervention');
+    const pendingBookings = Array.isArray(dashboardState?.bookings)
+        ? dashboardState.bookings.filter(booking => !['completed', 'resolved', 'cancelled'].includes(booking.status)).length
+        : Number(dashboardState?.intervention?.pending_bookings || 0);
 
     if (sentimentEl) {
         sentimentEl.innerText = `${metrics.sentiment}/10`;
         renderMetricSubtext(sentimentEl, 'Từ diary, report và feedback');
     }
-    if (riskRateEl) {
-        riskRateEl.innerText = formatPercent(metrics.high_risk_rate);
-        renderMetricSubtext(riskRateEl, `${metrics.high_risk_students || 0} SV / ${metrics.total_students_observed || 0} SV quan sát`);
+    if (supportRequestsEl) {
+        supportRequestsEl.innerText = formatNumber(pendingBookings);
+        renderMetricSubtext(supportRequestsEl, 'Booking hỗ trợ đang chờ xử lý');
     }
     if (engagementEl) {
         engagementEl.innerText = formatNumber(metrics.engagement);
@@ -794,45 +714,6 @@ function renderAIReport() {
     }).join('');
 }
 
-function renderRiskAlertPanel(alerts) {
-    const panel = document.getElementById('risk-alert-panel');
-    const count = document.getElementById('risk-alert-count');
-    const list = document.getElementById('risk-alert-list');
-    const queue = getDashboardRiskQueue(alerts)
-        .filter(item => !['resolved', 'completed', 'cancelled'].includes(item.status))
-        .sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
-
-    if (!queue.length) {
-        if (panel) panel.classList.add('hidden');
-        if (list) list.innerHTML = '';
-        return;
-    }
-
-    panel?.classList.remove('hidden');
-    if (count) count.innerText = `${queue.length} mục ưu tiên`;
-    if (!list) return;
-
-    list.innerHTML = queue.map(item => {
-        const score = Number(item.score || 0);
-        const action = item.type === 'booking'
-            ? `markBooking('${item.id}', 'scheduled')`
-            : `markRiskAlert('${item.id}', 'contacted')`;
-        return `
-            <div class="risk-alert-item ${item.severity === 'critical' ? 'critical' : ''}">
-                <div>
-                    <strong>${escapeHtml(item.label || 'Yêu cầu hỗ trợ')}</strong>
-                    <p>${escapeHtml(item.excerpt || 'Không có trích đoạn')}</p>
-                    <span>${escapeHtml(item.source || item.type)} · ${escapeHtml(item.student_id_hash || 'SV-ANON')} · ${formatFullDateTime(item.scheduled_at)}</span>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <span class="badge ${getScoreBadgeClass(score, item.severity)}">${score}/100</span>
-                    <button class="btn-action-sm btn-success" onclick="${action}">Đã liên hệ</button>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
 function renderConsultationCases(alerts) {
     const table = document.getElementById('consultation-case-table');
     const body = document.getElementById('consultation-case-body');
@@ -843,9 +724,9 @@ function renderConsultationCases(alerts) {
         head.innerHTML = '<tr><th>Student hash</th><th>Địa điểm</th><th>Ngày giờ</th><th>Điểm / trạng thái</th><th>Hành động</th></tr>';
     }
 
-    const queue = getDashboardRiskQueue(alerts)
-        .filter(item => !['resolved', 'completed', 'cancelled'].includes(item.status))
-        .sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
+    const queue = getSupportQueue()
+        .filter(item => !['resolved', 'completed', 'cancelled', 'rescheduled'].includes(item.status))
+        .sort(compareSupportQueueItems);
 
     if (!queue.length) {
         body.innerHTML = '<tr><td colspan="5" style="padding:16px; text-align:center; color:#888;">Chưa có ca tư vấn hoặc yêu cầu hỗ trợ đang chờ.</td></tr>';
@@ -860,10 +741,10 @@ function renderConsultationCases(alerts) {
         const score = Number(item.score || 0);
         return `
             <tr id="${rowId}" ${dataAttr}>
-                <td><strong>${escapeHtml(item.student_id_hash || 'SV-ANON')}</strong><br><span style="color:#888; font-size:11px;">${escapeHtml(item.type === 'booking' ? 'Booking' : 'Risk alert')}</span></td>
-                <td>${escapeHtml(item.location || 'Phòng tham vấn 102 - Khu B')}</td>
+                <td><strong>${escapeHtml(item.student_id_hash || 'SV-ANON')}</strong><br><span style="color:#888; font-size:11px;">${escapeHtml(item.type === 'booking' ? 'Booking' : 'Hỗ trợ')}</span></td>
+                <td data-location-value="${escapeHtml(item.location || 'Phòng tham vấn 102 - Khu B')}">${escapeHtml(item.location || 'Phòng tham vấn 102 - Khu B')}</td>
                 <td>${formatFullDateTime(item.scheduled_at)}</td>
-                <td><span class="badge ${getScoreBadgeClass(score, item.severity)}">${score}/100</span><br><span style="font-size:11px;color:#777;">${escapeHtml(getStatusLabel(item.status))}</span></td>
+                <td><span class="badge ${getScoreBadgeClass(score, item.severity)}">${score}/100</span><br><span style="font-size:11px;color:#777;">${escapeHtml(getStatusLabel(item.status))}${item.rescheduled_from ? ' • Hẹn lại' : ''}</span></td>
                 <td style="text-align:right;">
                     <button class="btn-action-sm btn-success" onclick="handleConsultation('success', '${rowId}')">✔ Xong</button>
                     <button class="btn-action-sm btn-warn" onclick="handleConsultation('fail', '${rowId}')">📅 Hẹn lại</button>
@@ -927,65 +808,43 @@ function renderFeedbackSummary() {
     }).join('');
 }
 
-function renderRiskDashboard() {
-    const timeRange = document.getElementById('timeSelect')?.value || '7';
-    const backendAlerts = Array.isArray(dashboardState?.alerts) ? dashboardState.alerts : [];
-    const localAlerts = filterAlertsByTime(getRiskAlerts(), timeRange);
-    const mergedById = new Map([...backendAlerts, ...localAlerts].map(alert => [alert.id, alert]));
-    const alerts = Array.from(mergedById.values()).filter(alert => alert.status !== 'resolved');
-    const queue = getDashboardRiskQueue(alerts).filter(item => !['resolved', 'completed', 'cancelled'].includes(item.status));
-    const latestAlert = queue[0] || alerts[0];
-    const redAlertBox = document.getElementById('red-alert-box');
-
-    if (latestAlert && redAlertBox) {
-        redAlertBox.classList.remove('hidden');
-        document.getElementById('red-alert-title').innerText =
-            `${(latestAlert.label || 'Cảnh báo rủi ro').toUpperCase()}: ${latestAlert.student_id_hash || latestAlert.class_name || 'SV-ANON'}`;
-        document.getElementById('red-alert-summary').innerText =
-            `${queue.length || alerts.length} mục đang chờ xử lý. Nguồn gần nhất: ${latestAlert.source || latestAlert.type || 'Không rõ'}, điểm ưu tiên: ${latestAlert.score || latestAlert.risk_score || 'N/A'}/100.`;
-    } else if (redAlertBox) {
-        redAlertBox.classList.add('hidden');
-    }
-
+function renderDashboardSections() {
     renderMetrics();
     renderEngagementBreakdown();
     renderTopTopics();
     renderAIReport();
-    renderRiskAlertPanel(alerts);
-    renderConsultationCases(alerts);
+    renderConsultationCases([]);
     renderInterventionSummary();
     renderFeedbackSummary();
 }
 
-async function markBooking(bookingId, status) {
+async function markBooking(bookingId, status, extra = {}) {
     try {
-        await apiRequest(`/api/bookings/${bookingId}`, {
+        const result = await apiRequest(`/api/bookings/${bookingId}`, {
             method: 'PATCH',
-            body: JSON.stringify({ status })
+            body: JSON.stringify({ status, ...extra })
         });
+        return result;
     } catch (error) {
         // Backend may be unavailable during offline demo.
+        showNotification(`Không cập nhật được booking: ${error.message}`, 'error');
+        return null;
+    } finally {
+        updateDashboardData();
     }
-    updateDashboardData();
 }
 
 async function activateSupportForLatestAlert() {
-    const backendAlerts = Array.isArray(dashboardState?.alerts) ? dashboardState.alerts : [];
-    const localAlerts = getRiskAlerts();
-    const latestItem = getDashboardRiskQueue([...backendAlerts, ...localAlerts])
+    const latestItem = getSupportQueue()
         .filter(item => !['resolved', 'completed', 'cancelled'].includes(item.status))
         .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))[0];
 
     if (!latestItem) {
-        alert('Không có cảnh báo hoặc yêu cầu hỗ trợ đang chờ.');
+        alert('Không có yêu cầu hỗ trợ đang chờ.');
         return;
     }
 
-    if (latestItem.type === 'booking') {
-        await markBooking(latestItem.id, 'scheduled');
-    } else {
-        await markRiskAlert(latestItem.id, 'contacted');
-    }
+    await markBooking(latestItem.id, 'scheduled');
 
     alert('Đã kích hoạt quy trình hỗ trợ cho mục ưu tiên cao nhất.');
 }
@@ -1098,13 +957,6 @@ function showAllTopics() {
     alert(topics || 'Chưa có chủ đề nổi bật.');
 }
 
-function filterAlertsBySeverity(severity) {
-    const alerts = Array.isArray(dashboardState?.alerts) ? dashboardState.alerts : [];
-    const filtered = severity === 'all' ? alerts : alerts.filter(alert => alert.severity === severity);
-    renderRiskAlertPanel(filtered);
-    renderConsultationCases(filtered);
-}
-
 function exportReport() {
     exportDashboardData();
 }
@@ -1112,7 +964,7 @@ function exportReport() {
 function generateWeeklyReport() {
     fetchDashboardData()
         .then(() => {
-            renderRiskDashboard();
+            renderDashboardSections();
             showNotification('Đã tạo báo cáo tuần từ dữ liệu live.', 'success');
         })
         .catch(error => showNotification(`Không tạo được báo cáo: ${error.message}`, 'error'));
@@ -1127,9 +979,6 @@ function switchView(view) {
     switch (view) {
         case 'dashboard':
             window.location.reload();
-            break;
-        case 'alerts':
-            renderAlertsView();
             break;
         case 'interventions':
             renderInterventionsView();
@@ -1158,10 +1007,6 @@ window.onload = function() {
     setupSidebarNavigation();
 };
 
-window.addEventListener('storage', function(event) {
-    if (event.key === RISK_ALERTS_KEY) updateDashboardData();
-});
-
 function setupSidebarNavigation() {
     const menuItems = document.querySelectorAll('.dash-menu-item');
     menuItems.forEach(item => {
@@ -1175,8 +1020,6 @@ function setupSidebarNavigation() {
             const text = this.textContent;
             if (text.includes('Tổng quan')) {
                 switchView('dashboard');
-            } else if (text.includes('Cảnh báo')) {
-                switchView('alerts');
             } else if (text.includes('Can thiệp')) {
                 switchView('interventions');
             } else if (text.includes('Báo cáo')) {

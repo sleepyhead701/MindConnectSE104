@@ -3,8 +3,13 @@ const riskDetectionService = require('../services/RiskDetectionService');
 const mongoose = require('mongoose');
 const ChatMessage = require('../models/ChatMessage');
 const RiskAlert = require('../models/RiskAlert');
+const crypto = require('crypto');
 
 const makeMemoryId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+const hashStudentId = (value) => {
+  const source = String(value || 'anonymous@student.local').trim().toLowerCase();
+  return `SV-${crypto.createHash('sha256').update(source).digest('hex').slice(0, 8).toUpperCase()}`;
+};
 
 const supportChat = async (req, res, next) => {
   try {
@@ -63,6 +68,7 @@ const supportChat = async (req, res, next) => {
     if (mongoose.connection.readyState === 1) {
       await ChatMessage.create({
         user_id: req.user?.id || null,
+        student_id_hash: hashStudentId(req.user?.email || req.user?.id),
         user_message: message.trim(),
         ai_reply: result.reply,
         model: result.model
@@ -78,6 +84,36 @@ const supportChat = async (req, res, next) => {
   }
 };
 
+const getChatHistory = async (req, res, next) => {
+  try {
+    if (!req.user?.id) {
+      return res.json({ success: true, data: [] });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const messages = await ChatMessage.find({ user_id: req.user.id })
+      .sort({ created_at: 1 })
+      .limit(80);
+
+    res.json({
+      success: true,
+      data: messages.map(message => ({
+        id: String(message._id),
+        user_message: message.user_message,
+        ai_reply: message.ai_reply,
+        model: message.model,
+        created_at: message.created_at
+      }))
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
-  supportChat
+  supportChat,
+  getChatHistory
 };

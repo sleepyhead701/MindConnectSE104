@@ -6,6 +6,10 @@ const chatMessageSchema = new mongoose.Schema({
     ref: 'User',
     default: null
   },
+  student_id_hash: {
+    type: String,
+    default: 'SV-ANON'
+  },
   user_message: {
     type: String,
     required: true,
