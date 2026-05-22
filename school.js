@@ -255,7 +255,6 @@ function getDefaultConsultationRows() {
     return element ? element.innerHTML : '';
 }
 
-
 // ============================================
 // 7. DASHBOARD DATA FETCHING
 // ============================================
@@ -265,9 +264,11 @@ async function fetchDashboardData() {
     return dashboardState;
 }
 
-
 // ============================================
-// 11. DASHBOARD UPDATE (MAIN TRIGGER)
+// 8. METRICS & TOPICS RENDERING
+// ============================================
+// ============================================
+// 9. DASHBOARD UPDATE (MAIN TRIGGER)
 // ============================================
 function updateDashboardData() {
     const metricsGrid = document.querySelector('.kpi-grid');
@@ -351,6 +352,14 @@ async function handleConsultation(status, rowId) {
     }
 }
 
+function renderDashboardView() {
+    // Main dashboard view is already in HTML, just update data
+    updateDashboardData();
+}
+
+function renderAlertsView() {
+    renderInterventionsView();
+}
 
 // ============================================
 // 11. LIVE DASHBOARD OVERRIDES
@@ -762,6 +771,20 @@ function switchView(view) {
     }
 }
 
+function setupSidebarNavigation() {
+    document.querySelectorAll('.dash-menu-item').forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelectorAll('.dash-menu-item').forEach(menuItem => {
+                menuItem.classList.remove('active');
+            });
+            this.classList.add('active');
+
+            const view = this.dataset.view || (this.textContent.includes('Can thiệp') ? 'interventions' : this.textContent.includes('Báo cáo') ? 'feedback' : 'dashboard');
+            switchView(view);
+        });
+    });
+}
+
 // ============================================
 // 15. INITIALIZATION
 // ============================================
@@ -769,12 +792,3 @@ window.onload = function() {
     updateDashboardData();
     setupSidebarNavigation();
 };
-
-function setupSidebarNavigation() {
-    document.querySelectorAll('.dash-menu-item').forEach(item => {
-        if (!item.dataset.view) return;
-        item.addEventListener('click', function() {
-            switchView(this.dataset.view || 'dashboard');
-        });
-    });
-}
