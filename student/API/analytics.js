@@ -1,4 +1,4 @@
-import { apiRequest } from './utils.js';
+import { apiRequest } from '../utils/utils.js';
 
 export function trackInteraction(type, targetId = '', metadata = {}) {
     apiRequest('/api/interactions', {

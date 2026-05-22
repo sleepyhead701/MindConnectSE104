@@ -7,6 +7,10 @@ export function escapeHtml(value) {
         .replace(/'/g, '&#039;');
 }
 
+export function stripHtml(value) {
+    return String(value || '').replace(/<[^>]*>/g, ' ');
+}
+
 function relativeTimeFrom(dateInput) {
     const date = new Date(dateInput);
     const diff = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -62,4 +66,16 @@ export async function apiRequest(path, options = {}) {
     }
 
     return result.data;
+}
+
+export function showNotification(text) {
+    const notif = document.createElement('div');
+    notif.className = 'notification-toast';
+    notif.innerText = text;
+    // Tìm mobile-frame để gắn vào, tránh lỗi nếu chưa load DOM
+    const frame = document.querySelector('.mobile-frame');
+    if(frame) {
+        frame.appendChild(notif);
+        setTimeout(() => notif.remove(), 4000);
+    }
 }

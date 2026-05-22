@@ -1,0 +1,605 @@
+/* --- GHI ĐÈ CSS ĐỂ CHUYỂN TỪ MOBILE -> DESKTOP (NOTION STYLE) --- */
+
+/* Reset body để full màn hình web */
+body {
+    display: block;
+    height: auto;
+    min-height: 100vh;
+    background-color: white;
+    overflow-y: auto;
+    padding-top: 70px;
+}
+
+/* Ẩn khung trình chiếu 16:9 cũ */
+#presentation-frame {
+    width: 100% !important;
+    height: auto !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    display: block !important;
+    position: static !important;
+}
+
+/* Ẩn các thành phần Mobile cũ */
+.view-section {
+    position: static;
+    width: 100%;
+    height: auto;
+    animation: none;
+}
+
+.student-container {
+    background: transparent;
+    height: auto;
+    display: block;
+    padding-top: 0;
+}
+
+.mobile-frame {
+    width: 100%;
+    height: auto;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+}
+
+.mobile-header {
+    display: none;
+}
+
+.mobile-nav {
+    display: none;
+}
+
+/* --- 3. GIAO DIỆN MỚI: THANH ĐIỀU HƯỚNG TRÊN CÙNG (MODERN TOP NAV) --- */
+.desktop-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(0, 0, 0, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 clamp(20px, 5vw, 60px);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-brand {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--deep-rose);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.nav-brand img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+}
+
+.nav-menu {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.nav-menu .nav-icon {
+    position: relative;
+    font-family: var(--font-body);
+    font-size: 14px !important;
+    font-weight: 500;
+    color: var(--text-dark);
+    cursor: pointer;
+    padding: 10px 18px;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 1;
+    background: transparent;
+    border: none;
+}
+
+.nav-menu .nav-icon::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: calc(100% - 36px);
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-pink), var(--deep-rose));
+    border-radius: 2px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-menu .nav-icon:hover {
+    background: rgba(212, 46, 112, 0.06);
+    color: var(--deep-rose);
+    transform: translateY(-1px);
+}
+
+.nav-menu .nav-icon:hover::after {
+    transform: translateX(-50%) scaleX(1);
+}
+
+.nav-menu .nav-icon.active {
+    background: rgba(212, 46, 112, 0.1);
+    color: var(--deep-rose);
+    font-weight: 600;
+    transform: none;
+}
+
+.nav-menu .nav-icon.active::after {
+    transform: translateX(-50%) scaleX(1);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-profile-badge {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent-pink), var(--deep-rose));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+}
+
+.user-profile-badge:hover {
+    border-color: var(--deep-rose);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(212, 46, 112, 0.3);
+}
+
+/* Profile Dropdown */
+.profile-dropdown {
+    position: relative;
+}
+
+.profile-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 200px;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    z-index: 1001;
+}
+
+.profile-dropdown:hover .profile-dropdown-menu,
+.profile-dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    padding: 12px 16px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--text-dark);
+    text-decoration: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+    background: rgba(212, 46, 112, 0.06);
+}
+
+.dropdown-item.danger {
+    color: var(--danger);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.06);
+    margin: 4px 0;
+}
+
+/* Logout Button */
+.btn-logout {
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--text-light);
+    background: transparent;
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: var(--font-body);
+    font-weight: 500;
+}
+
+.btn-logout:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: rgba(255, 105, 97, 0.06);
+}
+
+/* Mobile Hamburger */
+.hamburger-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.hamburger-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--text-dark);
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hamburger-btn.active span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger-btn.active span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+
+.hamburger-btn.active span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile Menu */
+.mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    top: 70px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999;
+}
+
+.mobile-menu-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.mobile-menu-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 20px;
+    transform: translateY(-20px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-menu-overlay.show .mobile-menu-content {
+    transform: translateY(0);
+}
+
+.mobile-menu-content .nav-icon {
+    display: block;
+    padding: 14px 16px;
+    font-size: 16px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0;
+}
+
+.mobile-menu-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 60px;
+    }
+
+    .desktop-nav {
+        height: 60px;
+        padding: 0 16px;
+    }
+
+    .nav-menu {
+        display: none;
+    }
+
+    .nav-actions .btn-logout {
+        display: none;
+    }
+
+    .hamburger-btn {
+        display: flex;
+    }
+
+    .mobile-menu-overlay {
+        display: block;
+    }
+
+    .nav-brand {
+        font-size: 20px;
+    }
+
+    .nav-brand img {
+        height: 32px;
+    }
+}
+
+/* --- 4. CONTAINER NỘI DUNG CHÍNH (CANVAS) --- */
+.notion-layout {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 100px 20px;
+}
+
+/* Tiêu đề trang chào mừng */
+.page-greeting {
+    margin-bottom: 30px;
+}
+
+.page-greeting h1 {
+    font-family: var(--font-heading);
+    font-size: 42px;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+}
+
+/* --- 5. TÙY CHỈNH CÁC THÀNH PHẦN JS RENDER RA --- */
+#student-main-content {
+    background: transparent !important;
+    padding: 0 !important;
+    overflow: visible !important;
+}
+
+.feed-card,
+.res-card {
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: none !important;
+    transition: 0.2s;
+}
+
+.feed-card:hover,
+.res-card:hover {
+    border-color: #ccc !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Nút Logout */
+.btn-logout-text {
+    font-size: 13px;
+    color: #888;
+    cursor: pointer;
+    margin-right: 15px;
+    text-decoration: underline;
+}
+
+.btn-logout-text:hover {
+    color: var(--danger);
+}
+
+/* --- PORTED APP HEADER + PAGE SHELL FROM REACT MOCKUP --- */
+:root {
+    --font-heading: 'Fraunces', Georgia, serif;
+    --font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    --mc-cream: #fffdf7;
+    --mc-blush: #fdecef;
+    --mc-secondary: #fbf4f4;
+    --mc-ink: #392833;
+    --mc-ink-soft: #745f69;
+    --mc-border: rgba(100, 59, 77, 0.1);
+    --mc-primary: #d42e70;
+    --mc-coral: #f29a78;
+    --mc-gradient-rose: linear-gradient(135deg, #dc4779 0%, #f3a169 100%);
+    --mc-gradient-blush: linear-gradient(180deg, #fffdf7 0%, #fff0f3 100%);
+    --mc-shadow-card: 0 1px 2px rgba(57, 40, 51, 0.04), 0 12px 36px -16px rgba(57, 40, 51, 0.16);
+    --mc-shadow-soft: 0 28px 70px -34px rgba(212, 46, 112, 0.24);
+}
+
+body {
+    padding-top: 64px;
+    background: var(--mc-gradient-blush);
+    color: var(--mc-ink);
+    font-family: var(--font-body);
+}
+
+#presentation-frame,
+.view-section,
+.student-container,
+.mobile-frame {
+    width: 100% !important;
+    min-height: calc(100vh - 64px);
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+}
+
+.mobile-frame {
+    overflow: visible;
+    position: relative;
+}
+
+.desktop-nav {
+    height: 64px;
+    padding: 0 clamp(16px, 5vw, 56px);
+    background: rgba(255, 255, 255, 0.76);
+    border-bottom: 1px solid var(--mc-border);
+    box-shadow: none;
+}
+
+.nav-brand {
+    color: var(--mc-primary);
+    font-family: var(--font-heading);
+    font-size: 23px;
+    letter-spacing: 0;
+}
+
+.nav-brand img {
+    height: 34px;
+}
+
+.nav-menu {
+    gap: 3px;
+    padding: 4px;
+    border: 1px solid var(--mc-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.72);
+    box-shadow: var(--mc-shadow-card);
+}
+
+.nav-menu .nav-icon,
+.mobile-menu-content .nav-icon {
+    opacity: 1;
+    color: var(--mc-ink-soft);
+    border-radius: 999px;
+    font-size: 14px !important;
+    font-weight: 600;
+    padding: 8px 16px;
+}
+
+.nav-menu .nav-icon::after {
+    display: none;
+}
+
+.nav-menu .nav-icon:hover,
+.mobile-menu-content .nav-icon:hover {
+    background: var(--mc-blush);
+    color: var(--mc-primary);
+    transform: none;
+}
+
+.nav-menu .nav-icon.active,
+.mobile-menu-content .nav-icon.active {
+    background: var(--mc-gradient-rose);
+    color: white;
+    box-shadow: 0 16px 36px -22px rgba(212, 46, 112, 0.65);
+    transform: none;
+}
+
+.btn-logout {
+    border-radius: 999px;
+    border-color: var(--mc-border);
+    background: rgba(255, 255, 255, 0.68);
+    color: var(--mc-ink-soft);
+}
+
+.btn-logout:hover {
+    color: var(--mc-primary);
+    border-color: rgba(212, 46, 112, 0.28);
+    background: white;
+}
+
+.user-profile-badge {
+    width: 38px;
+    height: 38px;
+    background: var(--mc-gradient-rose);
+    box-shadow: 0 16px 36px -22px rgba(212, 46, 112, 0.65);
+}
+
+.notion-layout {
+    max-width: 1120px;
+    padding: 36px clamp(16px, 4vw, 42px) 90px;
+}
+
+#student-main-content {
+    background: transparent !important;
+    color: var(--mc-ink);
+}
+
+.mc-panel,
+.mc-feed-card,
+.mc-chat-panel,
+.mc-resource-card {
+    border: 1px solid var(--mc-border) !important;
+    box-shadow: var(--mc-shadow-card) !important;
+}
+
+.mobile-menu-overlay {
+    top: 64px;
+}
+
+.mobile-menu-content {
+    background: rgba(255, 255, 255, 0.96);
+}
+
+.mobile-menu-content .nav-icon {
+    border-bottom: none;
+    margin-bottom: 6px;
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 60px;
+    }
+
+    .desktop-nav {
+        height: 60px;
+    }
+
+    .mobile-menu-overlay {
+        top: 60px;
+    }
+
+    .nav-brand span {
+        display: none;
+    }
+
+    .notion-layout {
+        padding-top: 26px;
+    }
+}

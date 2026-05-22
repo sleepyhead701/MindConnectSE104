@@ -1,7 +1,3 @@
-const defaultChatHistory = [
-    { sender: 'ai', text: 'Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?' }
-];
-
 class userProfile {
     constructor(name, email, avatarUrl, bio) {
         this.name = name;
@@ -11,14 +7,12 @@ class userProfile {
     }
 }
 
-class userSession {
+export class userSession {
     constructor(name, email) {
         this.name = name;
         this.email = email;
     }
 }
-
-const currentUser = new userSession('Durian', 'student@example.com');
 
 // Tạo list user profiles (dự phòng cho tính năng mở rộng sau này, hiện chỉ có 2 profile)
 const usersDB = [
@@ -85,7 +79,7 @@ const defaultUserFeed = [
     }
 ];
 
-const resourcesDB = [
+export const resourcesDB = [
     {
         type: 'Video',
         title: 'Thiền 5 phút giảm lo âu',
@@ -153,18 +147,11 @@ const resourcesDB = [
 
 const RISK_ALERTS_KEY = 'mindconnect:risk-alerts';
 const PUBLIC_FEED_KEY = 'mindconnect:public-feed';
-const PRIVATE_DIARY_KEY = 'mindconnect:private-diary';
-const STUDENT_PROFILE_KEY = 'mindconnect:student-profile';
-const CUSTOM_RESOURCES_KEY = 'mindconnect:custom-resources';
 const API_BASE_URL = 'http://localhost:3000';
 const CHAT_API_URL = `${API_BASE_URL}/chat/support`;
 
-let chatHistory = defaultChatHistory;
 let userFeed = loadPublicFeed();
-let privateDiaryEntries = loadPrivateDiaryEntries();
-let currentResource = getResourcesDB()[0];
 let backendReady = false;
-let currentMoodScore = 4;
 
 function loadPublicFeed() {
     return loadJson(PUBLIC_FEED_KEY, defaultUserFeed);
@@ -179,57 +166,6 @@ export function loadJson(key, fallback) {
     }
 }
 
-function loadPrivateDiaryEntries() {
-    return loadJson(getStudentStorageKey(PRIVATE_DIARY_KEY), []);
-}
-
-export function getPrivateDiaryEntries() {
-    return privateDiaryEntries;
-}
-
-export function savePrivateDiaryEntries() {
-    saveJson(getStudentStorageKey(PRIVATE_DIARY_KEY), privateDiaryEntries);
-}
-
-export function getStudentStorageKey(baseKey) {
-    return `${baseKey}:${getStudentStorageId()}`;
-}
-
-function getStudentStorageId() {
-    const session = getStudentSession();
-    return String(
-        session?.user?.email ||
-        session?.email ||
-        session?.name ||
-        currentUser.email ||
-        'guest'
-    ).trim().toLowerCase().replace(/[^a-z0-9@._-]/g, '-');
-}
-
-export function getStudentSession() {
-    return getAuthSession() || currentUser || { name: 'Người dùng ẩn danh', email: 'student@example.com' };
-}
-
-export function getAuthSession() {
-    try {
-        return JSON.parse(localStorage.getItem('mindconnect:auth'))
-            || JSON.parse(localStorage.getItem('authSession'))
-            || null;
-    } catch (error) {
-        return null;
-    }
-}
-
-export function getResourcesDB() {
-    return resourcesDB.concat(loadJson(CUSTOM_RESOURCES_KEY, []));
-}
-
-export function addResource(resource) {
-    const resources = getResourcesDB();
-    resources.push(resource);
-    saveJson(CUSTOM_RESOURCES_KEY, resources.filter(r => r.isCustom));
-}
-
 export function getBackendReadyState() {
     return backendReady;
 }
@@ -237,11 +173,6 @@ export function getBackendReadyState() {
 export function setBackendReadyState(isReady) {
     backendReady = isReady;
 }
-
-export function getStudentProfileKey() {
-    return STUDENT_PROFILE_KEY;
-}
-
 export function savePublicFeed() {
     saveJson(PUBLIC_FEED_KEY, getUserFeed());
 }
@@ -255,48 +186,24 @@ export function addUserFeed(feedItem) {
     savePublicFeed();
 }
 
-export function findUserBySession(session) {
-    const email = session?.user?.email || session?.email;
-    if (usersDB.find(u => u.email === email)) {
-        return usersDB.find(u => u.email === email);
-    }
-    return null;
-}
-
-export function findUserByName(name) {
-    if (usersDB.find(u => u.name === name)) {
-        return usersDB.find(u => u.name === name);
-    }
-    return null;
-}
-
 export function saveJson(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
 }
 
-export function getAuthorAvatar(authorName) {
-    const user = findUserByName(authorName);
-    return user ? user.avatarUrl : 'https://www.gravatar.com/avatar?d=mp&f=y';
+export function getAuthorAvatar(item, index) {
+    if (item?.author_avatar) return item.author_avatar;
+    const profile = getUserProfile(item?.author);
+    return profile?.avatarUrl || '';
 }
 
-export function getUserProfile(name) {
-    const profile = getStudentProfile();
-    if (name && (name === profile.name || name === profile.displayName || name === 'Tôi')) {
-        return new userProfile(profile.displayName || profile.name, profile.email, profile.avatarUrl, profile.bio);
-    }
-    return findUserByName(name) || null;
+export function getResourcesDB() {
+    return resourcesDB;
 }
 
-export function getStudentProfile() {
-    const session = getStudentSession();
-    const savedProfile = loadJson(getStudentStorageKey(getStudentProfileKey()), {});
-    const fallbackName = session?.user?.name || session?.name || session?.user?.email || session?.email || currentUser.name;
+export function getUsersDB() {
+    return usersDB;
+}
 
-    return {
-        name: savedProfile.name || session?.user?.name || session?.name || fallbackName || 'Người dùng ẩn danh',
-        email: session?.user?.email || session?.email || currentUser.email,
-        avatarUrl: savedProfile.avatarUrl || 'logo.png',
-        bio: savedProfile.bio || '',
-        displayName: savedProfile.name || session?.user?.name || session?.name || fallbackName
-    };
+export function getChatApiUrl() {
+    return CHAT_API_URL;
 }

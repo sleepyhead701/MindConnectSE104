@@ -1,6 +1,11 @@
-import { updateNav } from './updateNav.js';
-import { animateMainContentSwap } from './animations.js';
-import { getPrivateDiaryEntries } from './state.js';
+import { updateNav } from '../utils/updateNav.js';
+import { animateMainContentSwap } from '../animations.js';
+import { getPrivateDiaryEntries, getCurrentMoodScore, setCurrentMoodScore } from '../studentState.js';
+import { savePrivateDiaryEntries } from '../studentState.js';
+import { addManualTag, getManualTags } from '../utils/tags.js';
+import { createRiskAlert } from '../RiskAlert.js';
+import { normalizeVietnamese } from '../utils/normalizeVietnamese.js';
+import { escapeHtml, getFeedGradient, formatFeedTime, stripHtml } from '../utils/utils.js';
 
 export function renderStudentDiary() {
     const container = document.getElementById('student-main-content');
@@ -18,7 +23,7 @@ export function renderStudentDiary() {
     const recentHtml = getPrivateDiaryEntries().slice(0, 6).map((entry, index) => `
         <button type="button" class="mc-recent-entry" style="width:100%; text-align:left; border:0; cursor:pointer;" onclick="openDiaryEntryModal('${escapeHtml(entry.id)}')">
             <div class="mc-recent-top">
-                <span class="mc-recent-dot ${getFeedGradient(index)}">${escapeHtml(String(entry.mood_score || currentMoodScore))}</span>
+                <span class="mc-recent-dot ${getFeedGradient(index)}">${escapeHtml(String(entry.mood_score || getCurrentMoodScore()))}</span>
                 <strong>${formatFeedTime(entry.date || entry.time)}</strong>
             </div>
             <p><strong>${escapeHtml(entry.title || 'Không có tiêu đề')}</strong></p>
@@ -40,7 +45,7 @@ export function renderStudentDiary() {
                         <label class="mc-field-label">Cảm xúc hiện tại</label>
                         <div class="mc-mood-grid">
                             ${moodItems.map(item => `
-                                <button class="mood-card ${item.score === 4 ? 'active' : ''}" type="button" data-score="${item.score}" data-action="select-mood">
+                                <button class="mood-card ${item.score === getCurrentMoodScore() ? 'active' : ''}" type="button" data-score="${item.score}" data-action="select-mood">
                                     <span class="mood-mark mood-${item.tone}">${item.icon}</span>
                                     <span>${item.label}</span>
                                 </button>
@@ -77,7 +82,7 @@ export function renderStudentDiary() {
 }
 document.addEventListener("click", (event) => {
     if (event.target.closest("[data-action='addTag']")) {
-            addManualTag("feed-tag-input", "feed-tag-container");
+        addManualTag("diary-tag-input", "diary-tag-container");
         }
     if (event.target.closest("[data-action='select-mood']")) {
         const btn = event.target.closest("[data-action='select-mood']");
@@ -85,12 +90,12 @@ document.addEventListener("click", (event) => {
         selectMood(score, btn);
     }
     if (event.target.closest("[data-action='save-diary']")) {
-        saveDiaryEntry();
+        confirmAndPost();
     }
 });
 
 function selectMood(score, elem) {
-    currentMoodScore = Number(score) || currentMoodScore;
+    setCurrentMoodScore(Number(score) || getCurrentMoodScore());
     document.querySelectorAll('.emoji-btn, .mood-card').forEach(e => e.classList.remove('active'));
     elem.classList.add('active');
     
@@ -108,4 +113,94 @@ function selectMood(score, elem) {
     } else {
         msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score==5?"Rất tốt":(score==4?"Tốt":"Bình thường"));
     }
+}
+
+async function analyzeDiary() {
+    return savePrivateDiary();
+}
+
+function toggleTag(el) { el.classList.toggle('selected'); }
+
+async function savePrivateDiary() {
+    const title = document.getElementById('diary-title')?.value.trim() || '';
+    const content = document.getElementById('diary-content')?.value.trim() || '';
+    const tagInput = document.getElementById('diary-tag-input');
+    if (tagInput?.value.trim()) addManualTag('diary-tag-input', 'diary-tag-container');
+    const finalTags = getManualTags('diary-tag-container');
+
+    if (content.length < 5) {
+        alert('Hãy viết nhật ký dài hơn một chút nhé.');
+        return;
+    }
+
+    if (!finalTags.length) {
+        alert('Bạn cần thêm ít nhất 1 tag trước khi lưu nhật ký.');
+        return;
+    }
+
+    const riskAlert = createRiskAlert('Diary', `${title} ${content}`, { diary_title: title || 'Không có tiêu đề' });
+    const entry = {
+        id: `diary-${Date.now()}`,
+        title,
+        content,
+        tags: finalTags,
+        mood_score: getCurrentMoodScore(),
+        date: new Date().toISOString()
+    };
+
+    getPrivateDiaryEntries().unshift(entry);
+    savePrivateDiaryEntries();
+
+    try {
+        await apiRequest('/api/diaries', {
+            method: 'POST',
+            body: JSON.stringify({
+                title,
+                content,
+                tags: finalTags,
+                mood_score: getCurrentMoodScore(),
+            })
+        });
+    } catch (error) {
+        // Private local diary remains saved even if backend analytics are unavailable.
+    }
+
+    alert(riskAlert
+        ? 'Đã lưu nhật ký riêng tư và gửi cảnh báo ẩn danh cho tổ tham vấn.'
+        : 'Đã lưu nhật ký riêng tư.');
+    renderStudentDiary();
+}
+
+function openDiaryEntryModal(entryId) {
+    const entry = getPrivateDiaryEntries().find(item => String(item.id) === String(entryId));
+    if (!entry) return;
+
+    const existing = document.getElementById('diary-entry-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'diary-entry-modal';
+    modal.className = 'modal-overlay';
+    modal.onclick = function(e) { if (e.target === modal) modal.remove(); };
+    modal.innerHTML = `
+        <div class="modal-content" style="max-height:90vh; overflow:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:16px;">
+                <div>
+                    <p class="mc-kicker" style="margin:0 0 4px;">Nhật ký riêng tư</p>
+                    <h3 style="margin:0; color:var(--deep-rose); font-family:var(--font-heading);">${escapeHtml(entry.title || 'Không có tiêu đề')}</h3>
+                    <p style="margin:6px 0 0; color:#777; font-size:13px;">${formatFeedTime(entry.date)} · Mood ${escapeHtml(entry.mood_score || '-')} / 5</p>
+                </div>
+                <button type="button" aria-label="Đóng" onclick="document.getElementById('diary-entry-modal')?.remove()" style="border:0;background:transparent;font-size:24px;cursor:pointer;color:#999;">&times;</button>
+            </div>
+            <div class="mc-tag-row" style="margin-bottom:14px;">
+                ${(entry.tags || []).map(tag => `<span>#${escapeHtml(tag)}</span>`).join('')}
+            </div>
+            <p style="white-space:pre-wrap; line-height:1.7; color:var(--mc-ink);">${escapeHtml(entry.content)}</p>
+        </div>
+    `;
+    document.querySelector('.mobile-frame')?.appendChild(modal);
+}
+
+async function confirmAndPost() {
+    return savePrivateDiary();
 }
