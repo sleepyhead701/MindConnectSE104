@@ -1,6 +1,12 @@
 // school.js - School Admin Dashboard Logic
 
 // ============================================
+// 0. IMPORTS
+// ============================================
+import { escapeHtml as utilEscapeHtml } from './student/utils/utils.js';
+import { normalizeVietnamese } from './student/utils/normalizeVietnamese.js';
+
+// ============================================
 // 1. CONSTANTS & CONFIGURATION
 // ============================================
 const API_BASE_URL = 'http://localhost:3000';
@@ -283,7 +289,7 @@ function updateDashboardData() {
 }
 
 // ============================================
-// 12. CONSULTATION HANDLER
+// 10. CONSULTATION HANDLER
 // ============================================
 async function handleConsultation(status, rowId) {
     const row = document.getElementById(rowId);
@@ -347,7 +353,7 @@ async function handleConsultation(status, rowId) {
 
 
 // ============================================
-// 14. LIVE DASHBOARD OVERRIDES
+// 11. LIVE DASHBOARD OVERRIDES
 // ============================================
 function renderMetricSubtext(valueEl, text) {
     const sub = valueEl?.closest('.kpi-card')?.querySelector('.kpi-sub');
