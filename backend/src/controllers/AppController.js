@@ -393,6 +393,8 @@ const createBooking = async (req, res, next) => {
       department: req.body.department || 'CNTT',
       location: req.body.location || 'Phòng tham vấn 102 - Khu B',
       requested_time: bookingDraft.requested_time,
+      rescheduled_from: String(req.body.rescheduled_from || ''),
+      rescheduled_at: req.body.rescheduled_from ? new Date() : null,
       note: bookingDraft.note,
       urgency_score: toNumber(req.body.urgency_score) || scoreBookingUrgency(bookingDraft),
       before_mood_score: bookingDraft.before_mood_score,
@@ -415,7 +417,7 @@ const createBooking = async (req, res, next) => {
       student_id_hash: payload.student_id_hash,
       type: 'booking',
       target_id: String(booking._id || booking.id),
-      metadata: { urgency_score: payload.urgency_score, requested_time: payload.requested_time },
+      metadata: { urgency_score: payload.urgency_score, requested_time: payload.requested_time, location: payload.location },
       created_at: new Date()
     };
     if (isDbConnected()) {
@@ -434,6 +436,43 @@ const createBooking = async (req, res, next) => {
   }
 };
 
+const listMyBookings = async (req, res, next) => {
+  try {
+    if (!req.user?.id && !req.user?.email) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const studentHash = hashStudentId(req.user?.email || req.user?.id);
+    let bookings;
+
+    if (isDbConnected()) {
+      const filters = [{ student_id_hash: studentHash }];
+      if (req.user?.id && mongoose.Types.ObjectId.isValid(req.user.id)) {
+        filters.push({ user_id: req.user.id });
+      }
+      bookings = await Booking.find({ $or: filters })
+        .sort({ created_at: -1 })
+        .limit(50);
+    } else {
+      bookings = memoryStore.bookings
+        .filter(booking => {
+          const sameHash = booking.student_id_hash === studentHash;
+          const sameUser = req.user?.id && String(booking.user_id || '') === String(req.user.id);
+          return sameHash || sameUser;
+        })
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 50);
+    }
+
+    res.json({
+      success: true,
+      data: bookings.map(normalizeDocument)
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const updateBooking = async (req, res, next) => {
   try {
     const updates = {
@@ -443,16 +482,65 @@ const updateBooking = async (req, res, next) => {
     if (req.body.after_mood_score !== undefined) updates.after_mood_score = toNumber(req.body.after_mood_score);
     if (req.body.before_mood_score !== undefined) updates.before_mood_score = toNumber(req.body.before_mood_score);
     if (req.body.location) updates.location = String(req.body.location).slice(0, 200);
+    if (req.body.requested_time !== undefined) updates.requested_time = req.body.requested_time ? new Date(req.body.requested_time) : null;
+    if (req.body.note !== undefined) updates.note = String(req.body.note || '').slice(0, 1000);
     if (req.body.urgency_score !== undefined) updates.urgency_score = clamp(toNumber(req.body.urgency_score) || 0, 0, 100);
 
     let booking;
+    let followUpBooking = null;
     if (isDbConnected()) {
-      booking = mongoose.Types.ObjectId.isValid(req.params.id)
-        ? await Booking.findByIdAndUpdate(req.params.id, updates, { new: true })
+      const existingBooking = mongoose.Types.ObjectId.isValid(req.params.id)
+        ? await Booking.findById(req.params.id)
+        : null;
+      if (existingBooking && updates.status === 'rescheduled') {
+        updates.rescheduled_at = new Date();
+        followUpBooking = await Booking.create({
+          user_id: existingBooking.user_id || null,
+          student_alias: existingBooking.student_alias,
+          student_id_hash: existingBooking.student_id_hash,
+          class_name: existingBooking.class_name,
+          department: existingBooking.department,
+          location: updates.location || existingBooking.location,
+          requested_time: updates.requested_time || existingBooking.requested_time,
+          note: updates.note || existingBooking.note,
+          urgency_score: Math.max(1, Number(existingBooking.urgency_score || 55) - 1),
+          before_mood_score: existingBooking.before_mood_score,
+          after_mood_score: existingBooking.after_mood_score,
+          status: 'new',
+          rescheduled_from: String(existingBooking._id),
+          rescheduled_at: new Date(),
+          created_at: new Date()
+        });
+      }
+      booking = existingBooking
+        ? await Booking.findByIdAndUpdate(existingBooking._id, updates, { new: true })
         : null;
     } else {
       booking = memoryStore.bookings.find(item => item.id === req.params.id);
       if (booking) {
+        if (updates.status === 'rescheduled') {
+          updates.rescheduled_at = new Date();
+          followUpBooking = {
+            id: makeMemoryId('booking'),
+            user_id: booking.user_id || null,
+            student_alias: booking.student_alias,
+            student_id_hash: booking.student_id_hash,
+            class_name: booking.class_name,
+            department: booking.department,
+            location: updates.location || booking.location,
+            requested_time: updates.requested_time || booking.requested_time,
+            note: updates.note || booking.note,
+            urgency_score: Math.max(1, Number(booking.urgency_score || 55) - 1),
+            before_mood_score: booking.before_mood_score,
+            after_mood_score: booking.after_mood_score,
+            status: 'new',
+            rescheduled_from: String(booking.id),
+            rescheduled_at: new Date(),
+            created_at: new Date(),
+            updated_at: null
+          };
+          memoryStore.bookings.push(followUpBooking);
+        }
         Object.assign(booking, updates);
         persistMemoryStore();
       }
@@ -462,7 +550,13 @@ const updateBooking = async (req, res, next) => {
       return res.status(404).json({ success: false, error: 'Booking not found' });
     }
 
-    res.json({ success: true, data: normalizeDocument(booking) });
+    res.json({
+      success: true,
+      data: {
+        booking: normalizeDocument(booking),
+        follow_up_booking: followUpBooking ? normalizeDocument(followUpBooking) : null
+      }
+    });
   } catch (error) {
     next(error);
   }
@@ -710,7 +804,7 @@ const getDashboardV2 = async (req, res, next) => {
 
     const openAlerts = alerts.filter(alert => alert.status !== 'resolved');
     const completedBookings = bookings.filter(b => ['completed', 'resolved'].includes(b.status));
-    const pendingBookings = bookings.filter(b => !['completed', 'cancelled'].includes(b.status));
+    const pendingBookings = bookings.filter(b => !['completed', 'cancelled', 'rescheduled'].includes(b.status));
     const negativeFeedbacks = feedbacks.filter(feedback => Number(feedback.sentiment_score) < 45);
     const positiveFeedbacks = feedbacks.filter(feedback => Number(feedback.sentiment_score) >= 65);
 
@@ -769,6 +863,7 @@ const getDashboardV2 = async (req, res, next) => {
         student_id_hash: alert.student_id_hash || hashStudentId(alert.user_id || alert.student_alias),
         location: alert.location || 'Phòng tham vấn 102 - Khu B',
         scheduled_at: alert.created_at,
+        created_at: alert.created_at,
         status: alert.status,
         severity: alert.severity,
         label: alert.label,
@@ -782,7 +877,10 @@ const getDashboardV2 = async (req, res, next) => {
         student_id_hash: booking.student_id_hash || hashStudentId(booking.user_id || booking.student_alias),
         location: booking.location || 'Phòng tham vấn 102 - Khu B',
         scheduled_at: booking.requested_time || booking.created_at,
+        created_at: booking.created_at,
         status: booking.status,
+        rescheduled_from: booking.rescheduled_from || '',
+        rescheduled_at: booking.rescheduled_at || null,
         severity: Number(booking.urgency_score || 0) >= 80 ? 'high' : 'medium',
         label: 'Yêu cầu đặt lịch hỗ trợ',
         excerpt: booking.note,
@@ -852,6 +950,7 @@ module.exports = {
   createRiskAlert,
   updateRiskAlert,
   createBooking,
+  listMyBookings,
   updateBooking,
   createFeedback,
   listFeedback,

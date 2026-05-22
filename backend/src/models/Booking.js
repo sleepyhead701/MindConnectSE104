@@ -48,6 +48,14 @@ const bookingSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  rescheduled_from: {
+    type: String,
+    default: ''
+  },
+  rescheduled_at: {
+    type: Date,
+    default: null
+  },
   note: {
     type: String,
     maxlength: 1000,

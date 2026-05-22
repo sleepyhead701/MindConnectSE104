@@ -19,8 +19,42 @@ import { saveStudentProfile } from './student/studentState.js';
 
 import { addManualTag, getManualTags } from './student/utils/tags.js';
 
-function getSupportLocation() {
-    return 'Phòng tham vấn 102 - Khu B';
+function getSupportLocation(value) {
+    const selected = String(value || '').trim();
+    return SUPPORT_LOCATIONS.includes(selected) ? selected : SUPPORT_LOCATIONS[0];
+}
+
+function renderSupportLocationOptions(selectedLocation = getSupportLocation()) {
+    return SUPPORT_LOCATIONS.map(location => `
+        <option value="${escapeHtml(location)}" ${location === selectedLocation ? 'selected' : ''}>
+            ${escapeHtml(location)}
+        </option>
+    `).join('');
+}
+
+function getBookingStatusLabel(status) {
+    const labels = {
+        new: 'Đang chờ',
+        scheduled: 'Đã xếp lịch',
+        rescheduled: 'Đã hẹn lại',
+        completed: 'Hoàn tất',
+        cancelled: 'Đã hủy',
+        offline: 'Lưu tạm trên máy'
+    };
+    return labels[status] || status || 'Đang chờ';
+}
+
+function formatBookingDateTime(value) {
+    if (!value) return 'Chưa chọn thời gian';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Chưa chọn thời gian';
+    return date.toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
 }
 
 import { trackInteraction } from './student/API/analytics.js';
@@ -138,7 +172,7 @@ window.submitComment = function(postIndex, content) {
 
 import { updateStudentProfileBadge, renderStudentHome } from './student/NewsFeed/NewsFeed.js';
 
-import { renderStudentDiary, buildFallbackChatReply } from './student/Diary/Diary.js';
+import { renderStudentDiary } from './student/Diary/Diary.js';
 import { getCurrentMoodScore, setCurrentMoodScore } from './student/studentState.js';
 import { callChatBotAPI } from './student/API/callChatBotAPI.js'
 
