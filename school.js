@@ -1,12 +1,6 @@
 // school.js - School Admin Dashboard Logic
 
 // ============================================
-// 0. IMPORTS
-// ============================================
-import { escapeHtml as utilEscapeHtml } from './student/utils/utils.js';
-import { normalizeVietnamese } from './student/utils/normalizeVietnamese.js';
-
-// ============================================
 // 1. CONSTANTS & CONFIGURATION
 // ============================================
 const API_BASE_URL = 'http://localhost:3000';
@@ -267,8 +261,9 @@ async function fetchDashboardData() {
 // ============================================
 // 8. METRICS & TOPICS RENDERING
 // ============================================
+
 // ============================================
-// 9. DASHBOARD UPDATE (MAIN TRIGGER)
+// 11. DASHBOARD UPDATE (MAIN TRIGGER)
 // ============================================
 function updateDashboardData() {
     const metricsGrid = document.querySelector('.kpi-grid');
@@ -290,7 +285,7 @@ function updateDashboardData() {
 }
 
 // ============================================
-// 10. CONSULTATION HANDLER
+// 12. CONSULTATION HANDLER
 // ============================================
 async function handleConsultation(status, rowId) {
     const row = document.getElementById(rowId);
@@ -352,6 +347,9 @@ async function handleConsultation(status, rowId) {
     }
 }
 
+// ============================================
+// 13. NAVIGATION (SIDEBAR)
+// ============================================
 function renderDashboardView() {
     // Main dashboard view is already in HTML, just update data
     updateDashboardData();
@@ -362,7 +360,7 @@ function renderAlertsView() {
 }
 
 // ============================================
-// 11. LIVE DASHBOARD OVERRIDES
+// 14. LIVE DASHBOARD OVERRIDES
 // ============================================
 function renderMetricSubtext(valueEl, text) {
     const sub = valueEl?.closest('.kpi-card')?.querySelector('.kpi-sub');
@@ -773,14 +771,9 @@ function switchView(view) {
 
 function setupSidebarNavigation() {
     document.querySelectorAll('.dash-menu-item').forEach(item => {
+        if (!item.dataset.view) return;
         item.addEventListener('click', function() {
-            document.querySelectorAll('.dash-menu-item').forEach(menuItem => {
-                menuItem.classList.remove('active');
-            });
-            this.classList.add('active');
-
-            const view = this.dataset.view || (this.textContent.includes('Can thiệp') ? 'interventions' : this.textContent.includes('Báo cáo') ? 'feedback' : 'dashboard');
-            switchView(view);
+            switchView(this.dataset.view || 'dashboard');
         });
     });
 }
