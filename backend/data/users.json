@@ -1,0 +1,79 @@
+[
+  {
+    "_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+    "email": "24521374@gm.uit.edu.vn",
+    "password": "$2b$10$wafq8DETwzkD3gICDY/INeZOVsN4nQbLrbuvWhtS58aeo91pTEvsa",
+    "role": "student",
+    "created_at": "2026-05-21T08:20:00.373Z"
+  },
+  {
+    "_id": "236af6f8-ec90-4584-ba64-d1829e18f202",
+    "email": "thangdonganhngu@gmail.com",
+    "password": "$2b$10$egcJMLzRGOhq5sanUKGY6O.spUMDxRGpVc.qhQc34daO6rpW/KuJm",
+    "role": "school",
+    "created_at": "2026-05-21T08:20:44.279Z"
+  },
+  {
+    "_id": "76ac4e87-b810-4fd2-88a7-7d9c2dd4c390",
+    "email": "admin1779352573246@uit.edu.vn",
+    "password": "$2b$10$bilkqDvzCjJrSxqvDAZmROiOTNRIFsfbAU1mkpM5vuz8V28GjHJjO",
+    "role": "school",
+    "created_at": "2026-05-21T08:36:13.509Z"
+  },
+  {
+    "_id": "f4118fc9-56ee-421c-9c1f-542188de9d29",
+    "email": "24521779352573246@gm.uit.edu.vn",
+    "password": "$2b$10$zJqzCWp/WlLMMRoFpARn/.J4aozEagfg9yU0hOvgXjAgA2dChlQQ2",
+    "role": "student",
+    "created_at": "2026-05-21T08:36:13.655Z"
+  },
+  {
+    "_id": "fc532f88-c9d9-4e12-86dc-85e1f5a3d184",
+    "email": "demo-admin@uit.edu.vn",
+    "password": "$2b$10$pDLTXAxFDr/hH2r1fUW/iO/DKW2d6UeKTHPIGoCHdC.NsyT/4jdg2",
+    "role": "school",
+    "created_at": "2026-05-21T08:44:31.377Z"
+  },
+  {
+    "_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+    "email": "24521001@gm.uit.edu.vn",
+    "password": "$2b$10$7oz2F5Z8/7jM5vzem7tPc.i9aBJ/Cy0o1zH.6i1Lxr6/nrN/9ZgGa",
+    "role": "student",
+    "created_at": "2026-05-21T08:44:31.487Z"
+  },
+  {
+    "_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+    "email": "24521002@gm.uit.edu.vn",
+    "password": "$2b$10$VaNZxVUb2cPr0ddgyJ17b.Ra5CTh1keK7bEzMZYIYLcZ/GeAvxEsK",
+    "role": "student",
+    "created_at": "2026-05-21T08:44:31.654Z"
+  },
+  {
+    "_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+    "email": "24521003@gm.uit.edu.vn",
+    "password": "$2b$10$xIxrlIVyTU8j8BbfAPd.a.U.qD9JcnH3iZ4wYW7RfK/GprXVzq8Ua",
+    "role": "student",
+    "created_at": "2026-05-21T08:44:31.791Z"
+  },
+  {
+    "_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+    "email": "24521004@gm.uit.edu.vn",
+    "password": "$2b$10$rhHn9NP/GK/VnkQS6QG7BO86ZeNzrBzQG5q0uP8kU9dTxDeOyOEve",
+    "role": "student",
+    "created_at": "2026-05-21T08:44:31.972Z"
+  },
+  {
+    "_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+    "email": "24521005@gm.uit.edu.vn",
+    "password": "$2b$10$5Jeb8lnUYwrQdLcp3t.P4O9zVuyxjQYxBHln1hHwsyLdj.3RbdCZO",
+    "role": "student",
+    "created_at": "2026-05-21T08:44:32.179Z"
+  },
+  {
+    "_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+    "email": "24521006@gm.uit.edu.vn",
+    "password": "$2b$10$LeZDgw5FGbeZqeZR7C4pP.Fq4cGLInGnR937tXZbwuuwG8exnzwNq",
+    "role": "student",
+    "created_at": "2026-05-21T08:44:32.352Z"
+  }
+]

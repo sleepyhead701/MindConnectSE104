@@ -1,0 +1,1632 @@
+{
+  "diaries": [
+    {
+      "id": "diary-1779367834008-d73aae",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "author_alias": "Tôi",
+      "title": "Buồn",
+      "content": "Hom nay toi buon PKL",
+      "tags": [
+        "Stress"
+      ],
+      "mood_score": 2,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T12:50:34.008Z"
+    },
+    {
+      "id": "diary-1779353497498-bc3e75",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "author_alias": "Tôi",
+      "title": "Kiệt sức vì đồ án",
+      "content": "Đồ án kéo dài làm mình kiệt sức, stress và không còn động lực.",
+      "tags": [
+        "Stress",
+        "Học tập"
+      ],
+      "mood_score": 1,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:51:37.498Z"
+    },
+    {
+      "id": "diary-1779353497353-b5562a",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "author_alias": "Tôi",
+      "title": "Lo hướng nghiệp",
+      "content": "Mình phân vân hướng nghiệp, sợ chọn sai việc làm sau khi ra trường.",
+      "tags": [
+        "Hướng nghiệp",
+        "Học tập"
+      ],
+      "mood_score": 3,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:51:37.353Z"
+    },
+    {
+      "id": "diary-1779353497208-1ecc6c",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "author_alias": "Tôi",
+      "title": "Mâu thuẫn bạn bè",
+      "content": "Mình vừa cãi nhau với bạn thân, thấy cô đơn và không biết nên nói chuyện lại thế nào.",
+      "tags": [
+        "Mối quan hệ",
+        "Cô đơn"
+      ],
+      "mood_score": 3,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:51:37.208Z"
+    },
+    {
+      "id": "diary-1779353497056-fbf640",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "author_alias": "Tôi",
+      "title": "Áp lực tài chính",
+      "content": "Mình lo về tiền trọ và học phí, cảm giác áp lực tài chính làm mình khó tập trung.",
+      "tags": [
+        "Tài chính",
+        "Stress"
+      ],
+      "mood_score": 2,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:51:37.056Z"
+    },
+    {
+      "id": "diary-1779353496920-093543",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "author_alias": "Tôi",
+      "title": "Mất ngủ trước kỳ thi",
+      "content": "Gần thi nên mình mất ngủ, càng cố ngủ càng lo và sáng dậy rất mệt.",
+      "tags": [
+        "Mất ngủ",
+        "Học tập"
+      ],
+      "mood_score": 2,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:51:36.920Z"
+    },
+    {
+      "id": "diary-1779353496765-18b836",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "author_alias": "Tôi",
+      "title": "Deadline môn học",
+      "content": "Mình stress vì deadline môn học, mất ngủ hai ngày nay và hơi lo điểm cuối kỳ.",
+      "tags": [
+        "Stress",
+        "Mất ngủ",
+        "Học tập"
+      ],
+      "mood_score": 2,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:51:36.765Z"
+    },
+    {
+      "id": "diary-1779353072358-dfa771",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "author_alias": "Tôi",
+      "title": "Kiệt sức vì đồ án",
+      "content": "Đồ án kéo dài làm mình kiệt sức, stress và không còn động lực.",
+      "tags": [
+        "Stress",
+        "Học tập"
+      ],
+      "mood_score": 1,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:44:32.358Z"
+    },
+    {
+      "id": "diary-1779353072189-fab3d2",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "author_alias": "Tôi",
+      "title": "Lo hướng nghiệp",
+      "content": "Mình phân vân hướng nghiệp, sợ chọn sai việc làm sau khi ra trường.",
+      "tags": [
+        "Hướng nghiệp",
+        "Học tập"
+      ],
+      "mood_score": 3,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:44:32.189Z"
+    },
+    {
+      "id": "diary-1779353071980-d0faf0",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "author_alias": "Tôi",
+      "title": "Mâu thuẫn bạn bè",
+      "content": "Mình vừa cãi nhau với bạn thân, thấy cô đơn và không biết nên nói chuyện lại thế nào.",
+      "tags": [
+        "Mối quan hệ",
+        "Cô đơn"
+      ],
+      "mood_score": 3,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:44:31.980Z"
+    },
+    {
+      "id": "diary-1779353071797-af294c",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "author_alias": "Tôi",
+      "title": "Áp lực tài chính",
+      "content": "Mình lo về tiền trọ và học phí, cảm giác áp lực tài chính làm mình khó tập trung.",
+      "tags": [
+        "Tài chính",
+        "Stress"
+      ],
+      "mood_score": 2,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:44:31.797Z"
+    },
+    {
+      "id": "diary-1779353071660-899b7b",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "author_alias": "Tôi",
+      "title": "Mất ngủ trước kỳ thi",
+      "content": "Gần thi nên mình mất ngủ, càng cố ngủ càng lo và sáng dậy rất mệt.",
+      "tags": [
+        "Mất ngủ",
+        "Học tập"
+      ],
+      "mood_score": 2,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:44:31.660Z"
+    },
+    {
+      "id": "diary-1779353071495-d1252f",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "author_alias": "Tôi",
+      "title": "Deadline môn học",
+      "content": "Mình stress vì deadline môn học, mất ngủ hai ngày nay và hơi lo điểm cuối kỳ.",
+      "tags": [
+        "Stress",
+        "Mất ngủ",
+        "Học tập"
+      ],
+      "mood_score": 2,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:44:31.495Z"
+    },
+    {
+      "id": "diary-1779352573695-579de7",
+      "user_id": "f4118fc9-56ee-421c-9c1f-542188de9d29",
+      "author_alias": "Tôi",
+      "title": "Deadline m�n h?c",
+      "content": "M�nh stress v� deadline v� m?t ng?",
+      "tags": [
+        "Stress",
+        "M?t ng?"
+      ],
+      "mood_score": 2,
+      "is_anonymous": true,
+      "created_at": "2026-05-21T08:36:13.695Z"
+    }
+  ],
+  "riskAlerts": [
+    {
+      "id": "RA-1779379486147",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "source": "Quick Test",
+      "severity": "high",
+      "label": "Cảnh báo cảm xúc rất thấp",
+      "matched_keyword": "manual-trigger",
+      "status": "new",
+      "student_alias": "SV ẩn danh",
+      "student_id_hash": "SV-47986DEC",
+      "class_name": "CNTT_K48",
+      "department": "CNTT",
+      "location": "Phòng tham vấn 102 - Khu B",
+      "risk_score": 80,
+      "excerpt": "Quick Test ghi nhận mức cảm xúc 1/5.",
+      "created_at": "2026-05-21T16:04:46.147Z",
+      "updated_at": null
+    },
+    {
+      "id": "alert-1779353497529-545124",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "source": "Diary",
+      "severity": "high",
+      "label": "Dấu hiệu kiệt sức học tập",
+      "matched_keyword": "kiệt sức",
+      "status": "resolved",
+      "student_alias": "SV ẩn danh",
+      "student_id_hash": "SV-E741C952",
+      "class_name": "CNTT_K48",
+      "department": "CNTT",
+      "location": "Phòng tham vấn 102 - Khu B",
+      "risk_score": 86,
+      "excerpt": "Sinh viên mô tả kiệt sức vì đồ án và mất động lực.",
+      "created_at": "2026-05-21T08:51:37.529Z",
+      "updated_at": "2026-05-21T12:34:39.997Z"
+    },
+    {
+      "id": "alert-1779353072392-83e511",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "source": "Diary",
+      "severity": "high",
+      "label": "Dấu hiệu kiệt sức học tập",
+      "matched_keyword": "kiệt sức",
+      "status": "contacted",
+      "student_alias": "SV ẩn danh",
+      "student_id_hash": "SV-E741C952",
+      "class_name": "CNTT_K48",
+      "department": "CNTT",
+      "location": "Phòng tham vấn 102 - Khu B",
+      "risk_score": 86,
+      "excerpt": "Sinh viên mô tả kiệt sức vì đồ án và mất động lực.",
+      "created_at": "2026-05-21T08:44:32.392Z",
+      "updated_at": "2026-05-21T12:35:02.720Z"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "booking-1779368022822-df52c1",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_alias": "SV ẩn danh",
+      "student_id_hash": "SV-47986DEC",
+      "class_name": "CNTT_K48",
+      "department": "CNTT",
+      "location": "Phòng tham vấn 102 - Khu B",
+      "requested_time": "2026-06-03T11:50:00.000Z",
+      "note": "",
+      "urgency_score": 79,
+      "before_mood_score": 2,
+      "after_mood_score": null,
+      "status": "new",
+      "created_at": "2026-05-21T12:53:42.822Z"
+    },
+    {
+      "id": "booking-1779353497080-54290e",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_alias": "SV ẩn danh",
+      "student_id_hash": "SV-C5514A8E",
+      "class_name": "CNTT_K48",
+      "department": "CNTT",
+      "location": "Phòng tham vấn 102 - Khu B",
+      "requested_time": "2026-05-22T14:51:37.079Z",
+      "note": "Cần tư vấn vì áp lực tài chính và học tập.",
+      "urgency_score": 79,
+      "before_mood_score": 2,
+      "after_mood_score": null,
+      "status": "new",
+      "created_at": "2026-05-21T08:51:37.080Z"
+    },
+    {
+      "id": "booking-1779353496804-718f60",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_alias": "SV ẩn danh",
+      "student_id_hash": "SV-0E27EBA5",
+      "class_name": "CNTT_K48",
+      "department": "CNTT",
+      "location": "Phòng tham vấn 102 - Khu B",
+      "requested_time": "2026-05-21T14:51:36.802Z",
+      "note": "Mình muốn gặp tư vấn sớm vì stress deadline và mất ngủ.",
+      "urgency_score": 100,
+      "before_mood_score": 2,
+      "after_mood_score": 4,
+      "status": "completed",
+      "created_at": "2026-05-21T08:51:36.804Z",
+      "updated_at": "2026-05-21T08:51:36.812Z"
+    },
+    {
+      "id": "booking-1779353071827-8f79df",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_alias": "SV ẩn danh",
+      "student_id_hash": "SV-C5514A8E",
+      "class_name": "CNTT_K48",
+      "department": "CNTT",
+      "location": "Phòng tham vấn 102 - Khu B",
+      "requested_time": "2026-05-22T14:44:31.826Z",
+      "note": "Cần tư vấn vì áp lực tài chính và học tập.",
+      "urgency_score": 79,
+      "before_mood_score": 2,
+      "after_mood_score": null,
+      "status": "new",
+      "created_at": "2026-05-21T08:44:31.827Z"
+    },
+    {
+      "id": "booking-1779353071538-9f0f55",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_alias": "SV ẩn danh",
+      "student_id_hash": "SV-0E27EBA5",
+      "class_name": "CNTT_K48",
+      "department": "CNTT",
+      "location": "Phòng tham vấn 102 - Khu B",
+      "requested_time": "2026-05-21T14:44:31.531Z",
+      "note": "Mình muốn gặp tư vấn sớm vì stress deadline và mất ngủ.",
+      "urgency_score": 100,
+      "before_mood_score": 2,
+      "after_mood_score": 4,
+      "status": "completed",
+      "created_at": "2026-05-21T08:44:31.538Z",
+      "updated_at": "2026-05-21T08:44:31.548Z"
+    }
+  ],
+  "feedbacks": [
+    {
+      "id": "feedback-1779353497374-749b3b",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "source_type": "feedback",
+      "report_text": "Tài nguyên hướng nghiệp làm mình bớt rối hơn.",
+      "rating_text": "Muốn có thêm workshop thực tế.",
+      "mood_score": 4,
+      "before_mood_score": 3,
+      "after_mood_score": 4,
+      "booking_id": "",
+      "created_at": "2026-05-21T08:51:37.374Z",
+      "sentiment_score": 76
+    },
+    {
+      "id": "feedback-1779353497236-73d87e",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "source_type": "app",
+      "report_text": "Nhật ký giúp mình nhìn lại cảm xúc sau mâu thuẫn bạn bè.",
+      "rating_text": "Tính năng tag khá đúng.",
+      "mood_score": 4,
+      "before_mood_score": 3,
+      "after_mood_score": 4,
+      "booking_id": "",
+      "created_at": "2026-05-21T08:51:37.236Z",
+      "sentiment_score": 76
+    },
+    {
+      "id": "feedback-1779353496950-37d521",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "source_type": "feedback",
+      "report_text": "Bài thở 5 phút giúp mình bình tĩnh trước khi ngủ.",
+      "rating_text": "Nên thêm nhắc nhở buổi tối.",
+      "mood_score": 3,
+      "before_mood_score": 2,
+      "after_mood_score": 3,
+      "booking_id": "",
+      "created_at": "2026-05-21T08:51:36.949Z",
+      "sentiment_score": 70
+    },
+    {
+      "id": "feedback-1779353496796-a86a6b",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "source_type": "post_consultation",
+      "report_text": "Sau buổi hỗ trợ mình thấy nhẹ hơn và biết chia nhỏ deadline.",
+      "rating_text": "Tư vấn rõ ràng, hữu ích.",
+      "mood_score": 4,
+      "before_mood_score": 2,
+      "after_mood_score": 4,
+      "booking_id": "",
+      "created_at": "2026-05-21T08:51:36.796Z",
+      "sentiment_score": 96
+    },
+    {
+      "id": "feedback-1779353072222-d9414f",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "source_type": "feedback",
+      "report_text": "Tài nguyên hướng nghiệp làm mình bớt rối hơn.",
+      "rating_text": "Muốn có thêm workshop thực tế.",
+      "mood_score": 4,
+      "before_mood_score": 3,
+      "after_mood_score": 4,
+      "booking_id": "",
+      "created_at": "2026-05-21T08:44:32.222Z",
+      "sentiment_score": 76
+    },
+    {
+      "id": "feedback-1779353072018-185125",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "source_type": "app",
+      "report_text": "Nhật ký giúp mình nhìn lại cảm xúc sau mâu thuẫn bạn bè.",
+      "rating_text": "Tính năng tag khá đúng.",
+      "mood_score": 4,
+      "before_mood_score": 3,
+      "after_mood_score": 4,
+      "booking_id": "",
+      "created_at": "2026-05-21T08:44:32.018Z",
+      "sentiment_score": 76
+    },
+    {
+      "id": "feedback-1779353071682-a67c00",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "source_type": "feedback",
+      "report_text": "Bài thở 5 phút giúp mình bình tĩnh trước khi ngủ.",
+      "rating_text": "Nên thêm nhắc nhở buổi tối.",
+      "mood_score": 3,
+      "before_mood_score": 2,
+      "after_mood_score": 3,
+      "booking_id": "",
+      "created_at": "2026-05-21T08:44:31.682Z",
+      "sentiment_score": 70
+    },
+    {
+      "id": "feedback-1779353071528-37de3b",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "source_type": "post_consultation",
+      "report_text": "Sau buổi hỗ trợ mình thấy nhẹ hơn và biết chia nhỏ deadline.",
+      "rating_text": "Tư vấn rõ ràng, hữu ích.",
+      "mood_score": 4,
+      "before_mood_score": 2,
+      "after_mood_score": 4,
+      "booking_id": "",
+      "created_at": "2026-05-21T08:44:31.527Z",
+      "sentiment_score": 96
+    }
+  ],
+  "interactions": [
+    {
+      "id": "interaction-1779379486167-38de70",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "RA-1779379486147",
+      "metadata": {
+        "source": "Quick Test",
+        "severity": "high",
+        "risk_score": 80
+      },
+      "created_at": "2026-05-21T16:04:46.167Z"
+    },
+    {
+      "id": "interaction-1779368022842-c7d03d",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "booking",
+      "target_id": "booking-1779368022822-df52c1",
+      "metadata": {
+        "requested_time": "2026-06-03T18:50",
+        "location": "Phòng tham vấn 102 - Khu B",
+        "before_mood_score": 2
+      },
+      "created_at": "2026-05-21T12:53:42.842Z"
+    },
+    {
+      "id": "interaction-1779368022832-9e5a5c",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "booking",
+      "target_id": "booking-1779368022822-df52c1",
+      "metadata": {
+        "urgency_score": 79,
+        "requested_time": "2026-06-03T11:50:00.000Z"
+      },
+      "created_at": "2026-05-21T12:53:42.832Z"
+    },
+    {
+      "id": "interaction-1779367908297-5352e7",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "resource_view",
+      "target_id": "LiveStream MidFeedTFT",
+      "metadata": {
+        "type": "Video",
+        "title": "LiveStream MidFeedTFT"
+      },
+      "created_at": "2026-05-21T12:51:48.297Z"
+    },
+    {
+      "id": "interaction-1779367834010-5ca91f",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "post",
+      "target_id": "diary-1779367834008-d73aae",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 1
+      },
+      "created_at": "2026-05-21T12:50:34.010Z"
+    },
+    {
+      "id": "interaction-1779367784583-64eaf8",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "feed-1779367702570",
+      "metadata": {
+        "surface": "home-feed"
+      },
+      "created_at": "2026-05-21T12:49:44.583Z"
+    },
+    {
+      "id": "interaction-1779367707720-85cedd",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "comment",
+      "target_id": "feed-1779367702570",
+      "metadata": {
+        "content_length": 1
+      },
+      "created_at": "2026-05-21T12:48:27.720Z"
+    },
+    {
+      "id": "interaction-1779367704837-9b9a85",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "feed-1779367702570",
+      "metadata": {
+        "surface": "home-feed"
+      },
+      "created_at": "2026-05-21T12:48:24.837Z"
+    },
+    {
+      "id": "interaction-1779367702579-ca94ce",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "post",
+      "target_id": "feed-1779367702570",
+      "metadata": {
+        "source": "public-feed",
+        "tags": [
+          "Stress",
+          "học tập"
+        ],
+        "content_length": 3
+      },
+      "created_at": "2026-05-21T12:48:22.579Z"
+    },
+    {
+      "id": "interaction-1779367686169-9dfea4",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "1",
+      "metadata": {
+        "surface": "home-feed"
+      },
+      "created_at": "2026-05-21T12:48:06.169Z"
+    },
+    {
+      "id": "interaction-1779366985001-103396",
+      "user_id": "236af6f8-ec90-4584-ba64-d1829e18f202",
+      "student_id_hash": "SV-1DF8EEAE",
+      "type": "reaction",
+      "target_id": "2",
+      "metadata": {
+        "surface": "home-feed"
+      },
+      "created_at": "2026-05-21T12:36:25.001Z"
+    },
+    {
+      "id": "interaction-1779366807398-64cd1e",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 29
+      },
+      "created_at": "2026-05-21T12:33:27.398Z"
+    },
+    {
+      "id": "interaction-1779366789226-2bb499",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 59
+      },
+      "created_at": "2026-05-21T12:33:09.226Z"
+    },
+    {
+      "id": "interaction-1779366777289-473769",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 8
+      },
+      "created_at": "2026-05-21T12:32:57.289Z"
+    },
+    {
+      "id": "interaction-1779353749416-e58905",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 12
+      },
+      "created_at": "2026-05-21T08:55:49.416Z"
+    },
+    {
+      "id": "interaction-1779353738070-7953f6",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 81
+      },
+      "created_at": "2026-05-21T08:55:38.070Z"
+    },
+    {
+      "id": "interaction-1779353704055-16f122",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 32
+      },
+      "created_at": "2026-05-21T08:55:04.055Z"
+    },
+    {
+      "id": "interaction-1779353691555-5dc66a",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 13
+      },
+      "created_at": "2026-05-21T08:54:51.555Z"
+    },
+    {
+      "id": "interaction-1779353684517-1267ea",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 26
+      },
+      "created_at": "2026-05-21T08:54:44.517Z"
+    },
+    {
+      "id": "interaction-1779353672589-61a11f",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 34
+      },
+      "created_at": "2026-05-21T08:54:32.589Z"
+    },
+    {
+      "id": "interaction-1779353620081-241e74",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 54
+      },
+      "created_at": "2026-05-21T08:53:40.081Z"
+    },
+    {
+      "id": "interaction-1779353604524-b88c71",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 9
+      },
+      "created_at": "2026-05-21T08:53:24.524Z"
+    },
+    {
+      "id": "interaction-1779353563653-c653cc",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "diary-1779353497353-b5562a",
+      "metadata": {
+        "surface": "home-feed"
+      },
+      "created_at": "2026-05-21T08:52:43.653Z"
+    },
+    {
+      "id": "interaction-1779353559562-f21670",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "comment",
+      "target_id": "diary-1779353497498-bc3e75",
+      "metadata": {
+        "content_length": 4
+      },
+      "created_at": "2026-05-21T08:52:39.562Z"
+    },
+    {
+      "id": "interaction-1779353555373-20c466",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "diary-1779353497498-bc3e75",
+      "metadata": {
+        "surface": "home-feed"
+      },
+      "created_at": "2026-05-21T08:52:35.373Z"
+    },
+    {
+      "id": "interaction-1779353554820-e7763c",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "diary-1779353497498-bc3e75",
+      "metadata": {
+        "surface": "home-feed"
+      },
+      "created_at": "2026-05-21T08:52:34.820Z"
+    },
+    {
+      "id": "interaction-1779353554643-b5b971",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "diary-1779353497498-bc3e75",
+      "metadata": {
+        "surface": "home-feed"
+      },
+      "created_at": "2026-05-21T08:52:34.643Z"
+    },
+    {
+      "id": "interaction-1779353497531-ff4b76",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "chat",
+      "target_id": "alert-1779353497529-545124",
+      "metadata": {
+        "source": "Diary",
+        "severity": "high",
+        "risk_score": 86
+      },
+      "created_at": "2026-05-21T08:51:37.531Z"
+    },
+    {
+      "id": "interaction-1779353497523-f1f7ff",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 62
+      },
+      "created_at": "2026-05-21T08:51:37.523Z"
+    },
+    {
+      "id": "interaction-1779353497518-e894a4",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "resource_view",
+      "target_id": "Blog vượt qua căng thẳng trước kỳ thi",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:51:37.518Z"
+    },
+    {
+      "id": "interaction-1779353497513-c28cdc",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "comment",
+      "target_id": "diary-1779353497498-bc3e75",
+      "metadata": {
+        "content_length": 53
+      },
+      "created_at": "2026-05-21T08:51:37.513Z"
+    },
+    {
+      "id": "interaction-1779353497506-485adc",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "reaction",
+      "target_id": "diary-1779353497498-bc3e75",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 8
+      },
+      "created_at": "2026-05-21T08:51:37.506Z"
+    },
+    {
+      "id": "interaction-1779353497500-81d73a",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "post",
+      "target_id": "diary-1779353497498-bc3e75",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:51:37.500Z"
+    },
+    {
+      "id": "interaction-1779353497383-6f79c8",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "feedback",
+      "target_id": "feedback-1779353497374-749b3b",
+      "metadata": {
+        "source_type": "feedback",
+        "sentiment_score": 76
+      },
+      "created_at": "2026-05-21T08:51:37.383Z"
+    },
+    {
+      "id": "interaction-1779353497371-18951f",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 67
+      },
+      "created_at": "2026-05-21T08:51:37.371Z"
+    },
+    {
+      "id": "interaction-1779353497367-85cccd",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "resource_view",
+      "target_id": "Thiền 5 phút giảm lo âu",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:51:37.367Z"
+    },
+    {
+      "id": "interaction-1779353497363-101b36",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "comment",
+      "target_id": "diary-1779353497353-b5562a",
+      "metadata": {
+        "content_length": 52
+      },
+      "created_at": "2026-05-21T08:51:37.363Z"
+    },
+    {
+      "id": "interaction-1779353497359-0fe73f",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "reaction",
+      "target_id": "diary-1779353497353-b5562a",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 7
+      },
+      "created_at": "2026-05-21T08:51:37.359Z"
+    },
+    {
+      "id": "interaction-1779353497354-743002",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "post",
+      "target_id": "diary-1779353497353-b5562a",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:51:37.354Z"
+    },
+    {
+      "id": "interaction-1779353497238-b28ee9",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "feedback",
+      "target_id": "feedback-1779353497236-73d87e",
+      "metadata": {
+        "source_type": "app",
+        "sentiment_score": 76
+      },
+      "created_at": "2026-05-21T08:51:37.238Z"
+    },
+    {
+      "id": "interaction-1779353497231-364dde",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 85
+      },
+      "created_at": "2026-05-21T08:51:37.231Z"
+    },
+    {
+      "id": "interaction-1779353497226-1a0628",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "resource_view",
+      "target_id": "Blog vượt qua căng thẳng trước kỳ thi",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:51:37.226Z"
+    },
+    {
+      "id": "interaction-1779353497221-2e058d",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "comment",
+      "target_id": "diary-1779353497208-1ecc6c",
+      "metadata": {
+        "content_length": 51
+      },
+      "created_at": "2026-05-21T08:51:37.221Z"
+    },
+    {
+      "id": "interaction-1779353497215-6482e7",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "reaction",
+      "target_id": "diary-1779353497208-1ecc6c",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 6
+      },
+      "created_at": "2026-05-21T08:51:37.215Z"
+    },
+    {
+      "id": "interaction-1779353497211-993f97",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "post",
+      "target_id": "diary-1779353497208-1ecc6c",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:51:37.211Z"
+    },
+    {
+      "id": "interaction-1779353497081-3dc2f7",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "booking",
+      "target_id": "booking-1779353497080-54290e",
+      "metadata": {
+        "urgency_score": 79,
+        "requested_time": "2026-05-22T14:51:37.079Z"
+      },
+      "created_at": "2026-05-21T08:51:37.081Z"
+    },
+    {
+      "id": "interaction-1779353497075-948dcd",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 81
+      },
+      "created_at": "2026-05-21T08:51:37.075Z"
+    },
+    {
+      "id": "interaction-1779353497071-c69a02",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "resource_view",
+      "target_id": "Thiền 5 phút giảm lo âu",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:51:37.071Z"
+    },
+    {
+      "id": "interaction-1779353497067-cb8eca",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "comment",
+      "target_id": "diary-1779353497056-fbf640",
+      "metadata": {
+        "content_length": 50
+      },
+      "created_at": "2026-05-21T08:51:37.067Z"
+    },
+    {
+      "id": "interaction-1779353497062-4ec7be",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "reaction",
+      "target_id": "diary-1779353497056-fbf640",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 5
+      },
+      "created_at": "2026-05-21T08:51:37.062Z"
+    },
+    {
+      "id": "interaction-1779353497058-ead1a9",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "post",
+      "target_id": "diary-1779353497056-fbf640",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:51:37.058Z"
+    },
+    {
+      "id": "interaction-1779353496951-bf19d2",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "feedback",
+      "target_id": "feedback-1779353496950-37d521",
+      "metadata": {
+        "source_type": "feedback",
+        "sentiment_score": 70
+      },
+      "created_at": "2026-05-21T08:51:36.951Z"
+    },
+    {
+      "id": "interaction-1779353496944-bb1ce1",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 66
+      },
+      "created_at": "2026-05-21T08:51:36.944Z"
+    },
+    {
+      "id": "interaction-1779353496939-088d49",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "resource_view",
+      "target_id": "Blog vượt qua căng thẳng trước kỳ thi",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:51:36.939Z"
+    },
+    {
+      "id": "interaction-1779353496933-0ac9cd",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "comment",
+      "target_id": "diary-1779353496920-093543",
+      "metadata": {
+        "content_length": 49
+      },
+      "created_at": "2026-05-21T08:51:36.933Z"
+    },
+    {
+      "id": "interaction-1779353496928-e6970d",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "reaction",
+      "target_id": "diary-1779353496920-093543",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 4
+      },
+      "created_at": "2026-05-21T08:51:36.928Z"
+    },
+    {
+      "id": "interaction-1779353496922-400f0d",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "post",
+      "target_id": "diary-1779353496920-093543",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:51:36.922Z"
+    },
+    {
+      "id": "interaction-1779353496807-c8ab02",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "booking",
+      "target_id": "booking-1779353496804-718f60",
+      "metadata": {
+        "urgency_score": 100,
+        "requested_time": "2026-05-21T14:51:36.802Z"
+      },
+      "created_at": "2026-05-21T08:51:36.807Z"
+    },
+    {
+      "id": "interaction-1779353496797-8f5086",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "feedback",
+      "target_id": "feedback-1779353496796-a86a6b",
+      "metadata": {
+        "source_type": "post_consultation",
+        "sentiment_score": 96
+      },
+      "created_at": "2026-05-21T08:51:36.797Z"
+    },
+    {
+      "id": "interaction-1779353496791-615a74",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 77
+      },
+      "created_at": "2026-05-21T08:51:36.790Z"
+    },
+    {
+      "id": "interaction-1779353496785-093df4",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "resource_view",
+      "target_id": "Thiền 5 phút giảm lo âu",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:51:36.785Z"
+    },
+    {
+      "id": "interaction-1779353496779-6d8213",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "comment",
+      "target_id": "diary-1779353496765-18b836",
+      "metadata": {
+        "content_length": 48
+      },
+      "created_at": "2026-05-21T08:51:36.779Z"
+    },
+    {
+      "id": "interaction-1779353496773-476c5b",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "reaction",
+      "target_id": "diary-1779353496765-18b836",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 3
+      },
+      "created_at": "2026-05-21T08:51:36.773Z"
+    },
+    {
+      "id": "interaction-1779353496769-8d928e",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "post",
+      "target_id": "diary-1779353496765-18b836",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 3
+      },
+      "created_at": "2026-05-21T08:51:36.769Z"
+    },
+    {
+      "id": "interaction-1779353072395-c3058d",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "chat",
+      "target_id": "alert-1779353072392-83e511",
+      "metadata": {
+        "source": "Diary",
+        "severity": "high",
+        "risk_score": 86
+      },
+      "created_at": "2026-05-21T08:44:32.395Z"
+    },
+    {
+      "id": "interaction-1779353072387-c1ceb3",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 62
+      },
+      "created_at": "2026-05-21T08:44:32.387Z"
+    },
+    {
+      "id": "interaction-1779353072384-eb99c6",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "resource_view",
+      "target_id": "Blog vượt qua căng thẳng trước kỳ thi",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:44:32.384Z"
+    },
+    {
+      "id": "interaction-1779353072375-85ea51",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "comment",
+      "target_id": "diary-1779353072358-dfa771",
+      "metadata": {
+        "content_length": 53
+      },
+      "created_at": "2026-05-21T08:44:32.375Z"
+    },
+    {
+      "id": "interaction-1779353072368-4c7c47",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "reaction",
+      "target_id": "diary-1779353072358-dfa771",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 8
+      },
+      "created_at": "2026-05-21T08:44:32.368Z"
+    },
+    {
+      "id": "interaction-1779353072360-40165a",
+      "user_id": "c1b8686a-538f-42d2-be13-99a8691e0878",
+      "student_id_hash": "SV-E741C952",
+      "type": "post",
+      "target_id": "diary-1779353072358-dfa771",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:44:32.360Z"
+    },
+    {
+      "id": "interaction-1779353072224-bf4aca",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "feedback",
+      "target_id": "feedback-1779353072222-d9414f",
+      "metadata": {
+        "source_type": "feedback",
+        "sentiment_score": 76
+      },
+      "created_at": "2026-05-21T08:44:32.224Z"
+    },
+    {
+      "id": "interaction-1779353072216-6d2fee",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 67
+      },
+      "created_at": "2026-05-21T08:44:32.216Z"
+    },
+    {
+      "id": "interaction-1779353072210-68e1ed",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "resource_view",
+      "target_id": "Thiền 5 phút giảm lo âu",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:44:32.210Z"
+    },
+    {
+      "id": "interaction-1779353072203-0b940d",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "comment",
+      "target_id": "diary-1779353072189-fab3d2",
+      "metadata": {
+        "content_length": 52
+      },
+      "created_at": "2026-05-21T08:44:32.203Z"
+    },
+    {
+      "id": "interaction-1779353072197-e764e0",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "reaction",
+      "target_id": "diary-1779353072189-fab3d2",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 7
+      },
+      "created_at": "2026-05-21T08:44:32.197Z"
+    },
+    {
+      "id": "interaction-1779353072192-2c2836",
+      "user_id": "c5735f35-640e-4cb3-bcf3-263c86ad53ed",
+      "student_id_hash": "SV-3F492085",
+      "type": "post",
+      "target_id": "diary-1779353072189-fab3d2",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:44:32.191Z"
+    },
+    {
+      "id": "interaction-1779353072020-c208c0",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "feedback",
+      "target_id": "feedback-1779353072018-185125",
+      "metadata": {
+        "source_type": "app",
+        "sentiment_score": 76
+      },
+      "created_at": "2026-05-21T08:44:32.020Z"
+    },
+    {
+      "id": "interaction-1779353072013-fe1114",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 85
+      },
+      "created_at": "2026-05-21T08:44:32.013Z"
+    },
+    {
+      "id": "interaction-1779353072006-4efce8",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "resource_view",
+      "target_id": "Blog vượt qua căng thẳng trước kỳ thi",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:44:32.006Z"
+    },
+    {
+      "id": "interaction-1779353071998-c54939",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "comment",
+      "target_id": "diary-1779353071980-d0faf0",
+      "metadata": {
+        "content_length": 51
+      },
+      "created_at": "2026-05-21T08:44:31.998Z"
+    },
+    {
+      "id": "interaction-1779353071990-8b3e3d",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "reaction",
+      "target_id": "diary-1779353071980-d0faf0",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 6
+      },
+      "created_at": "2026-05-21T08:44:31.990Z"
+    },
+    {
+      "id": "interaction-1779353071982-992702",
+      "user_id": "e83958da-f2cd-4769-af23-eca7e900e848",
+      "student_id_hash": "SV-C1D124AD",
+      "type": "post",
+      "target_id": "diary-1779353071980-d0faf0",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:44:31.982Z"
+    },
+    {
+      "id": "interaction-1779353071829-459977",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "booking",
+      "target_id": "booking-1779353071827-8f79df",
+      "metadata": {
+        "urgency_score": 79,
+        "requested_time": "2026-05-22T14:44:31.826Z"
+      },
+      "created_at": "2026-05-21T08:44:31.829Z"
+    },
+    {
+      "id": "interaction-1779353071822-1b6c8a",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 81
+      },
+      "created_at": "2026-05-21T08:44:31.822Z"
+    },
+    {
+      "id": "interaction-1779353071817-78b3d9",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "resource_view",
+      "target_id": "Thiền 5 phút giảm lo âu",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:44:31.817Z"
+    },
+    {
+      "id": "interaction-1779353071811-0503cc",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "comment",
+      "target_id": "diary-1779353071797-af294c",
+      "metadata": {
+        "content_length": 50
+      },
+      "created_at": "2026-05-21T08:44:31.811Z"
+    },
+    {
+      "id": "interaction-1779353071804-cb0fad",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "reaction",
+      "target_id": "diary-1779353071797-af294c",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 5
+      },
+      "created_at": "2026-05-21T08:44:31.804Z"
+    },
+    {
+      "id": "interaction-1779353071799-b3730c",
+      "user_id": "1dcafcb1-55ed-414c-bb31-8826e9e7a496",
+      "student_id_hash": "SV-C5514A8E",
+      "type": "post",
+      "target_id": "diary-1779353071797-af294c",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:44:31.799Z"
+    },
+    {
+      "id": "interaction-1779353071684-40ddb6",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "feedback",
+      "target_id": "feedback-1779353071682-a67c00",
+      "metadata": {
+        "source_type": "feedback",
+        "sentiment_score": 70
+      },
+      "created_at": "2026-05-21T08:44:31.684Z"
+    },
+    {
+      "id": "interaction-1779353071677-96faa7",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 66
+      },
+      "created_at": "2026-05-21T08:44:31.677Z"
+    },
+    {
+      "id": "interaction-1779353071673-5122ea",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "resource_view",
+      "target_id": "Blog vượt qua căng thẳng trước kỳ thi",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:44:31.673Z"
+    },
+    {
+      "id": "interaction-1779353071669-1a894b",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "comment",
+      "target_id": "diary-1779353071660-899b7b",
+      "metadata": {
+        "content_length": 49
+      },
+      "created_at": "2026-05-21T08:44:31.669Z"
+    },
+    {
+      "id": "interaction-1779353071665-19204c",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "reaction",
+      "target_id": "diary-1779353071660-899b7b",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 4
+      },
+      "created_at": "2026-05-21T08:44:31.665Z"
+    },
+    {
+      "id": "interaction-1779353071661-f6b441",
+      "user_id": "75c79d57-8e42-4e7a-aa2d-d7cedeb383c7",
+      "student_id_hash": "SV-FFEA0DF6",
+      "type": "post",
+      "target_id": "diary-1779353071660-899b7b",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:44:31.661Z"
+    },
+    {
+      "id": "interaction-1779353071542-c635f0",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "booking",
+      "target_id": "booking-1779353071538-9f0f55",
+      "metadata": {
+        "urgency_score": 100,
+        "requested_time": "2026-05-21T14:44:31.531Z"
+      },
+      "created_at": "2026-05-21T08:44:31.541Z"
+    },
+    {
+      "id": "interaction-1779353071529-5b85a3",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "feedback",
+      "target_id": "feedback-1779353071528-37de3b",
+      "metadata": {
+        "source_type": "post_consultation",
+        "sentiment_score": 96
+      },
+      "created_at": "2026-05-21T08:44:31.529Z"
+    },
+    {
+      "id": "interaction-1779353071515-d1e961",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 77
+      },
+      "created_at": "2026-05-21T08:44:31.515Z"
+    },
+    {
+      "id": "interaction-1779353071511-5cf254",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "resource_view",
+      "target_id": "Thiền 5 phút giảm lo âu",
+      "metadata": {
+        "source": "seed-demo"
+      },
+      "created_at": "2026-05-21T08:44:31.511Z"
+    },
+    {
+      "id": "interaction-1779353071507-233b00",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "comment",
+      "target_id": "diary-1779353071495-d1252f",
+      "metadata": {
+        "content_length": 48
+      },
+      "created_at": "2026-05-21T08:44:31.507Z"
+    },
+    {
+      "id": "interaction-1779353071503-709b2d",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "reaction",
+      "target_id": "diary-1779353071495-d1252f",
+      "metadata": {
+        "surface": "home-feed",
+        "count": 3
+      },
+      "created_at": "2026-05-21T08:44:31.503Z"
+    },
+    {
+      "id": "interaction-1779353071496-2c4c57",
+      "user_id": "758fc624-3dac-4a29-81c5-7e6db085424c",
+      "student_id_hash": "SV-0E27EBA5",
+      "type": "post",
+      "target_id": "diary-1779353071495-d1252f",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 3
+      },
+      "created_at": "2026-05-21T08:44:31.496Z"
+    },
+    {
+      "id": "interaction-1779352573698-1d892f",
+      "user_id": "f4118fc9-56ee-421c-9c1f-542188de9d29",
+      "student_id_hash": "SV-07361D76",
+      "type": "post",
+      "target_id": "diary-1779352573695-579de7",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 2
+      },
+      "created_at": "2026-05-21T08:36:13.698Z"
+    }
+  ]
+}
