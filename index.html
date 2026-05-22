@@ -438,17 +438,38 @@
             border-radius: 999px;
             padding: 5px;
             gap: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .role-switch-indicator {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: calc(50% - 2px);
+            height: calc(100% - 10px);
+            background: white;
+            border-radius: 999px;
+            box-shadow: var(--mc-shadow-card);
+            transition: transform 0.32s ease;
+            z-index: 0;
+        }
+
+        .role-switch-container.role-school .role-switch-indicator {
+            transform: translateX(100%);
         }
 
         .role-btn {
             border-radius: 999px;
             color: var(--mc-ink-soft);
             font-size: 14px;
+            position: relative;
+            z-index: 1;
         }
 
         .role-btn.active {
             color: var(--mc-primary);
-            box-shadow: var(--mc-shadow-card);
+            background: transparent;
         }
 
         .input-label {
@@ -575,7 +596,8 @@
         </section>
 
         <div class="login-card-glass" id="login-form">
-            <div class="role-switch-container">
+            <div class="role-switch-container" id="role-switch">
+                <span class="role-switch-indicator" aria-hidden="true"></span>
                 <div class="role-btn active" id="tab-student" onclick="switchRole('student')">Sinh viên</div>
                 <div class="role-btn" id="tab-school" onclick="switchRole('school')">Nhà trường</div>
             </div>
@@ -693,6 +715,10 @@
             document.getElementById('tab-student').classList.remove('active');
             document.getElementById('tab-school').classList.remove('active');
             document.getElementById('tab-' + role).classList.add('active');
+            const switcher = document.getElementById('role-switch');
+            if (switcher) {
+                switcher.classList.toggle('role-school', role === 'school');
+            }
             syncRoleCopy();
         }
 

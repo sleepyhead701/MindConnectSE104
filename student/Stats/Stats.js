@@ -6,6 +6,7 @@ import { showNotification } from '../utils/utils.js';
 import { getPrivateDiaryEntries, isOwnedFeedPost } from '../studentState.js';
 import { getUserFeed } from '../../state.js';
 import { getBackendReadyState } from '../../state.js';
+import { openFeedbackModal, openBookingModal } from '../Booking/Booking.js';
 
 function normalizeEmotionText(text) {
     return String(text || '')
@@ -261,6 +262,6 @@ document.addEventListener('click', (e) => {
     } else if (action === 'write-post') {
         document.querySelector('.nav-icon[data-action="newsfeed"]')?.click();
     } else if (action === 'book-session') {
-        document.querySelector('.nav-icon[data-action="booking"]')?.click();
+        openBookingModal();
     }
 });

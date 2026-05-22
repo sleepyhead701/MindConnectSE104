@@ -1,5 +1,6 @@
 import { getChatApiHistory } from './getChatApiHistory.js';
 import { getChatApiUrl } from '../../state.js';
+import { getAuthHeaders } from './getAuthHeaders.js';
 
 export async function callChatBotAPI(message) {
     const response = await fetch(getChatApiUrl(), {

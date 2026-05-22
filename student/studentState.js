@@ -1,6 +1,7 @@
 import { loadJson, saveJson } from "../state.js";
 import { userSession } from "../state.js";
 import { getResourcesDB, getUsersDB } from "../state.js";
+import { normalizeStudentBooking } from "./utils/normalizeStudentBooking.js"
 
 
 const defaultChatHistory = [
@@ -12,10 +13,13 @@ const currentUser = new userSession('Durian', 'student@example.com');
 const CUSTOM_RESOURCES_KEY = 'mindconnect:custom-resources';
 const PRIVATE_DIARY_KEY = 'mindconnect:private-diary';
 const STUDENT_PROFILE_KEY = 'mindconnect:student-profile';
+const STUDENT_BOOKINGS_KEY = 'mindconnect:student-bookings';
 
 let currentMoodScore = 4;
 let chatHistory = defaultChatHistory;
 let privateDiaryEntries = loadPrivateDiaryEntries();
+let chatHistoryRemoteLoaded = false;
+let studentBookings = loadStudentBookings();
 
 export function getStudentProfileKey() {
     return STUDENT_PROFILE_KEY;
@@ -70,10 +74,6 @@ export function setCurrentMoodScore(score) {
 
 export function getCurrentMoodScore() {
     return currentMoodScore;
-}
-
-export function getChatHistory() {
-    return chatHistory;
 }
 
 export function addChatMessage(sender, text) {
@@ -160,4 +160,90 @@ export function getCurrentProfileNames(profile = getStudentProfile()) {
         profile.name,
         profile.displayName
     ].filter(Boolean));
+}
+
+export function getCurrentUserName() {
+    const profile = getStudentProfile();
+    const names = getCurrentProfileNames(profile);
+    return Array.from(names)[0] || 'Người dùng ẩn danh';
+}
+
+export function getCurrentUserEmail() {
+    const session = getStudentSession();
+    return session?.user?.email || session?.email || currentUser.email;
+}
+
+export function setCurrentUserName(name) {
+    const profile = getStudentProfile();
+    const updatedProfile = {
+        ...profile,
+        name: String(name || '').trim() || 'Người dùng ẩn danh'
+    };
+    saveStudentProfile(updatedProfile);
+    syncAuthProfileName(updatedProfile.name);
+    currentUser.name = updatedProfile.name;
+    currentUser.email = updatedProfile.email || currentUser.email;
+}
+
+export function setCurrentUserEmail(email) {
+    const profile = getStudentProfile();
+    const updatedProfile = {
+        ...profile,
+        email: String(email || '').trim().toLowerCase() || currentUser.email
+    };
+    saveStudentProfile(updatedProfile);
+    currentUser.email = updatedProfile.email;
+}
+
+export function syncAuthProfileName(displayName) {
+    const session = getAuthSession();
+    if (!session) return;
+
+    const nextSession = { ...session };
+    if ('name' in nextSession) nextSession.name = displayName;
+    if (nextSession.user) nextSession.user = { ...nextSession.user, name: displayName };
+
+    localStorage.setItem('mindconnect:auth', JSON.stringify(nextSession));
+}
+
+export function getChatHistory() {
+    if (!chatHistoryRemoteLoaded) {
+        const remoteHistory = loadJson(getStudentStorageKey('mindconnect:chat-history'), null);
+        if (remoteHistory) {
+            chatHistory = remoteHistory;
+        }
+        chatHistoryRemoteLoaded = true;
+    }
+    return chatHistory;
+}
+
+export function clearChatHistory() {
+    chatHistory = [];
+    saveJson(getStudentStorageKey('mindconnect:chat-history'), chatHistory);
+}
+
+export function getChatHistoryRemoteLoaded() {
+    return chatHistoryRemoteLoaded;
+}
+
+export function setChatHistoryRemoteLoaded(loaded) {
+    chatHistoryRemoteLoaded = loaded;
+}
+
+export function loadStudentBookings() {
+    const saved = loadJson(getStudentStorageKey(STUDENT_BOOKINGS_KEY), []);
+    return Array.isArray(saved) ? saved.map(normalizeStudentBooking).filter(Boolean) : [];
+}
+
+export function saveStudentBookings() {
+    saveJson(getStudentStorageKey(STUDENT_BOOKINGS_KEY), studentBookings.slice(0, 50));
+}
+
+export function getStudentBookings() {
+    return studentBookings;
+}
+
+export function setStudentBookings(bookings) {
+    studentBookings = Array.isArray(bookings) ? bookings.map(normalizeStudentBooking).filter(Boolean) : [];
+    saveStudentBookings();
 }

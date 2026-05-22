@@ -9,81 +9,16 @@ import { getStudentProfile, getPrivateDiaryEntries } from './student/studentStat
 import { findUserBySession, findUserByName } from './student/studentState.js';
 import { getBackendReadyState, setBackendReadyState } from './state.js';
 import { escapeHtml, apiRequest } from './student/utils/utils.js';
-
-function getAuthHeaders() {
-    const session = getAuthSession();
-    return session?.token ? { Authorization: `Bearer ${session.token}` } : {};
-}
+import { getAPIBaseUrl } from './state.js';
 
 import { saveStudentProfile } from './student/studentState.js';
 
 import { addManualTag, getManualTags } from './student/utils/tags.js';
 
-function getSupportLocation(value) {
-    const selected = String(value || '').trim();
-    return SUPPORT_LOCATIONS.includes(selected) ? selected : SUPPORT_LOCATIONS[0];
-}
-
-function renderSupportLocationOptions(selectedLocation = getSupportLocation()) {
-    return SUPPORT_LOCATIONS.map(location => `
-        <option value="${escapeHtml(location)}" ${location === selectedLocation ? 'selected' : ''}>
-            ${escapeHtml(location)}
-        </option>
-    `).join('');
-}
-
-function getBookingStatusLabel(status) {
-    const labels = {
-        new: 'Đang chờ',
-        scheduled: 'Đã xếp lịch',
-        rescheduled: 'Đã hẹn lại',
-        completed: 'Hoàn tất',
-        cancelled: 'Đã hủy',
-        offline: 'Lưu tạm trên máy'
-    };
-    return labels[status] || status || 'Đang chờ';
-}
-
-function formatBookingDateTime(value) {
-    if (!value) return 'Chưa chọn thời gian';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Chưa chọn thời gian';
-    return date.toLocaleString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    });
-}
-
 import { trackInteraction } from './student/API/analytics.js';
 
 import { normalizeVietnamese } from './student/utils/normalizeVietnamese.js';
 
-function getRiskAlerts() {
-    try {
-        return JSON.parse(localStorage.getItem(RISK_ALERTS_KEY)) || [];
-    } catch (error) {
-        return [];
-    }
-}
-
-function renderCrisisSupportNotice(alert) {
-    if (!alert) return '';
-
-    const isCritical = alert.severity === 'critical';
-    return `
-        <div class="crisis-support-card ${isCritical ? 'critical' : ''}">
-            <strong>${isCritical ? 'Cần hỗ trợ khẩn cấp' : 'Tín hiệu rủi ro đã được ghi nhận'}</strong>
-            <p>
-                Hệ thống đã tạo cảnh báo ẩn danh cho tổ tham vấn. Nếu bạn đang không an toàn,
-                hãy gọi hotline <a href="tel:19001267">1900.1267</a> hoặc liên hệ người tin cậy ngay.
-            </p>
-            <button class="btn-primary" onclick="openBookingModal()">Đặt lịch tham vấn</button>
-        </div>
-    `;
-}
 
 // --- 2. KHỞI TẠO (INIT) ---
 window.onload = function() {
@@ -105,17 +40,11 @@ import { showNotification } from './student/utils/utils.js';
 import { updateNav } from './student/utils/updateNav.js';
 import { animateMainContentSwap } from './student/animations.js';
 
-function formatDiaryContent(title, content) {
-    const safeTitle = escapeHtml(title || '');
-    const safeContent = escapeHtml(content || '').replace(/\n/g, '<br>');
-    return safeTitle ? `<strong>${safeTitle}</strong><br>${safeContent}` : safeContent;
-}
-
 import { formatFeedTime, getFeedGradient, getInitials } from './student/utils/utils.js';
 
-async function loadFeedFromBackend() {
+export async function loadFeedFromBackend() {
     try {
-        await fetch(`${API_BASE_URL}/`);
+        await fetch(`${getAPIBaseUrl()}/`);
     } catch (error) {
         // Keep the local public feed available when backend is unavailable.
     } finally {

@@ -1,4 +1,10 @@
+import { setBackendReadyState } from '../state.js';
+import { loadFeedFromBackend } from '../student.js';
+import { showLoadingScreen, hideLoadingScreen } from './loadingScreen.js';
+import { updateStudentProfileBadge, renderStudentHome } from './NewsFeed/NewsFeed.js';
 import { normalizeVietnamese } from './utils/normalizeVietnamese.js';
+import { showNotification } from './utils/utils.js';
+import { getRiskAlertsKey } from '../state.js';
 
 const riskDetectionRules = [
     {
@@ -46,7 +52,7 @@ export function createRiskAlert(source, text, extra = {}) {
 }
 
 export function saveRiskAlerts(alerts) {
-    localStorage.setItem(RISK_ALERTS_KEY, JSON.stringify(alerts.slice(0, 30)));
+    localStorage.setItem(getRiskAlertsKey(), JSON.stringify(alerts.slice(0, 30)));
 }
 
 export async function syncRiskAlert(alert) {
@@ -76,4 +82,27 @@ function detectRiskSignal(text) {
     }
 
     return null;
+}
+export function getRiskAlerts() {
+    try {
+        return JSON.parse(localStorage.getItem(getRiskAlertsKey())) || [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function renderCrisisSupportNotice(alert) {
+    if (!alert) return '';
+
+    const isCritical = alert.severity === 'critical';
+    return `
+        <div class="crisis-support-card ${isCritical ? 'critical' : ''}">
+            <strong>${isCritical ? 'Cần hỗ trợ khẩn cấp' : 'Tín hiệu rủi ro đã được ghi nhận'}</strong>
+            <p>
+                Hệ thống đã tạo cảnh báo ẩn danh cho tổ tham vấn. Nếu bạn đang không an toàn,
+                hãy gọi hotline <a href="tel:19001267">1900.1267</a> hoặc liên hệ người tin cậy ngay.
+            </p>
+            <button class="btn-primary" onclick="openBookingModal()">Đặt lịch tham vấn</button>
+        </div>
+    `;
 }

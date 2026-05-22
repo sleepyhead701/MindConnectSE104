@@ -3,11 +3,14 @@ import { escapeHtml } from '../utils/utils.js';
 import { updateNav } from '../utils/updateNav.js';
 import { animateMainContentSwap } from '../animations.js';
 import { showNotification } from '../utils/utils.js';
-import { getChatHistory, addChatMessage } from '../studentState.js';
+import { getChatHistory, addChatMessage, clearChatHistory } from '../studentState.js';
 import { callChatBotAPI } from '../API/callChatBotAPI.js';
 import { blockIfBackendNotReady } from '../API/blockIfBackendNotReady.js'
 import { trackInteraction } from "../API/analytics.js";
 import { createRiskAlert } from '../RiskAlert.js';
+import { getBackendReadyState } from '../../state.js';
+import { getChatHistoryRemoteLoaded, setChatHistoryRemoteLoaded } from '../studentState.js';
+
 
 function buildChatConnectionErrorReply(error) {
     const message = String(error?.message || '')
@@ -27,10 +30,11 @@ function buildChatConnectionErrorReply(error) {
     ].join('\n');
 }
 
-export function renderChat() {
+export function renderChat(options = {}) {
     const container = document.getElementById('student-main-content');
     updateNav(4);
     animateMainContentSwap();
+    const shouldSyncHistory = options.syncHistory !== false;
 
     const suggestions = [
         'Mình đang căng thẳng vì deadline',
@@ -56,20 +60,28 @@ export function renderChat() {
             </div>
 
             <div class="mc-chat-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+                    <div style="font-weight:700; color:var(--deep-rose);">Lịch sử chat của tôi</div>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                        <span style="font-size:12px; color:#777;">${Math.max(getChatHistory().length - 1, 0)} tin đã lưu</span>
+                        <button class="mc-btn mc-btn-outline" type="button" data-action="refresh">Tải lịch sử</button>
+                        <button class="mc-btn mc-btn-danger" type="button" data-action="delete">Xóa lịch sử</button>
+                    </div>
+                </div>
                 <div id="chat-box" class="chat-box mc-chat-box">
                     ${messagesHtml}
                 </div>
 
                 <div class="mc-chat-suggestions">
                     ${suggestions.map(s => `
-                        <button type="button" data-suggestion="${escapeHtml(s)}" data-action="suggestion" class="mc-btn mc-btn-secondary" data-suggestion="${escapeHtml(s)}">
+                        <button type="button" data-action="suggest" data-suggestion="${escapeHtml(s)}">
                             ${escapeHtml(s)}
                         </button>
                     `).join('')}
                 </div>
 
                 <div class="mc-chat-input-row">
-                    <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." onkeypress="handleEnter(event)">
+                    <input type="text" id="chat-input" placeholder="Nhập tin nhắn...">
                     <button class="mc-send-btn" type="button" aria-label="Gửi tin nhắn" data-action="send">→</button>
                 </div>
             </div>
@@ -79,20 +91,92 @@ export function renderChat() {
         const box = document.getElementById('chat-box');
         if (box) box.scrollTop = box.scrollHeight;
     }, 0);
-}
 
-document.addEventListener('click', (e) => {
-    const target = e.target;
-    if (target.matches('.mc-send-btn') || target.closest('.mc-send-btn')) {
-        sendMsg();
-    } else if (target.matches('button[data-action="suggestion"]')) {
-        const suggestion = target.getAttribute('data-suggestion');
-        if (suggestion) {
-            setChatSuggestion(suggestion);
+    // Event delegation for click actions inside the chat container
+    // Add the listener only once to avoid duplicate handlers when re-rendering
+    if (!container.__mcListenerAdded) {
+        container.addEventListener('click', function onContainerClick(e) {
+            // no-op
+        });
+        // replace with the real handler reference so we can avoid adding again
+        container.removeEventListener('click', function onContainerClick(e) {});
+        container.addEventListener('click', function onContainerClick(e) {
+        const btn = e.target.closest && e.target.closest('[data-action]');
+        if (!btn) return;
+        const action = btn.getAttribute('data-action');
+        if (action === 'refresh') {
+            refreshChatHistoryFromBackend();
+        } else if (action === 'delete') {
+            if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử chat?')) return;
+            clearChatHistory();
+            try {
+                if (getBackendReadyState() && typeof apiRequest === 'function') {
+                    apiRequest('/chat/clear', { method: 'POST' }).catch(() => {});
+                }
+            } catch (e) {}
+            showNotification('Đã xóa lịch sử chat.');
+            renderChat({ syncHistory: false });
+        } else if (action === 'suggest') {
+            setChatSuggestion(btn.getAttribute('data-suggestion'));
+        } else if (action === 'send') {
             sendMsg();
         }
+        });
+        container.__mcListenerAdded = true;
     }
-});
+
+    // Enter key handler for chat input
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) {
+        chatInput.addEventListener('keypress', function (e) { if (e.key === 'Enter') sendMsg(); });
+    }
+
+    if (shouldSyncHistory && !getChatHistoryRemoteLoaded()) {
+        setChatHistoryRemoteLoaded(true);
+        refreshChatHistoryFromBackend({ silent: true });
+    }
+}
+
+async function refreshChatHistoryFromBackend(options = {}) {
+    if (!getBackendReadyState()) return;
+    try {
+        const remoteHistory = await apiRequest('/chat/history');
+        if (Array.isArray(remoteHistory) && remoteHistory.length) {
+            const rebuiltHistory = defaultChatHistory.map(message => ({
+                ...message,
+                created_at: message.created_at || new Date().toISOString()
+            }));
+
+            remoteHistory.forEach(item => {
+                if (item.user_message) {
+                    rebuiltHistory.push({
+                        sender: 'user',
+                        text: item.user_message,
+                        created_at: item.created_at
+                    });
+                }
+                if (item.ai_reply) {
+                    rebuiltHistory.push({
+                        sender: 'ai',
+                        text: item.ai_reply,
+                        created_at: item.created_at
+                    });
+                }
+            });
+
+            clearChatHistory();
+            setChatHistory(rebuiltHistory);
+            saveChatHistory();
+            renderChat({ syncHistory: false });
+        } else if (!options.silent) {
+            showNotification('Chưa có lịch sử chat từ backend. Mình vẫn giữ lịch sử local trên máy bạn.');
+        }
+    } catch (error) {
+        if (!options.silent) {
+            showNotification('Chưa tải được lịch sử chat từ backend, đang dùng lịch sử local.');
+        }
+    }
+}
 
 function handleEnter(e) { if (e.key === 'Enter') sendMsg(); }
 

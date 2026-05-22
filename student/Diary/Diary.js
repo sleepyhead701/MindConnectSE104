@@ -6,6 +6,10 @@ import { addManualTag, getManualTags } from '../utils/tags.js';
 import { createRiskAlert } from '../RiskAlert.js';
 import { normalizeVietnamese } from '../utils/normalizeVietnamese.js';
 import { escapeHtml, getFeedGradient, formatFeedTime, stripHtml } from '../utils/utils.js';
+import { apiRequest } from '../utils/utils.js';
+import { openBookingModal } from '../Booking/Booking.js';
+import { renderStudentStats } from '../Stats/Stats.js';
+import { renderResourcesLibrary } from '../Resources/Resources.js';
 
 export function renderStudentDiary() {
     const container = document.getElementById('student-main-content');
@@ -21,7 +25,7 @@ export function renderStudentDiary() {
     ];
 
     const recentHtml = getPrivateDiaryEntries().slice(0, 6).map((entry, index) => `
-        <button type="button" class="mc-recent-entry" style="width:100%; text-align:left; border:0; cursor:pointer;" onclick="openDiaryEntryModal('${escapeHtml(entry.id)}')">
+        <button type="button" class="mc-recent-entry" style="width:100%; text-align:left; border:0; cursor:pointer;" data-action="open-diary-entry" data-entry-id="${escapeHtml(entry.id)}">
             <div class="mc-recent-top">
                 <span class="mc-recent-dot ${getFeedGradient(index)}">${escapeHtml(String(entry.mood_score || getCurrentMoodScore()))}</span>
                 <strong>${formatFeedTime(entry.date || entry.time)}</strong>
@@ -81,16 +85,34 @@ export function renderStudentDiary() {
     `;
 }
 document.addEventListener("click", (event) => {
-    if (event.target.closest("[data-action='addTag']")) {
-        addManualTag("diary-tag-input", "diary-tag-container");
-        }
-    if (event.target.closest("[data-action='select-mood']")) {
-        const btn = event.target.closest("[data-action='select-mood']");
-        const score = btn.getAttribute('data-score');
-        selectMood(score, btn);
-    }
-    if (event.target.closest("[data-action='save-diary']")) {
-        confirmAndPost();
+    const actionEl = event.target.closest('[data-action]');
+    if (!actionEl) return;
+
+    switch (actionEl.getAttribute('data-action')) {
+        case 'addTag':
+            addManualTag('diary-tag-input', 'diary-tag-container');
+            break;
+        case 'select-mood':
+            selectMood(actionEl.getAttribute('data-score'), actionEl);
+            break;
+        case 'save-diary':
+            confirmAndPost();
+            break;
+        case 'open-diary-entry':
+            openDiaryEntryModal(actionEl.getAttribute('data-entry-id'));
+            break;
+        case 'close-diary-modal':
+            document.getElementById('diary-entry-modal')?.remove();
+            break;
+        case 'booking-modal':
+            openBookingModal();
+            break;
+        case 'student-stats':
+            renderStudentStats();
+            break;
+        case 'resources':
+            renderResourcesLibrary("Podcast");
+            break;
     }
 });
 
@@ -100,16 +122,17 @@ function selectMood(score, elem) {
     elem.classList.add('active');
     
     const msg = document.getElementById('quick-test-msg');
-    if(score === 1) {
+    if(score == 1) {
+        console.log('Creating risk alert for very low mood score...');
+        msg.innerHTML = `Mình đã ghi nhận mức cảm xúc rất thấp và gửi cảnh báo ẩn danh cho tổ tham vấn. <u data-action="booking-modal" style="cursor:pointer; font-weight:bold;">Đặt lịch hỗ trợ</u>`;
         createRiskAlert('Quick Test', 'Sinh viên chọn mức cảm xúc rất thấp trong Quick Test', {
             force: true,
             label: 'Cảnh báo cảm xúc rất thấp',
             severity: 'high',
             excerpt: 'Quick Test ghi nhận mức cảm xúc 1/5.'
         });
-        msg.innerHTML = `Mình đã ghi nhận mức cảm xúc rất thấp và gửi cảnh báo ẩn danh cho tổ tham vấn. <u onclick="openBookingModal()" style="cursor:pointer; font-weight:bold;">Đặt lịch hỗ trợ</u>`;
     } else if(score <= 2) {
-        msg.innerHTML = `Bạn ổn không? <u onclick="renderStudentStats()" style="cursor:pointer; font-weight:bold;">Xem thống kê</u> hoặc <u onclick="renderResources()" style="cursor:pointer; font-weight:bold;">nghe nhạc</u> nhé.`;
+        msg.innerHTML = `Bạn ổn không? <u data-action="student-stats" style="cursor:pointer; font-weight:bold;">Xem thống kê</u> hoặc <u data-action="resources" style="cursor:pointer; font-weight:bold;">nghe nhạc</u> nhé.`;
     } else {
         msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score==5?"Rất tốt":(score==4?"Tốt":"Bình thường"));
     }
@@ -190,7 +213,7 @@ function openDiaryEntryModal(entryId) {
                     <h3 style="margin:0; color:var(--deep-rose); font-family:var(--font-heading);">${escapeHtml(entry.title || 'Không có tiêu đề')}</h3>
                     <p style="margin:6px 0 0; color:#777; font-size:13px;">${formatFeedTime(entry.date)} · Mood ${escapeHtml(entry.mood_score || '-')} / 5</p>
                 </div>
-                <button type="button" aria-label="Đóng" onclick="document.getElementById('diary-entry-modal')?.remove()" style="border:0;background:transparent;font-size:24px;cursor:pointer;color:#999;">&times;</button>
+                <button type="button" aria-label="Đóng" data-action="close-diary-modal" style="border:0;background:transparent;font-size:24px;cursor:pointer;color:#999;">&times;</button>
             </div>
             <div class="mc-tag-row" style="margin-bottom:14px;">
                 ${(entry.tags || []).map(tag => `<span>#${escapeHtml(tag)}</span>`).join('')}
@@ -203,4 +226,10 @@ function openDiaryEntryModal(entryId) {
 
 async function confirmAndPost() {
     return savePrivateDiary();
+}
+
+function formatDiaryContent(title, content) {
+    const safeTitle = escapeHtml(title || '');
+    const safeContent = escapeHtml(content || '').replace(/\n/g, '<br>');
+    return safeTitle ? `<strong>${safeTitle}</strong><br>${safeContent}` : safeContent;
 }

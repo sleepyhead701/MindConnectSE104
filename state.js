@@ -145,6 +145,14 @@ export const resourcesDB = [
     }
 ];
 
+const SUPPORT_LOCATIONS = [
+    'Phòng tham vấn 102 - Khu B',
+    'Phòng Công tác Sinh viên - Khu A',
+    'Trung tâm Hỗ trợ Sinh viên - Tầng 3',
+    'Online qua Google Meet',
+    'Online qua Microsoft Teams'
+];
+
 const RISK_ALERTS_KEY = 'mindconnect:risk-alerts';
 const PUBLIC_FEED_KEY = 'mindconnect:public-feed';
 const API_BASE_URL = 'http://localhost:3000';
@@ -206,4 +214,16 @@ export function getUsersDB() {
 
 export function getChatApiUrl() {
     return CHAT_API_URL;
+}
+
+export function getAPIBaseUrl() {
+    return API_BASE_URL;
+}
+
+export function getRiskAlertsKey() {
+    return RISK_ALERTS_KEY;
+}
+
+export function getSupportLocations() {
+    return SUPPORT_LOCATIONS;
 }

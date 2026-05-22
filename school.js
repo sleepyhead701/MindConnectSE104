@@ -249,46 +249,6 @@ function getDefaultConsultationRows() {
     return element ? element.innerHTML : '';
 }
 
-function renderConsultationCases(alerts) {
-    const body = document.getElementById('consultation-case-body');
-    if (!body) return;
-
-    const bookings = dashboardState?.bookings || [];
-    const dynamicRows = alerts.map(alert => {
-        const rowId = `case-${alert.id}`;
-        const badgeClass = alert.severity === 'critical' ? 'bg-high' : 'bg-med';
-        return `
-            <tr id="${rowId}" data-alert-id="${alert.id}">
-                <td style="padding:8px;">#${escapeHtml(alert.id)}</td>
-                <td>${escapeHtml(alert.class_name || alert.department || 'Chưa rõ')}</td>
-                <td><span class="badge ${badgeClass}">${escapeHtml(alert.label)}</span></td>
-                <td style="text-align:right;">
-                    <button class="btn-action-sm btn-success" onclick="handleConsultation('success', '${rowId}')">✔ Xong</button>
-                    <button class="btn-action-sm btn-warn" onclick="handleConsultation('fail', '${rowId}')">📅 Hẹn lại</button>
-                </td>
-            </tr>
-        `;
-    }).join('');
-
-    const bookingRows = bookings
-        .filter(booking => !['completed', 'cancelled'].includes(booking.status))
-        .map(booking => {
-            const rowId = `booking-${booking.id}`;
-            return `
-                <tr id="${rowId}" data-booking-id="${booking.id}">
-                    <td style="padding:8px;">#${escapeHtml(booking.id)}</td>
-                    <td>${escapeHtml(booking.class_name || booking.department || 'Chưa rõ')}</td>
-                    <td><span class="badge bg-med">Yêu cầu tham vấn</span></td>
-                    <td style="text-align:right;">
-                        <button class="btn-action-sm btn-success" onclick="handleConsultation('success', '${rowId}')">✔ Xong</button>
-                        <button class="btn-action-sm btn-warn" onclick="handleConsultation('fail', '${rowId}')">📅 Hẹn lại</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-
-    body.innerHTML = dynamicRows + bookingRows + getDefaultConsultationRows();
-}
 
 // ============================================
 // 7. DASHBOARD DATA FETCHING
@@ -299,59 +259,6 @@ async function fetchDashboardData() {
     return dashboardState;
 }
 
-// ============================================
-// 8. METRICS & TOPICS RENDERING
-// ============================================
-function renderMetrics() {
-    const metrics = dashboardState?.metrics;
-    if (!metrics) return;
-
-    const sentimentEl = document.getElementById('metric-sentiment');
-    const supportRequestsEl = document.getElementById('metric-support-requests');
-    const engagementEl = document.getElementById('metric-engagement');
-    const interventionEl = document.getElementById('metric-intervention');
-    const pendingBookings = Array.isArray(dashboardState?.bookings)
-        ? dashboardState.bookings.filter(booking => !['completed', 'resolved', 'cancelled'].includes(booking.status)).length
-        : 0;
-
-    if (sentimentEl) sentimentEl.innerText = `${metrics.sentiment}/10`;
-    if (supportRequestsEl) supportRequestsEl.innerText = String(pendingBookings);
-    if (engagementEl) engagementEl.innerText = String(metrics.engagement);
-    if (interventionEl) interventionEl.innerText = `${metrics.intervention_reduction}%`;
-}
-
-function renderTopTopics() {
-    const topics = dashboardState?.top_topics;
-    const listEl = document.getElementById('top-topic-list');
-    if (!Array.isArray(topics) || topics.length === 0 || !listEl) return;
-
-    listEl.innerHTML = topics.map((topic, index) => `
-        <li><strong>${index + 1}. ${escapeHtml(topic.tag)}</strong> (${escapeHtml(topic.count)})</li>
-    `).join('');
-}
-
-// ============================================
-// 9. DASHBOARD MAIN RENDER
-// ============================================
-function renderDashboardSections() {
-    renderMetrics();
-    renderTopTopics();
-    renderConsultationCases([]);
-}
-
-async function activateSupportForLatestAlert() {
-    const latestItem = getSupportQueue()
-        .filter(item => !['resolved', 'completed', 'cancelled'].includes(item.status))
-        .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))[0];
-
-    if (!latestItem) {
-        alert('Không có yêu cầu hỗ trợ đang chờ.');
-        return;
-    }
-
-    await markBooking(latestItem.id, 'scheduled');
-    alert('Đã kích hoạt quy trình hỗ trợ cho yêu cầu ưu tiên cao nhất.');
-}
 
 // ============================================
 // 11. DASHBOARD UPDATE (MAIN TRIGGER)
@@ -438,148 +345,6 @@ async function handleConsultation(status, rowId) {
     }
 }
 
-// ============================================
-// 13. NAVIGATION (SIDEBAR)
-// ============================================
-function switchView(view) {
-    currentView = view;
-
-    // Update sidebar active state
-    document.querySelectorAll('.dash-menu-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    event.target.classList.add('active');
-
-    // Handle view switching
-    const content = document.getElementById('main-content');
-    if (!content) return;
-
-    switch (view) {
-        case 'dashboard':
-            renderDashboardView();
-            break;
-        case 'interventions':
-            renderInterventionsView();
-            break;
-        case 'feedback':
-            renderFeedbackView();
-            break;
-        default:
-            renderDashboardView();
-    }
-}
-
-function renderDashboardView() {
-    // Main dashboard view is already in HTML, just update data
-    updateDashboardData();
-}
-
-function renderAlertsView() {
-    renderInterventionsView();
-}
-
-function renderInterventionsView() {
-    const content = document.getElementById('main-content');
-    if (!content) return;
-
-    content.innerHTML = `
-        <div class="dash-header">
-            <div>
-                <h2 style="color: var(--deep-rose);">Hiệu quả Can thiệp</h2>
-                <span style="color: #666; font-size: 14px;">Đánh giá hiệu quả các can thiệp đã thực hiện</span>
-            </div>
-            <button class="btn btn-primary" onclick="renderDashboardView(); switchView('dashboard');">← Quay lại Dashboard</button>
-        </div>
-
-        <div class="roi-grid">
-            <div class="stat-box">
-                <h4 style="margin-bottom: 15px;">📊 Tỷ lệ thành công</h4>
-                <div style="margin-bottom: 15px;">
-                    <div style="display:flex; justify-content:space-between; font-size: 13px; margin-bottom:5px;">
-                        <span>Tỷ lệ Điều hướng Thành công</span>
-                        <strong>78%</strong>
-                    </div>
-                    <div class="progress-bar"><div class="progress-fill" style="width: 78%; background: var(--success);"></div></div>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <div style="display:flex; justify-content:space-between; font-size: 13px; margin-bottom:5px;">
-                        <span>Tỷ lệ Chuyển đổi Tư vấn</span>
-                        <strong>12%</strong>
-                    </div>
-                    <div class="progress-bar"><div class="progress-fill" style="width: 12%; background: var(--warning);"></div></div>
-                </div>
-                <div>
-                    <div style="display:flex; justify-content:space-between; font-size: 13px; margin-bottom:5px;">
-                        <span>Phản hồi tích cực về Nguồn lực</span>
-                        <strong>4.5/5 ⭐</strong>
-                    </div>
-                    <div class="progress-bar"><div class="progress-fill" style="width: 90%; background: var(--accent-pink);"></div></div>
-                </div>
-            </div>
-
-            <div class="stat-box">
-                <h4 style="margin-bottom: 15px;">📋 Ca Tư vấn Cần xử lý</h4>
-                <table style="width:100%; font-size: 13px; border-collapse: collapse;">
-                    <thead>
-                        <tr style="border-bottom: 1px solid #eee;">
-                            <th style="text-align:left; padding:5px;">Case ID</th>
-                            <th style="text-align:left; padding:5px;">Đơn vị</th>
-                            <th style="text-align:left; padding:5px;">Trạng thái</th>
-                            <th style="text-align:right; padding:5px;">Xử lý</th>
-                        </tr>
-                    </thead>
-                    <tbody id="consultation-case-body">
-                        ${getDefaultConsultationRows()}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-
-    updateDashboardData();
-}
-
-function renderFeedbackView() {
-    const content = document.getElementById('main-content');
-    if (!content) return;
-
-    content.innerHTML = `
-        <div class="dash-header">
-            <div>
-                <h2 style="color: var(--deep-rose);">Báo cáo & Feedback</h2>
-                <span style="color: #666; font-size: 14px;">Phản hồi từ sinh viên về các dịch vụ hỗ trợ</span>
-            </div>
-            <button class="btn btn-primary" onclick="renderDashboardView(); switchView('dashboard');">← Quay lại Dashboard</button>
-        </div>
-
-        <div class="feedback-list">
-            <div class="feedback-item positive">
-                <div class="feedback-header">
-                    <span class="feedback-author">Sinh viên ẩn danh</span>
-                    <span class="feedback-time">2 giờ trước</span>
-                    <span class="feedback-tag positive">Tích cực</span>
-                </div>
-                <p class="feedback-text">"Tài liệu về quản lý stress rất hữu ích. Cảm ơn đội ngũ hỗ trợ!"</p>
-            </div>
-            <div class="feedback-item improvement">
-                <div class="feedback-header">
-                    <span class="feedback-author">Sinh viên ẩn danh</span>
-                    <span class="feedback-time">5 giờ trước</span>
-                    <span class="feedback-tag improvement">Cần cải thiện</span>
-                </div>
-                <p class="feedback-text">"Khung giờ tư vấn nên linh hoạt hơn, buổi tối sẽ tiện hơn."</p>
-            </div>
-            <div class="feedback-item positive">
-                <div class="feedback-header">
-                    <span class="feedback-author">Sinh viên ẩn danh</span>
-                    <span class="feedback-time">1 ngày trước</span>
-                    <span class="feedback-tag positive">Tích cực</span>
-                </div>
-                <p class="feedback-text">"Bài thiền 5 phút trên app giúp mình ngủ ngon hơn. Nên thêm nhiều bài tập như vậy."</p>
-            </div>
-        </div>
-    `;
-}
 
 // ============================================
 // 14. LIVE DASHBOARD OVERRIDES
@@ -991,14 +756,6 @@ function switchView(view) {
     }
 }
 
-function setupSidebarNavigation() {
-    document.querySelectorAll('.dash-menu-item').forEach(item => {
-        item.addEventListener('click', function() {
-            switchView(this.dataset.view || 'dashboard');
-        });
-    });
-}
-
 // ============================================
 // 15. INITIALIZATION
 // ============================================
@@ -1008,32 +765,10 @@ window.onload = function() {
 };
 
 function setupSidebarNavigation() {
-    const menuItems = document.querySelectorAll('.dash-menu-item');
-    menuItems.forEach(item => {
-        item.addEventListener('click', function() {
-            // Remove active from all
-            menuItems.forEach(i => i.classList.remove('active'));
-            // Add active to clicked
-            this.classList.add('active');
-
-            // Determine view based on content
-            const text = this.textContent;
-            if (text.includes('Tổng quan')) {
-                switchView('dashboard');
-            } else if (text.includes('Can thiệp')) {
-                switchView('interventions');
-            } else if (text.includes('Báo cáo')) {
-                switchView('feedback');
-            }
-        });
-    });
-}
-
-setupSidebarNavigation = function() {
     document.querySelectorAll('.dash-menu-item').forEach(item => {
         if (!item.dataset.view) return;
         item.addEventListener('click', function() {
             switchView(this.dataset.view || 'dashboard');
         });
     });
-};
+}

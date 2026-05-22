@@ -1,6 +1,50 @@
 import { blockIfBackendNotReady } from '../API/blockIfBackendNotReady.js'
+import { getCurrentMoodScore, setCurrentMoodScore } from '../studentState.js';
+import { apiRequest } from '../utils/utils.js';
+import { getSupportLocations } from '../../state.js';
+import { escapeHtml } from '../utils/utils.js';
+import { trackInteraction } from '../API/analytics.js';
+import { getRiskAlerts, saveRiskAlerts } from '../RiskAlert.js';
 
-function openFeedbackModal(context = {}) {
+function getSupportLocation(value) {
+    const selected = String(value || '').trim();
+    return getSupportLocations().includes(selected) ? selected : getSupportLocations()[0];
+}
+
+function renderSupportLocationOptions(selectedLocation = getSupportLocation()) {
+    return getSupportLocations().map(location => `
+        <option value="${escapeHtml(location)}" ${location === selectedLocation ? 'selected' : ''}>
+            ${escapeHtml(location)}
+        </option>
+    `).join('');
+}
+
+function getBookingStatusLabel(status) {
+    const labels = {
+        new: 'Đang chờ',
+        scheduled: 'Đã xếp lịch',
+        rescheduled: 'Đã hẹn lại',
+        completed: 'Hoàn tất',
+        cancelled: 'Đã hủy',
+        offline: 'Lưu tạm trên máy'
+    };
+    return labels[status] || status || 'Đang chờ';
+}
+
+function formatBookingDateTime(value) {
+    if (!value) return 'Chưa chọn thời gian';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Chưa chọn thời gian';
+    return date.toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
+export function openFeedbackModal(context = {}) {
     const existing = document.getElementById('student-feedback-modal');
     if (existing) existing.remove();
 
@@ -11,7 +55,6 @@ function openFeedbackModal(context = {}) {
     modal.className = 'modal-overlay';
     modal.dataset.sourceType = context.source_type || 'feedback';
     modal.dataset.bookingId = context.booking_id || '';
-    modal.onclick = function(e) { if (e.target === modal) closeFeedbackModal(); };
 
     modal.innerHTML = `
         <div class="modal-content" style="max-height: 90vh; overflow:auto;">
@@ -20,7 +63,7 @@ function openFeedbackModal(context = {}) {
                     <h3 style="color: var(--deep-rose); font-family: var(--font-heading); margin:0;">Gửi feedback ẩn danh</h3>
                     <p style="margin:4px 0 0; color:#666; font-size:13px;">Nhà trường sẽ dùng phản hồi này để đo hiệu quả hỗ trợ.</p>
                 </div>
-                <button type="button" onclick="closeFeedbackModal()" aria-label="Đóng" style="font-size: 24px; cursor:pointer; color: #999; border:0; background:transparent;">&times;</button>
+                <button type="button" id="close-feedback-btn" aria-label="Đóng" style="font-size: 24px; cursor:pointer; color: #999; border:0; background:transparent;">&times;</button>
             </div>
 
             <label class="mc-field-label" for="feedback-report">Bạn muốn báo cáo hoặc chia sẻ điều gì?</label>
@@ -44,10 +87,14 @@ function openFeedbackModal(context = {}) {
                 </div>
             </div>
 
-            <button class="mc-btn mc-btn-primary" style="width:100%; margin-top:18px;" type="button" onclick="submitStudentFeedback()">Gửi phản hồi</button>
+            <button class="mc-btn mc-btn-primary" id="submit-feedback-btn" style="width:100%; margin-top:18px;" type="button">Gửi phản hồi</button>
         </div>
     `;
     document.querySelector('.mobile-frame')?.appendChild(modal);
+    
+    modal.onclick = function(e) { if (e.target === modal) closeFeedbackModal(); };
+    document.getElementById('close-feedback-btn').addEventListener('click', closeFeedbackModal);
+    document.getElementById('submit-feedback-btn').addEventListener('click', submitStudentFeedback);
 }
 
 function closeFeedbackModal() {
@@ -94,7 +141,7 @@ async function submitStudentFeedback() {
     }
 }
 
-function openBookingModal() {
+export function openBookingModal() {
     const modal = document.createElement('div');
     modal.id = 'booking-modal';
     modal.className = 'modal-overlay';
@@ -105,7 +152,7 @@ function openBookingModal() {
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
                 <h3 style="color: var(--deep-rose); font-family: var(--font-heading);">Đặt lịch tham vấn</h3>
-                <span onclick="closeBookingModal()" style="font-size: 24px; cursor:pointer; color: #999;">&times;</span>
+                <span id="close-booking-btn" style="font-size: 24px; cursor:pointer; color: #999;">&times;</span>
             </div>
 
             <div class="info-row"><span class="label">📞 Hotline hỗ trợ:</span><a href="tel:19001234" class="val" style="text-decoration:none;">1900.1234</a></div>
@@ -115,14 +162,24 @@ function openBookingModal() {
                 <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Chọn thời gian mong muốn:</label>
                 <input type="datetime-local" id="booking-time" style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
             </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Chọn địa điểm mong muốn:</label>
+                <select id="booking-location" class="mc-input">
+                    ${renderSupportLocationOptions()}
+                </select>
+            </div>
             <div style="margin-bottom: 20px;">
                 <label style="display:block; font-size: 13px; margin-bottom: 5px; color:#666;">Ghi chú (Không bắt buộc):</label>
                 <input type="text" id="booking-note" placeholder="Ví dụ: Mình muốn tư vấn về..." style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
             </div>
-            <button class="btn-primary" style="width:100%; padding: 12px;" onclick="handleConfirmBooking()">Xác nhận đặt lịch</button>
+            <button class="btn-primary" id="confirm-booking-btn" style="width:100%; padding: 12px;" type="button">Xác nhận đặt lịch</button>
         </div>
     `;
     document.querySelector('.mobile-frame').appendChild(modal);
+    
+    modal.onclick = function(e) { if(e.target === modal) closeBookingModal(); };
+    document.getElementById('close-booking-btn').addEventListener('click', closeBookingModal);
+    document.getElementById('confirm-booking-btn').addEventListener('click', handleConfirmBooking);
 }
 
 function closeBookingModal() {
@@ -130,11 +187,25 @@ function closeBookingModal() {
     if(modal) modal.remove();
 }
 
-async function handleConfirmBooking() {
+function isWithinBusinessHours(dateTimeString) {
+    if (!dateTimeString) return false;
+    const date = new Date(dateTimeString);
+    if (Number.isNaN(date.getTime())) return false;
+    const hour = date.getHours();
+    return hour >= 7 && hour < 17;
+}
+
+export async function handleConfirmBooking() {
     if (blockIfBackendNotReady()) return;
 
     const requestedTime = document.getElementById('booking-time')?.value || null;
     const note = document.getElementById('booking-note')?.value || '';
+    
+    if (requestedTime && !isWithinBusinessHours(requestedTime)) {
+        alert('⏰ Vui lòng chọn thời gian trong giờ hành chính (7h sáng - 5h chiều)');
+        return;
+    }
+    
     closeBookingModal();
 
     try {

@@ -22,10 +22,10 @@
         </a>
 
         <div class="nav-menu">
-            <div href="" class="nav-icon active" data-nav-index="0" data-action="newsfeed">Home</div>
-            <div href="/Diary" class="nav-icon" data-nav-index="1" data-action="diary">Diary</div>
+            <a href="#" class="nav-icon active" data-nav-index="0" data-action="newsfeed">Home</a>
+            <a href="#" class="nav-icon" data-nav-index="1" data-action="diary">Diary</a>
             <div class="profile-dropdown">
-                <div class="nav-icon" data-nav-index="2" data-action="resources">Resources</div>
+                <a href="#" class="nav-icon" data-nav-index="2" data-action="resources">Resources</a>
                 <div class="profile-dropdown-menu">
                     <button type="button" class="dropdown-item" data-action="resources">
                         <span>A to Z topics</span>
@@ -51,9 +51,9 @@
         <div class="nav-actions">
             <button class="btn-logout" data-action="logout">Log out</button>
             <div class="profile-dropdown">
-                <div class="user-profile-badge" id="profileAvatar">S</div>
+                <div class="user-profile-badge" id="profileAvatar"></div>
                 <div class="profile-dropdown-menu">
-                    <div class="dropdown-item">
+                    <div class="dropdown-item" style="pointer-events: none;">
                         <span>Student</span>
                     </div>
                     <div class="dropdown-item" data-action="profile">
@@ -172,6 +172,26 @@
             });
         });
         
+    </script>
+    <script>
+        // If an <img> is present inside the avatar, remove any background so the image shows cleanly.
+        (function(){
+            const avatar = document.getElementById('profileAvatar');
+            if(!avatar) return;
+
+            const removeBgIfImg = () => {
+                if (avatar.querySelector('img')) {
+                    avatar.style.background = 'none';
+                }
+            };
+
+            // Initial check
+            removeBgIfImg();
+
+            // Watch for future changes (e.g., avatar image added later)
+            const mo = new MutationObserver(removeBgIfImg);
+            mo.observe(avatar, { childList: true, subtree: true, attributes: true });
+        })();
     </script>
 
 </body>
