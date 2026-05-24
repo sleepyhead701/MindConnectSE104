@@ -1,12 +1,12 @@
 import { blockIfBackendNotReady } from '../API/blockIfBackendNotReady.js'
-import { getCurrentMoodScore, setCurrentMoodScore } from '../studentState.js';
+import { getCurrentMoodScore, setCurrentMoodScore, getStudentBookings, setStudentBookings } from '../studentState.js';
 import { apiRequest } from '../utils/utils.js';
 import { getSupportLocations } from '../../state.js';
 import { escapeHtml } from '../utils/utils.js';
 import { trackInteraction } from '../API/analytics.js';
 import { getRiskAlerts, saveRiskAlerts } from '../RiskAlert.js';
 
-function getSupportLocation(value) {
+export function getSupportLocation(value) {
     const selected = String(value || '').trim();
     return getSupportLocations().includes(selected) ? selected : getSupportLocations()[0];
 }
@@ -19,7 +19,7 @@ function renderSupportLocationOptions(selectedLocation = getSupportLocation()) {
     `).join('');
 }
 
-function getBookingStatusLabel(status) {
+export function getBookingStatusLabel(status) {
     const labels = {
         new: 'Đang chờ',
         scheduled: 'Đã xếp lịch',
@@ -31,7 +31,7 @@ function getBookingStatusLabel(status) {
     return labels[status] || status || 'Đang chờ';
 }
 
-function formatBookingDateTime(value) {
+export function formatBookingDateTime(value) {
     if (!value) return 'Chưa chọn thời gian';
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return 'Chưa chọn thời gian';
@@ -200,6 +200,7 @@ export async function handleConfirmBooking() {
 
     const requestedTime = document.getElementById('booking-time')?.value || null;
     const note = document.getElementById('booking-note')?.value || '';
+    const selectedLocation = getSupportLocation(document.getElementById('booking-location')?.value);
     
     if (requestedTime && !isWithinBusinessHours(requestedTime)) {
         alert('⏰ Vui lòng chọn thời gian trong giờ hành chính (7h sáng - 5h chiều)');
@@ -214,16 +215,28 @@ export async function handleConfirmBooking() {
             body: JSON.stringify({
                 requested_time: requestedTime,
                 note,
-                location: getSupportLocation(),
+                location: selectedLocation,
                 before_mood_score: getCurrentMoodScore()
             })
         });
         trackInteraction('booking', booking?.id || requestedTime || Date.now(), {
             requested_time: requestedTime,
-            location: getSupportLocation(),
+            location: selectedLocation,
             before_mood_score: getCurrentMoodScore()
         });
+        setStudentBookings([booking, ...getStudentBookings()]);
     } catch (error) {
+        const localBooking = {
+            id: `local-booking-${Date.now()}`,
+            requested_time: requestedTime,
+            location: selectedLocation,
+            note,
+            status: 'offline',
+            before_mood_score: getCurrentMoodScore(),
+            created_at: new Date().toISOString()
+        };
+        setStudentBookings([localBooking, ...getStudentBookings()]);
+
         const localBookingAlert = {
             id: `BK-${Date.now()}`,
             created_at: new Date().toISOString(),
@@ -235,7 +248,7 @@ export async function handleConfirmBooking() {
             student_alias: 'SV ẩn danh',
             class_name: 'CNTT_K48',
             department: 'CNTT',
-            location: getSupportLocation(),
+            location: selectedLocation,
             before_mood_score: getCurrentMoodScore(),
             excerpt: note || 'Sinh viên yêu cầu đặt lịch tham vấn.'
         };

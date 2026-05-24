@@ -21,11 +21,11 @@ import { normalizeVietnamese } from './student/utils/normalizeVietnamese.js';
 
 
 // --- 2. KHỞI TẠO (INIT) ---
-window.onload = function() {
+window.onload = async function() {
     setBackendReadyState(false);
     showLoadingScreen(); // Hiển thị màn hình
     updateStudentProfileBadge();
-    loadFeedFromBackend();
+    await loadFeedFromBackend();
     hideLoadingScreen();
     renderStudentHome(); // Mặc định vào trang chủ
     setTimeout(() => {
@@ -43,12 +43,19 @@ import { animateMainContentSwap } from './student/animations.js';
 import { formatFeedTime, getFeedGradient, getInitials } from './student/utils/utils.js';
 
 export async function loadFeedFromBackend() {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
     try {
-        await fetch(`${getAPIBaseUrl()}/`);
+        const response = await fetch(`${getAPIBaseUrl()}/`, { signal: controller.signal });
+        setBackendReadyState(response.ok);
+        if (!response.ok) {
+            throw new Error(`Backend returned ${response.status}`);
+        }
     } catch (error) {
-        // Keep the local public feed available when backend is unavailable.
+        setBackendReadyState(false);
+        showNotification('Backend chưa sẵn sàng. Các tính năng cần API sẽ tạm khóa cho tới khi backend chạy lại.');
     } finally {
-        setBackendReadyState(true);
+        clearTimeout(timeoutId);
     }
 }
 
@@ -74,30 +81,6 @@ function getFallbackResourceSuggestion(txt) {
 
     return 'Nếu bạn muốn, mình có thể gợi ý một video, podcast hoặc bài tập thở trong mục Resources.';
 }
-
-window.submitComment = function(postIndex, content) {
-    const profile = getStudentProfile();
-    const userName = profile.displayName || profile.name;
-    const post = getUserFeed()[postIndex];
-    if (!getUserFeed()[postIndex].commentObjects) {
-        getUserFeed()[postIndex].commentObjects = [];
-        
-    }
-    getUserFeed()[postIndex].commentObjects.push({
-        author: userName,
-        author_avatar: profile.avatarUrl,
-        owner_email: profile.email,
-        isUser: true,
-        content: content,
-        date: new Date().toISOString(),
-        likes: 0
-    });
-    trackInteraction('comment', post?.id || `post-${postIndex}`, {
-        content_length: String(content || '').length
-    });
-    savePublicFeed();
-    renderStudentHome();
-};
 
 import { updateStudentProfileBadge, renderStudentHome } from './student/NewsFeed/NewsFeed.js';
 

@@ -3,13 +3,21 @@ import { escapeHtml } from '../utils/utils.js';
 import { updateNav } from '../utils/updateNav.js';
 import { animateMainContentSwap } from '../animations.js';
 import { showNotification } from '../utils/utils.js';
-import { getChatHistory, addChatMessage, clearChatHistory } from '../studentState.js';
+import {
+    defaultChatHistory,
+    getChatHistory,
+    addChatMessage,
+    clearChatHistory,
+    setChatHistory,
+    saveChatHistory
+} from '../studentState.js';
 import { callChatBotAPI } from '../API/callChatBotAPI.js';
 import { blockIfBackendNotReady } from '../API/blockIfBackendNotReady.js'
 import { trackInteraction } from "../API/analytics.js";
 import { createRiskAlert } from '../RiskAlert.js';
 import { getBackendReadyState } from '../../state.js';
 import { getChatHistoryRemoteLoaded, setChatHistoryRemoteLoaded } from '../studentState.js';
+import { apiRequest } from '../utils/utils.js';
 
 
 function buildChatConnectionErrorReply(error) {
@@ -110,7 +118,7 @@ export function renderChat(options = {}) {
             if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử chat?')) return;
             clearChatHistory();
             try {
-                if (getBackendReadyState() && typeof apiRequest === 'function') {
+                if (getBackendReadyState()) {
                     apiRequest('/chat/clear', { method: 'POST' }).catch(() => {});
                 }
             } catch (e) {}
@@ -284,4 +292,18 @@ export function buildFallbackChatReply(txt, riskAlert) {
     }
 
     return `Cảm ơn bạn đã chia sẻ. Mình luôn ở đây lắng nghe bạn; bạn có thể kể rõ hơn chuyện gì đang làm bạn nặng lòng nhất không? ${suggestion}`;
+}
+
+function getFallbackResourceSuggestion(text) {
+    const normalized = String(text || '').toLowerCase();
+    if (normalized.includes('deadline') || normalized.includes('học') || normalized.includes('thi')) {
+        return 'Bạn có thể thử Pomodoro 25 phút, chia việc thành bước nhỏ và xem thêm tài nguyên về vượt qua căng thẳng trước kỳ thi trong Resources.';
+    }
+    if (normalized.includes('ngủ') || normalized.includes('mất ngủ')) {
+        return 'Tối nay bạn thử giảm màn hình 30 phút trước khi ngủ, viết vài dòng Diary để xả suy nghĩ, và tìm resource về giấc ngủ trong Resources nhé.';
+    }
+    if (normalized.includes('lo') || normalized.includes('stress') || normalized.includes('căng thẳng')) {
+        return 'Một bước nhẹ nhàng bây giờ là thở chậm 4-4-6 trong vài vòng, rồi ghi lại điều đang làm bạn lo nhất để mình cùng gỡ từng phần.';
+    }
+    return 'Nếu muốn, bạn có thể mở Resources để tìm bài đọc, video hoặc công cụ thở phù hợp với điều mình đang trải qua.';
 }

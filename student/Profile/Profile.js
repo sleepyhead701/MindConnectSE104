@@ -11,12 +11,78 @@ import { syncAuthProfileName } from '../studentState.js';
 import { getUserFeed, savePublicFeed } from '../../state.js';
 import { updateStudentProfileBadge } from '../NewsFeed/NewsFeed.js';
 import { openFeedbackModal } from '../Booking/Booking.js';
-import { getStudentBookings, saveStudentBookings } from '../studentState.js';
+import { getStudentBookings, saveStudentBookings, setStudentBookings } from '../studentState.js';
 import { getBackendReadyState } from '../../state.js';
 import { apiRequest} from '../utils/utils.js';
 import { getAuthHeaders } from '../API/getAuthHeaders.js';
+import { formatBookingDateTime, getBookingStatusLabel, getSupportLocation } from '../Booking/Booking.js';
 
-function handleAvatarUpload(event) {
+const MAX_AVATAR_BYTES = 500 * 1024;
+const MAX_AVATAR_INPUT_BYTES = 5 * 1024 * 1024;
+
+function getDataUrlByteSize(dataUrl) {
+    const base64 = String(dataUrl || '').split(',')[1] || '';
+    return Math.floor((base64.length * 3) / 4);
+}
+
+function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error('Không đọc được ảnh.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function loadImage(dataUrl) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('Không xử lý được ảnh này.'));
+        img.src = dataUrl;
+    });
+}
+
+async function compressAvatarInBrowser(dataUrl) {
+    if (getDataUrlByteSize(dataUrl) <= MAX_AVATAR_BYTES) return dataUrl;
+
+    const image = await loadImage(dataUrl);
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    const maxEdge = 512;
+    const ratio = Math.min(1, maxEdge / Math.max(image.width, image.height));
+    canvas.width = Math.max(1, Math.round(image.width * ratio));
+    canvas.height = Math.max(1, Math.round(image.height * ratio));
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    for (const quality of [0.86, 0.78, 0.7, 0.62, 0.54, 0.46]) {
+        const candidate = canvas.toDataURL('image/jpeg', quality);
+        if (getDataUrlByteSize(candidate) <= MAX_AVATAR_BYTES) {
+            return candidate;
+        }
+    }
+
+    throw new Error('Ảnh vẫn lớn hơn 500KB sau khi nén. Bạn hãy chọn ảnh nhỏ hơn.');
+}
+
+async function compressAvatarOnBackend(dataUrl) {
+    if (!getBackendReadyState()) return dataUrl;
+
+    try {
+        const result = await apiRequest('/api/media/images/compress', {
+            method: 'POST',
+            body: JSON.stringify({ image: dataUrl })
+        });
+        return result?.image || dataUrl;
+    } catch (error) {
+        if (getDataUrlByteSize(dataUrl) > MAX_AVATAR_BYTES) {
+            throw error;
+        }
+        return dataUrl;
+    }
+}
+
+async function handleAvatarUpload(event) {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -26,19 +92,38 @@ function handleAvatarUpload(event) {
         return;
     }
 
-    if (file.size > 1.5 * 1024 * 1024) {
-        alert('Avatar nên nhỏ hơn 1.5MB để trình duyệt lưu ổn định.');
+    if (file.size > MAX_AVATAR_INPUT_BYTES) {
+        alert('Ảnh gốc nên nhỏ hơn 5MB để hệ thống có thể nén xuống 500KB.');
         return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
+    try {
+        const rawDataUrl = await readFileAsDataUrl(file);
+        let backendCompressed;
+        if (getBackendReadyState()) {
+            try {
+                backendCompressed = await compressAvatarOnBackend(rawDataUrl);
+            } catch (error) {
+                backendCompressed = await compressAvatarInBrowser(rawDataUrl);
+                backendCompressed = await compressAvatarOnBackend(backendCompressed);
+            }
+        } else {
+            backendCompressed = await compressAvatarInBrowser(rawDataUrl);
+        }
+
+        if (getDataUrlByteSize(backendCompressed) > MAX_AVATAR_BYTES) {
+            alert('Ảnh sau xử lý vẫn lớn hơn 500KB. Vui lòng chọn ảnh nhỏ hơn.');
+            return;
+        }
+
         const preview = document.getElementById('profile-avatar-preview');
         if (!preview) return;
-        preview.src = reader.result;
-        preview.dataset.avatarUrl = reader.result;
-    };
-    reader.readAsDataURL(file);
+        preview.src = backendCompressed;
+        preview.dataset.avatarUrl = backendCompressed;
+        showNotification('Đã nén avatar xuống dưới 500KB.');
+    } catch (error) {
+        alert(error.message || 'Không xử lý được avatar lúc này.');
+    }
 }
 
 function saveProfileSettings() {

@@ -1,5 +1,5 @@
 import { getStudentProfile, saveStudentProfile, getStudentSession } from '../studentState.js';
-import { escapeHtml } from '../utils/utils.js';
+import { apiRequest, escapeHtml } from '../utils/utils.js';
 import { updateNav } from '../utils/updateNav.js';
 import { animateMainContentSwap } from '../animations.js';
 import { showNotification } from '../utils/utils.js';

@@ -8,7 +8,8 @@ import { getCustomResourcesKey } from '../studentState.js';
 import { getResourcesDB} from '../../state.js';
 import { addResources } from '../studentState.js';
 
-var currentResource = getResourcesDB()[0];
+var currentResource = getResourcesDB();
+let customResourcesHydrated = false;
 
 function trackResourceOpen(index) {
     const resource = currentResource[index];
@@ -30,6 +31,21 @@ function normalizeResourceType(url, requestedType) {
 
 function loadCustomResources() {
     return loadJson(getCustomResourcesKey(), []);
+}
+
+function ensureCustomResourcesLoaded() {
+    if (customResourcesHydrated) return;
+    customResourcesHydrated = true;
+
+    const resources = getResourcesDB();
+    const existing = new Set(resources.map(resource => String(resource.url || resource.title || '').toLowerCase()));
+    loadCustomResources().forEach(resource => {
+        const key = String(resource.url || resource.title || '').toLowerCase();
+        if (key && !existing.has(key)) {
+            resources.push({ ...resource, isCustom: true });
+            existing.add(key);
+        }
+    });
 }
 
 function saveCustomResources() {
@@ -114,6 +130,7 @@ export function renderResourcesLibrary(filterType = 'Tất cả') {
     const container = document.getElementById('student-main-content');
     updateNav(2);
     animateMainContentSwap();
+    ensureCustomResourcesLoaded();
 
     const filteredDB = filterType === 'Tất cả'
         ? getResourcesDB()
@@ -131,8 +148,8 @@ export function renderResourcesLibrary(filterType = 'Tất cả') {
     const cardsHtml = filteredDB.map((res, index) => {
         const href = res.url || '#';
         const actionAttr = res.action
-            ? `data-action="${res.action}" href="#"`
-            : `href="${escapeHtml(href)}" ${href === '#' ? '' : 'target="_blank" rel="noopener noreferrer"'}`;
+            ? `data-action="${res.action}" data-index="${index}" href="#"`
+            : `href="${escapeHtml(href)}" data-action="open-resource" data-index="${index}" ${href === '#' ? '' : 'target="_blank" rel="noopener noreferrer"'}`;
 
         return `
             <a ${actionAttr} class="res-link mc-resource-link">
@@ -157,33 +174,39 @@ export function renderResourcesLibrary(filterType = 'Tất cả') {
                 <h1>Tài nguyên cho <span>tâm hồn.</span></h1>
                 <p>Import resource bằng link, ưu tiên nguồn chính thống và học thuật cho nội dung tâm lý.</p>
             </div>
-            <div class="mc-panel" style="margin-bottom:18px;">
-                <label class="mc-field-label" for="resource-request-input">Request resource theo nhu cầu</label>
-                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
-                    <input id="resource-request-input" class="mc-input" style="flex:1; min-width:220px;" placeholder="Ví dụ: mất ngủ, anxiety, stress deadline">
-                    <button class="mc-btn mc-btn-outline" type="button" data-action="request-resource">Gợi ý resource</button>
+
+            <div class="mc-panel mc-resource-shell">
+                <div class="mc-resource-toolbar">
+                    <div>
+                        <label class="mc-field-label" for="resource-request-input">Tìm hoặc request resource</label>
+                        <div class="mc-resource-search-row">
+                            <input id="resource-request-input" class="mc-input" placeholder="Ví dụ: mất ngủ, anxiety, stress deadline">
+                            <button class="mc-btn mc-btn-outline" type="button" data-action="request-resource">Gợi ý</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="mc-field-label" for="resource-url">Import resource bằng link</label>
+                        <div class="mc-resource-import-row">
+                            <input id="resource-url" class="mc-input" placeholder="https://...">
+                            <input id="resource-title" class="mc-input" placeholder="Tên resource">
+                            <select id="resource-type" class="mc-input">
+                                <option>Tự nhận diện</option>
+                                <option>Blog</option>
+                                <option>Video</option>
+                                <option>Podcast</option>
+                                <option>Book</option>
+                                <option>Công cụ</option>
+                            </select>
+                            <button class="mc-btn mc-btn-primary" type="button" data-action="import-resource">Import</button>
+                        </div>
+                    </div>
                 </div>
                 <div id="resource-request-result" class="feedback-list"></div>
-            </div>
-            <div class="mc-panel" style="margin-bottom:18px;">
-                <label class="mc-field-label" for="resource-url">Import resource bằng link</label>
-                <div class="mc-resource-import-row">
-                    <input id="resource-url" class="mc-input" placeholder="https://...">
-                    <input id="resource-title" class="mc-input" placeholder="Tên resource">
-                    <select id="resource-type" class="mc-input">
-                        <option>Tự nhận diện</option>
-                        <option>Blog</option>
-                        <option>Video</option>
-                        <option>Podcast</option>
-                        <option>Book</option>
-                        <option>Công cụ</option>
-                    </select>
-                    <button class="mc-btn mc-btn-primary" type="button" data-action="import-resource">Import</button>
+
+                <div class="filter-bar mc-filter-bar">${filterHtml}</div>
+                <div class="resource-grid mc-resource-grid">
+                    ${cardsHtml}
                 </div>
-            </div>
-            <div class="filter-bar mc-filter-bar">${filterHtml}</div>
-            <div class="resource-grid mc-resource-grid">
-                ${cardsHtml}
             </div>
         </section>
     `;
@@ -245,6 +268,8 @@ document.addEventListener('click', function(event) {
     } else if (action === 'start-breathing') {
         startBreathing();
     } else if (action === 'renderBreathingSpace') {
+        const index = parseInt(actionEl.getAttribute('data-index'), 10);
+        if (Number.isFinite(index)) trackResourceOpen(index);
         renderBreathingSpace();
     }
 });

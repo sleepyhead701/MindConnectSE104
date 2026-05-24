@@ -1,9 +1,5 @@
-import { setBackendReadyState } from '../state.js';
-import { loadFeedFromBackend } from '../student.js';
-import { showLoadingScreen, hideLoadingScreen } from './loadingScreen.js';
-import { updateStudentProfileBadge, renderStudentHome } from './NewsFeed/NewsFeed.js';
 import { normalizeVietnamese } from './utils/normalizeVietnamese.js';
-import { showNotification } from './utils/utils.js';
+import { apiRequest } from './utils/utils.js';
 import { getRiskAlertsKey } from '../state.js';
 
 const riskDetectionRules = [

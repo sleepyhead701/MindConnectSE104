@@ -18,7 +18,7 @@ if (!process.env.JWT_SECRET) {
   console.warn('JWT_SECRET is not defined. Using a development-only fallback secret.');
 }
 
-app.use(express.json());
+app.use(express.json({ limit: '7mb' }));
 
 app.use((req, res, next) => {
   const allowedOrigins = (process.env.CORS_ORIGIN || '*')
@@ -33,7 +33,7 @@ app.use((req, res, next) => {
   }
 
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Student-Client-Id');
 
   if (req.method === 'OPTIONS') {
     return res.sendStatus(204);

@@ -11,6 +11,15 @@ const hashStudentId = (value) => {
   return `SV-${crypto.createHash('sha256').update(source).digest('hex').slice(0, 8).toUpperCase()}`;
 };
 
+const getStudentIdentitySource = (req) => (
+  req.user?.email ||
+  req.user?.id ||
+  req.body?.student_client_id ||
+  req.query?.student_client_id ||
+  req.headers['x-student-client-id'] ||
+  null
+);
+
 const supportChat = async (req, res, next) => {
   try {
     const { message, history } = req.body;
@@ -33,6 +42,7 @@ const supportChat = async (req, res, next) => {
     if (riskSignal && riskSignal.severity === 'critical') {
       const alertPayload = {
         user_id: req.user?.id || null,
+        student_id_hash: hashStudentId(getStudentIdentitySource(req)),
         source: 'Chat',
         severity: riskSignal.severity,
         label: riskSignal.label,
@@ -68,7 +78,7 @@ const supportChat = async (req, res, next) => {
     if (mongoose.connection.readyState === 1) {
       await ChatMessage.create({
         user_id: req.user?.id || null,
-        student_id_hash: hashStudentId(req.user?.email || req.user?.id),
+        student_id_hash: hashStudentId(getStudentIdentitySource(req)),
         user_message: message.trim(),
         ai_reply: result.reply,
         model: result.model
@@ -86,7 +96,8 @@ const supportChat = async (req, res, next) => {
 
 const getChatHistory = async (req, res, next) => {
   try {
-    if (!req.user?.id) {
+    const identitySource = getStudentIdentitySource(req);
+    if (!identitySource) {
       return res.json({ success: true, data: [] });
     }
 
@@ -94,7 +105,13 @@ const getChatHistory = async (req, res, next) => {
       return res.json({ success: true, data: [] });
     }
 
-    const messages = await ChatMessage.find({ user_id: req.user.id })
+    const studentHash = hashStudentId(identitySource);
+    const filters = [{ student_id_hash: studentHash }];
+    if (req.user?.id && mongoose.Types.ObjectId.isValid(req.user.id)) {
+      filters.push({ user_id: req.user.id });
+    }
+
+    const messages = await ChatMessage.find({ $or: filters })
       .sort({ created_at: 1 })
       .limit(80);
 
@@ -113,7 +130,29 @@ const getChatHistory = async (req, res, next) => {
   }
 };
 
+const clearChatHistory = async (req, res, next) => {
+  try {
+    const identitySource = getStudentIdentitySource(req);
+    if (identitySource && mongoose.connection.readyState === 1) {
+      const studentHash = hashStudentId(identitySource);
+      const filters = [{ student_id_hash: studentHash }];
+      if (req.user?.id && mongoose.Types.ObjectId.isValid(req.user.id)) {
+        filters.push({ user_id: req.user.id });
+      }
+      await ChatMessage.deleteMany({ $or: filters });
+    }
+
+    res.json({
+      success: true,
+      data: { cleared: true }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   supportChat,
-  getChatHistory
+  getChatHistory,
+  clearChatHistory
 };

@@ -9,6 +9,7 @@ router.get('/feed', optionalAuthenticate, appController.getFeed);
 router.post('/diaries', optionalAuthenticate, appController.createDiary);
 router.post('/diaries/tags', optionalAuthenticate, appController.suggestDiaryTags);
 router.post('/interactions', optionalAuthenticate, appController.createInteraction);
+router.post('/media/images/compress', optionalAuthenticate, appController.compressUploadedImage);
 
 // Risk alerts: Everyone can list/create (in prototype, student might need to create it implicitly, but admin lists them)
 // Wait, if student creates risk alerts, they only need optionalAuthenticate

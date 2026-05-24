@@ -454,6 +454,69 @@
   ],
   "interactions": [
     {
+      "id": "interaction-1779647009211-05a3fe",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "1",
+      "metadata": {
+        "source": "public-feed",
+        "target_type": "post",
+        "post_id": 1,
+        "reaction": "❤️",
+        "action": "add"
+      },
+      "created_at": "2026-05-24T18:23:29.211Z"
+    },
+    {
+      "id": "interaction-1779647003099-359a5d",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "feed-1779367702570",
+      "metadata": {
+        "source": "public-feed",
+        "target_type": "post",
+        "post_id": "feed-1779367702570",
+        "reaction": "❤️",
+        "action": "add"
+      },
+      "created_at": "2026-05-24T18:23:23.099Z"
+    },
+    {
+      "id": "interaction-1779646995972-58c133",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 15
+      },
+      "created_at": "2026-05-24T18:23:15.972Z"
+    },
+    {
+      "id": "interaction-1779646987734-b0fd4b",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 29
+      },
+      "created_at": "2026-05-24T18:23:07.734Z"
+    },
+    {
+      "id": "interaction-1779646982862-6dfb6e",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "chat-support",
+      "metadata": {
+        "message_length": 24
+      },
+      "created_at": "2026-05-24T18:23:02.862Z"
+    },
+    {
       "id": "interaction-1779379486167-38de70",
       "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
       "student_id_hash": "SV-47986DEC",

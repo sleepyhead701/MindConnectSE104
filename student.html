@@ -16,7 +16,7 @@
 <body>
 
     <div class="desktop-nav">
-        <a href="" class="nav-brand" data-action="newsfeed">
+        <a href="#" class="nav-brand" data-action="newsfeed">
             <img src="logonoword.png" alt="MindConnect Logo">
             <span>MindConnect</span>
         </a>
@@ -76,11 +76,11 @@
 
     <div class="mobile-menu-overlay" id="mobileMenuOverlay">
         <div class="mobile-menu-content">
-            <div class="nav-icon" data-nav-index="0" data-action="newsfeed"; closeMobileMenu();">Home</div>
-            <div class="nav-icon" data-nav-index="1" data-action="diary"; closeMobileMenu();">Diary</div>
-            <div class="nav-icon" data-nav-index="2" data-action="resources"; closeMobileMenu();">Resources</div>
-            <div class="nav-icon" data-nav-index="3" data-action="stats"; closeMobileMenu();">Stats</div>
-            <div class="nav-icon" data-nav-index="4" data-action="chat"; closeMobileMenu();">Chat</div>
+            <div class="nav-icon" data-nav-index="0" data-action="newsfeed">Home</div>
+            <div class="nav-icon" data-nav-index="1" data-action="diary">Diary</div>
+            <div class="nav-icon" data-nav-index="2" data-action="resources">Resources</div>
+            <div class="nav-icon" data-nav-index="3" data-action="stats">Stats</div>
+            <div class="nav-icon" data-nav-index="4" data-action="chat">Chat</div>
             <div class="mobile-menu-actions">
                 <button class="btn-logout" data-action="logout">Log out</button>
             </div>
@@ -115,9 +115,26 @@
         import { renderChat } from './student/ChatAI/ChatAI.js';
 
         document.addEventListener('DOMContentLoaded', () => {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            const closeMobileMenu = () => {
+                hamburgerBtn?.classList.remove('active');
+                mobileMenuOverlay?.classList.remove('show');
+            };
+
+            hamburgerBtn?.addEventListener('click', () => {
+                hamburgerBtn.classList.toggle('active');
+                mobileMenuOverlay?.classList.toggle('show');
+            });
+            mobileMenuOverlay?.addEventListener('click', (event) => {
+                if (event.target === mobileMenuOverlay) closeMobileMenu();
+            });
+
             // click event cho navigation theo từng data-action
-            document.querySelectorAll('.nav-icon, .mobile-menu-content .nav-icon .nav-brand').forEach(icon => {
-                icon.addEventListener('click', () => {
+            document.querySelectorAll('.nav-icon, .nav-brand').forEach(icon => {
+                icon.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    closeMobileMenu();
                     const action = icon.getAttribute('data-action');
                     if (action === 'newsfeed') {
                         renderStudentHome();

@@ -12,6 +12,16 @@ const riskDetectionService = require('../services/RiskDetectionService');
 
 const dataDir = path.resolve(__dirname, '../../data');
 const appStoreFile = path.join(dataDir, 'app-store.json');
+let sharp = null;
+try {
+  sharp = require('sharp');
+} catch (error) {
+  sharp = null;
+}
+
+const MAX_IMAGE_BYTES = 500 * 1024;
+const MAX_IMAGE_INPUT_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 const defaultMemoryStore = {
   diaries: [],
   riskAlerts: [],
@@ -47,6 +57,15 @@ const hashStudentId = (value) => {
   const source = String(value || 'anonymous@student.local').trim().toLowerCase();
   return `SV-${crypto.createHash('sha256').update(source).digest('hex').slice(0, 8).toUpperCase()}`;
 };
+
+const getStudentIdentitySource = (req) => (
+  req.user?.email ||
+  req.user?.id ||
+  req.body?.student_client_id ||
+  req.query?.student_client_id ||
+  req.headers['x-student-client-id'] ||
+  null
+);
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
@@ -197,7 +216,7 @@ const createDiary = async (req, res, next) => {
 
     const interactionPayload = {
       user_id: req.user?.id || null,
-      student_id_hash: hashStudentId(req.user?.email || req.user?.id),
+      student_id_hash: hashStudentId(getStudentIdentitySource(req)),
       type: 'post',
       target_id: String(diary._id || diary.id),
       metadata: { source: 'diary', tag_count: payload.tags.length },
@@ -240,7 +259,7 @@ const suggestDiaryTags = async (req, res, next) => {
         matched_keyword: riskSignal.matchedKeyword,
         status: 'new',
         student_alias: 'SV ẩn danh',
-        student_id_hash: hashStudentId(req.user?.email || req.user?.id),
+        student_id_hash: hashStudentId(getStudentIdentitySource(req)),
         class_name: 'CNTT_K48',
         department: 'CNTT',
         location: 'Phòng tham vấn 102 - Khu B',
@@ -305,7 +324,7 @@ const createRiskAlert = async (req, res, next) => {
       matched_keyword: req.body.matched_keyword || '',
       status: req.body.status || 'new',
       student_alias: req.body.student_alias || 'SV ẩn danh',
-      student_id_hash: req.body.student_id_hash || hashStudentId(req.user?.email || req.user?.id),
+      student_id_hash: req.body.student_id_hash || hashStudentId(getStudentIdentitySource(req)),
       class_name: req.body.class_name || 'CNTT_K48',
       department: req.body.department || 'CNTT',
       location: req.body.location || 'Phòng tham vấn 102 - Khu B',
@@ -388,7 +407,7 @@ const createBooking = async (req, res, next) => {
     const payload = {
       user_id: req.user?.id || null,
       student_alias: req.body.student_alias || 'SV ẩn danh',
-      student_id_hash: req.body.student_id_hash || hashStudentId(req.user?.email || req.user?.id),
+      student_id_hash: req.body.student_id_hash || hashStudentId(getStudentIdentitySource(req)),
       class_name: req.body.class_name || 'CNTT_K48',
       department: req.body.department || 'CNTT',
       location: req.body.location || 'Phòng tham vấn 102 - Khu B',
@@ -436,13 +455,76 @@ const createBooking = async (req, res, next) => {
   }
 };
 
+const parseImageDataUrl = (value) => {
+  const match = String(value || '').match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([A-Za-z0-9+/=]+)$/);
+  if (!match) {
+    const error = new Error('Image must be a valid base64 data URL');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const mimeType = match[1].toLowerCase();
+  if (!ALLOWED_IMAGE_MIME_TYPES.has(mimeType)) {
+    const error = new Error('Only PNG, JPG, WebP or GIF images are allowed');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const buffer = Buffer.from(match[2], 'base64');
+  if (!buffer.length || buffer.length > MAX_IMAGE_INPUT_BYTES) {
+    const error = new Error('Image input is too large');
+    error.statusCode = 413;
+    throw error;
+  }
+
+  return { mimeType, buffer };
+};
+
+const toDataUrl = (mimeType, buffer) => `data:${mimeType};base64,${buffer.toString('base64')}`;
+
+const compressImageToLimit = async ({ mimeType, buffer, maxBytes = MAX_IMAGE_BYTES }) => {
+  if (buffer.length <= maxBytes) {
+    return { mimeType, buffer, compressed: false, engine: 'size-check' };
+  }
+
+  if (!sharp || mimeType === 'image/gif') {
+    const error = new Error('Image is larger than 500KB. Backend compression requires sharp for oversized images.');
+    error.statusCode = 413;
+    throw error;
+  }
+
+  const widths = [900, 720, 560, 420, 320];
+  const qualities = [82, 74, 66, 58, 50, 42];
+  let smallest = null;
+
+  for (const width of widths) {
+    for (const quality of qualities) {
+      const candidate = await sharp(buffer, { failOn: 'none' })
+        .rotate()
+        .resize({ width, height: width, fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality, mozjpeg: true })
+        .toBuffer();
+
+      if (!smallest || candidate.length < smallest.length) smallest = candidate;
+      if (candidate.length <= maxBytes) {
+        return { mimeType: 'image/jpeg', buffer: candidate, compressed: true, engine: 'sharp' };
+      }
+    }
+  }
+
+  const error = new Error(`Image could not be compressed below ${Math.round(maxBytes / 1024)}KB`);
+  error.statusCode = 413;
+  throw error;
+};
+
 const listMyBookings = async (req, res, next) => {
   try {
-    if (!req.user?.id && !req.user?.email) {
+    const identitySource = getStudentIdentitySource(req);
+    if (!identitySource) {
       return res.json({ success: true, data: [] });
     }
 
-    const studentHash = hashStudentId(req.user?.email || req.user?.id);
+    const studentHash = hashStudentId(identitySource);
     let bookings;
 
     if (isDbConnected()) {
@@ -574,7 +656,7 @@ const createFeedback = async (req, res, next) => {
 
     const payload = {
       user_id: req.user?.id || null,
-      student_id_hash: req.body.student_id_hash || hashStudentId(req.user?.email || req.user?.id),
+      student_id_hash: req.body.student_id_hash || hashStudentId(getStudentIdentitySource(req)),
       source_type: req.body.source_type || 'feedback',
       report_text: reportText.slice(0, 5000),
       rating_text: ratingText.slice(0, 2000),
@@ -649,7 +731,7 @@ const createInteraction = async (req, res, next) => {
   try {
     const payload = {
       user_id: req.user?.id || null,
-      student_id_hash: req.body.student_id_hash || hashStudentId(req.user?.email || req.user?.id),
+      student_id_hash: req.body.student_id_hash || hashStudentId(getStudentIdentitySource(req)),
       type: req.body.type || 'reaction',
       target_id: String(req.body.target_id || ''),
       metadata: req.body.metadata && typeof req.body.metadata === 'object' ? req.body.metadata : {},
@@ -668,6 +750,28 @@ const createInteraction = async (req, res, next) => {
     res.status(201).json({
       success: true,
       data: normalizeDocument(interaction)
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const compressUploadedImage = async (req, res, next) => {
+  try {
+    const { image } = req.body;
+    const { mimeType, buffer } = parseImageDataUrl(image);
+    const result = await compressImageToLimit({ mimeType, buffer });
+
+    res.json({
+      success: true,
+      data: {
+        image: toDataUrl(result.mimeType, result.buffer),
+        mime_type: result.mimeType,
+        size_bytes: result.buffer.length,
+        max_size_bytes: MAX_IMAGE_BYTES,
+        compressed: result.compressed,
+        engine: result.engine
+      }
     });
   } catch (error) {
     next(error);
@@ -790,6 +894,11 @@ const getDashboardV2 = async (req, res, next) => {
     feedbacks.forEach(feedback => {
       inferTagsFromText(`${feedback.report_text || ''} ${feedback.rating_text || ''}`).forEach(registerTag);
     });
+    interactions
+      .filter(item => item.type === 'post' && item.metadata?.source === 'public-feed')
+      .forEach(item => {
+        (Array.isArray(item.metadata?.tags) ? item.metadata.tags : []).forEach(registerTag);
+      });
 
     const totalTopicSignals = Math.max(Object.values(tagCounts).reduce((sum, value) => sum + value, 0), 1);
     const topTopics = Object.entries(tagCounts)
@@ -844,10 +953,11 @@ const getDashboardV2 = async (req, res, next) => {
       ...bookings.map(item => item.student_id_hash || item.user_id || item.id)
     ]).size, 1);
 
+    const publicFeedPosts = interactions.filter(item => item.type === 'post' && item.metadata?.source === 'public-feed');
     const engagementBreakdown = {
-      posts: diaries.length,
-      reactions: interactions.filter(item => item.type === 'reaction').length,
-      comments: interactions.filter(item => item.type === 'comment').length,
+      posts: publicFeedPosts.length,
+      reactions: interactions.filter(item => item.type === 'reaction' && item.metadata?.source === 'public-feed').length,
+      comments: interactions.filter(item => item.type === 'comment' && item.metadata?.source === 'public-feed').length,
       chats: interactions.filter(item => item.type === 'chat').length,
       bookings: bookings.length,
       feedbacks: feedbacks.length,
@@ -886,7 +996,17 @@ const getDashboardV2 = async (req, res, next) => {
         excerpt: booking.note,
         score: Number(booking.urgency_score || scoreBookingUrgency(booking))
       }))
-    ].sort((a, b) => b.score - a.score);
+    ].sort((a, b) => {
+      const aRescheduled = a.rescheduled_from ? 1 : 0;
+      const bRescheduled = b.rescheduled_from ? 1 : 0;
+      if (aRescheduled !== bRescheduled) return aRescheduled - bRescheduled;
+
+      if (aRescheduled && bRescheduled) {
+        return new Date(a.created_at || a.scheduled_at || 0) - new Date(b.created_at || b.scheduled_at || 0);
+      }
+
+      return b.score - a.score;
+    });
 
     const aiReport = topTopics.map(topic => ({
       tag: topic.tag,
@@ -955,5 +1075,6 @@ module.exports = {
   createFeedback,
   listFeedback,
   createInteraction,
+  compressUploadedImage,
   getDashboard: getDashboardV2
 };

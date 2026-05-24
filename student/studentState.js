@@ -4,7 +4,7 @@ import { getResourcesDB, getUsersDB } from "../state.js";
 import { normalizeStudentBooking } from "./utils/normalizeStudentBooking.js"
 
 
-const defaultChatHistory = [
+export const defaultChatHistory = [
     { sender: 'ai', text: 'Chào bạn! Mình là AI của MindConnect. Mình có thể giúp gì cho bạn hôm nay?' }
 ];
 
@@ -16,7 +16,8 @@ const STUDENT_PROFILE_KEY = 'mindconnect:student-profile';
 const STUDENT_BOOKINGS_KEY = 'mindconnect:student-bookings';
 
 let currentMoodScore = 4;
-let chatHistory = defaultChatHistory;
+let chatHistory = defaultChatHistory.map(message => ({ ...message }));
+let chatHistoryLocalLoaded = false;
 let privateDiaryEntries = loadPrivateDiaryEntries();
 let chatHistoryRemoteLoaded = false;
 let studentBookings = loadStudentBookings();
@@ -77,7 +78,23 @@ export function getCurrentMoodScore() {
 }
 
 export function addChatMessage(sender, text) {
-    chatHistory.push({ sender, text });
+    chatHistory.push({ sender, text, created_at: new Date().toISOString() });
+    saveChatHistory();
+}
+
+export function setChatHistory(messages) {
+    chatHistory = Array.isArray(messages)
+        ? messages.map(message => ({
+            sender: message.sender === 'user' ? 'user' : 'ai',
+            text: String(message.text || ''),
+            created_at: message.created_at || new Date().toISOString()
+        }))
+        : defaultChatHistory.map(message => ({ ...message }));
+    chatHistoryLocalLoaded = true;
+    saveChatHistory();
+}
+
+export function saveChatHistory() {
     saveJson(getStudentStorageKey('mindconnect:chat-history'), chatHistory);
 }
 
@@ -118,7 +135,12 @@ export function addResources(resource) {
 export function getUserProfile(name) {
     const profile = getStudentProfile();
     if (name && (name === profile.name || name === profile.displayName || name === 'Tôi')) {
-        return new userProfile(profile.displayName || profile.name, profile.email, profile.avatarUrl, profile.bio);
+        return {
+            name: profile.displayName || profile.name,
+            email: profile.email,
+            avatarUrl: profile.avatarUrl,
+            bio: profile.bio
+        };
     }
     return findUserByName(name) || null;
 }
@@ -207,18 +229,19 @@ export function syncAuthProfileName(displayName) {
 }
 
 export function getChatHistory() {
-    if (!chatHistoryRemoteLoaded) {
+    if (!chatHistoryLocalLoaded) {
         const remoteHistory = loadJson(getStudentStorageKey('mindconnect:chat-history'), null);
-        if (remoteHistory) {
+        if (Array.isArray(remoteHistory) && remoteHistory.length) {
             chatHistory = remoteHistory;
         }
-        chatHistoryRemoteLoaded = true;
+        chatHistoryLocalLoaded = true;
     }
     return chatHistory;
 }
 
 export function clearChatHistory() {
     chatHistory = [];
+    chatHistoryLocalLoaded = true;
     saveJson(getStudentStorageKey('mindconnect:chat-history'), chatHistory);
 }
 

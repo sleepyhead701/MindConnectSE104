@@ -200,7 +200,8 @@ export function saveJson(key, value) {
 
 export function getAuthorAvatar(item, index) {
     if (item?.author_avatar) return item.author_avatar;
-    const profile = getUserProfile(item?.author);
+    const author = typeof item === 'string' ? item : item?.author;
+    const profile = usersDB.find(user => user.name === author);
     return profile?.avatarUrl || '';
 }
 

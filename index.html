@@ -519,6 +519,59 @@
             letter-spacing: 0;
         }
 
+        .landing-info {
+            width: min(100%, 1280px);
+            margin: 0 auto;
+            padding: 0 clamp(20px, 5vw, 64px) 80px;
+            display: grid;
+            gap: 18px;
+            box-sizing: border-box;
+        }
+
+        .landing-section {
+            scroll-margin-top: 24px;
+            border: 1px solid var(--mc-border);
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.76);
+            box-shadow: var(--mc-shadow-card);
+            padding: clamp(22px, 4vw, 34px);
+        }
+
+        .landing-section h2 {
+            margin: 0;
+            font-family: 'Fraunces', Georgia, serif;
+            color: var(--mc-ink);
+            font-size: clamp(28px, 4vw, 42px);
+            font-weight: 500;
+        }
+
+        .landing-section p {
+            margin: 10px 0 0;
+            color: var(--mc-ink-soft);
+            line-height: 1.7;
+            max-width: 820px;
+        }
+
+        .landing-feature-grid {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .landing-feature {
+            border: 1px solid var(--mc-border);
+            border-radius: 16px;
+            background: white;
+            padding: 16px;
+        }
+
+        .landing-feature strong {
+            display: block;
+            color: var(--mc-primary);
+            margin-bottom: 6px;
+        }
+
         @media (max-width: 900px) {
             .landing-nav {
                 height: auto;
@@ -544,6 +597,10 @@
 
             .login-hero-copy {
                 text-align: left;
+            }
+
+            .landing-feature-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -572,15 +629,15 @@
             <span class="brand-text">MindConnect</span>
         </div>
         <div class="nav-links">
-            <a href="#" class="nav-item">Trang chủ</a>
-            <a href="#" class="nav-item">Dịch vụ</a>
-            <a href="#" class="nav-item">Về chúng tôi</a>
-            <a href="#" class="nav-item">Liên hệ</a>
+            <a href="#home" class="nav-item">Trang chủ</a>
+            <a href="#services" class="nav-item">Dịch vụ</a>
+            <a href="#about" class="nav-item">Về chúng tôi</a>
+            <a href="#contact" class="nav-item">Liên hệ</a>
             <a href="#" class="btn-login-nav" onclick="showLoginForm(); return false;">Đăng nhập</a>
         </div>
     </nav>
 
-    <div class="main-container">
+    <div class="main-container" id="home">
         <section class="login-hero-copy" aria-label="MindConnect introduction">
             <!-- <div class="hero-badge"><span class="hero-badge-dot"></span>AI đồng hành sức khỏe tinh thần</div> -->
             <h1>Lắng nghe cảm xúc. <span>Mỗi ngày.</span></h1>
@@ -705,6 +762,26 @@
             </p>
         </div>
     </div>
+
+    <section class="landing-info" aria-label="Thông tin MindConnect">
+        <article class="landing-section" id="services">
+            <h2>Dịch vụ</h2>
+            <p>MindConnect hỗ trợ sinh viên ghi Diary riêng tư, trò chuyện với AI, đặt lịch tham vấn, theo dõi cảm xúc và tìm tài nguyên sức khỏe tinh thần phù hợp.</p>
+            <div class="landing-feature-grid">
+                <div class="landing-feature"><strong>Diary riêng tư</strong><span>Chỉ người dùng nhìn thấy, dùng cho thống kê cảm xúc cá nhân.</span></div>
+                <div class="landing-feature"><strong>AI hỗ trợ</strong><span>Lắng nghe, gợi ý bước nhỏ và đề xuất tài nguyên liên quan.</span></div>
+                <div class="landing-feature"><strong>Kết nối nhà trường</strong><span>Đặt lịch hỗ trợ và gửi feedback sau can thiệp.</span></div>
+            </div>
+        </article>
+        <article class="landing-section" id="about">
+            <h2>Về chúng tôi</h2>
+            <p>MindConnect được xây dựng như một không gian an toàn cho sinh viên và một dashboard dữ liệu cho nhà trường, giúp phát hiện nhu cầu hỗ trợ sớm mà vẫn tôn trọng quyền riêng tư.</p>
+        </article>
+        <article class="landing-section" id="contact">
+            <h2>Liên hệ</h2>
+            <p>Hotline hỗ trợ: 1900.1234. Email: support@mindconnect.local. Khi có nguy cơ khẩn cấp, sinh viên nên liên hệ người tin cậy hoặc dịch vụ hỗ trợ tại địa phương ngay.</p>
+        </article>
+    </section>
 
     <script>
         const API_BASE_URL = 'http://localhost:3000';

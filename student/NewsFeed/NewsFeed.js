@@ -1,13 +1,53 @@
 import { updateNav } from '../utils/updateNav.js';
 import { animateMainContentSwap } from '../animations.js';
-import { getUserFeed, getAuthorAvatar, addUserFeed } from '../../state.js';
+import { getUserFeed, getAuthorAvatar, addUserFeed, savePublicFeed } from '../../state.js';
 import { getStudentProfile, getUserProfile } from '../studentState.js';
 import { escapeHtml, formatFeedTime, getInitials, renderAvatar } from '../utils/utils.js';
 import { addManualTag, getManualTags } from '../utils/tags.js';
 import { trackInteraction } from '../API/analytics.js';
 import { renderStudentDiary } from '../Diary/Diary.js';
 
-var currentUserFeed = getUserFeed();
+function getReactionCount(likes) {
+    if (Array.isArray(likes)) {
+        return likes.reduce((sum, value) => sum + (Number(value) || 0), 0);
+    }
+    return Number(likes) || 0;
+}
+
+function setReactionCount(target, nextCount) {
+    target.likes = Math.max(0, Number(nextCount) || 0);
+}
+
+function getReactionTarget(button) {
+    const postIndex = Number(button?.dataset?.postIndex);
+    const commentIndex = button?.dataset?.commentIndex === undefined ? null : Number(button.dataset.commentIndex);
+    const feed = getUserFeed();
+    const post = feed[postIndex];
+    if (!post) return null;
+
+    if (Number.isFinite(commentIndex)) {
+        const comment = Array.isArray(post.commentObjects) ? post.commentObjects[commentIndex] : null;
+        return comment ? { post, target: comment, targetType: 'comment', targetId: comment.id || `${post.id}-comment-${commentIndex}` } : null;
+    }
+
+    return { post, target: post, targetType: 'post', targetId: post.id || `post-${postIndex}` };
+}
+
+function persistReaction(button, reaction, active) {
+    const resolved = getReactionTarget(button);
+    if (!resolved) return;
+
+    const currentCount = getReactionCount(resolved.target.likes);
+    setReactionCount(resolved.target, active ? currentCount + 1 : currentCount - 1);
+    savePublicFeed();
+    trackInteraction('reaction', resolved.targetId, {
+        source: 'public-feed',
+        target_type: resolved.targetType,
+        post_id: resolved.post.id || '',
+        reaction,
+        action: active ? 'add' : 'remove'
+    });
+}
 
 
 export function updateStudentProfileBadge() {
@@ -61,7 +101,6 @@ function publishFeedPost() {
         tags,
         content_length: content.length
     });
-    currentUserFeed.push(post);
     renderStudentHome();
 }
 
@@ -70,7 +109,8 @@ export function renderStudentHome() {
     updateNav(0);
     animateMainContentSwap();
 
-    const feedHtml = currentUserFeed.map((post, index) => {
+    const feedItems = getUserFeed();
+    const feedHtml = feedItems.map((post, index) => {
         const postDate = post.date || post.time;
         const comments = Array.isArray(post.commentObjects) ? post.commentObjects : [];
         const commentCount = comments.length || post.comments || 0;
@@ -79,7 +119,7 @@ export function renderStudentHome() {
         const commentsHtml = comments.length > 0
             ? `
                 <div class="mc-reply-list">
-                    ${comments.map(c => `
+                    ${comments.map((c, commentIndex) => `
                         <div class="mc-reply-card">
                             ${renderAvatar(c.author, c.author_avatar || getUserProfile(c.author)?.avatarUrl, index)}
                             <div class="mc-reply-content-box">
@@ -89,7 +129,7 @@ export function renderStudentHome() {
                             </div>
                             <p>${escapeHtml(c.content)}</p>
                             <div style="margin-top: 8px; position: relative; display: inline-block;" class="mc-reaction-wrapper" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
-                                <button type="button" aria-label="Thả tim" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 16px; color: #666; transition: transform 0.2s;" data-action="toggle-like""><span class="mc-reaction-icon" style="filter: grayscale(100%);">❤️</span> <span class="mc-like-count">${Array.isArray(c.likes) ? c.likes.length : (c.likes || 0)}</span></button>
+                                <button type="button" aria-label="Thả tim" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 16px; color: #666; transition: transform 0.2s;" data-action="toggle-like" data-post-index="${index}" data-comment-index="${commentIndex}"><span class="mc-reaction-icon" style="filter: grayscale(100%);">❤️</span> <span class="mc-like-count">${getReactionCount(c.likes)}</span></button>
                                 <div class="mc-reaction-popup" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 5px 10px; gap: 10px; z-index: 10;">
                                     <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="👍">👍</span>
                                     <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="❤️">❤️</span>
@@ -108,7 +148,7 @@ export function renderStudentHome() {
         return `
             <article class="mc-feed-card" data-post-id="${escapeHtml(post.id || `post-${index}`)}">
                 <div class="mc-feed-content">
-                    ${renderAvatar(post.author, post.author_avatar || getUserProfile(post.author)?.avatarUrl || getAuthorAvatar(post.author), index)}
+                    ${renderAvatar(post.author, post.author_avatar || getUserProfile(post.author)?.avatarUrl || getAuthorAvatar(post), index)}
                     <div class="mc-feed-main">
                         <div class="mc-feed-meta">
                             <h3>${escapeHtml(post.author)}</h3>
@@ -122,7 +162,7 @@ export function renderStudentHome() {
 
                         <div class="mc-feed-actions">
                             <div class="mc-reaction-wrapper" style="position: relative; display: inline-block;" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
-                                <button type="button" aria-label="Thả tim" style="transition: transform 0.2s;" data-action="toggle-like"><span class="mc-reaction-icon" style="filter: grayscale(100%);">❤️</span> <span class="mc-like-count">${Array.isArray(post.likes) ? post.likes.length : (post.likes || 0)}</span></button>
+                                <button type="button" aria-label="Thả tim" style="transition: transform 0.2s;" data-action="toggle-like" data-post-index="${index}"><span class="mc-reaction-icon" style="filter: grayscale(100%);">❤️</span> <span class="mc-like-count">${getReactionCount(post.likes)}</span></button>
                                 <div class="mc-reaction-popup" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 5px 10px; gap: 10px; z-index: 10;">
                                     <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="👍">👍</span>
                                     <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="❤️">❤️</span>
@@ -172,6 +212,36 @@ export function renderStudentHome() {
     `;
 }
 
+window.submitComment = function submitComment(postIndex, rawContent) {
+    const content = String(rawContent || '').trim();
+    const feed = getUserFeed();
+    const post = feed[postIndex];
+    if (!content || !post) return;
+
+    const profile = getStudentProfile();
+    if (!Array.isArray(post.commentObjects)) {
+        post.commentObjects = [];
+    }
+
+    post.commentObjects.push({
+        id: `comment-${Date.now()}`,
+        author: profile.displayName || profile.name,
+        author_avatar: profile.avatarUrl,
+        owner_email: profile.email,
+        date: new Date().toISOString(),
+        content,
+        likes: 0,
+        isUser: true
+    });
+    post.comments = post.commentObjects.length;
+    savePublicFeed();
+    trackInteraction('comment', post.id, {
+        source: 'public-feed',
+        content_length: content.length
+    });
+    renderStudentHome();
+};
+
 document.addEventListener("click", (event) => {
     if (event.target.closest("[data-action='addTag']")) {
         addManualTag("feed-tag-input", "feed-tag-container");
@@ -193,10 +263,12 @@ document.addEventListener("click", (event) => {
             if (icon) icon.style.filter = 'grayscale(0%)';
             btn.style.transform = 'scale(1.2)';
             setTimeout(() => btn.style.transform = 'scale(1)', 200);
+            persistReaction(btn, icon?.textContent || '❤️', true);
         } else {
             num.textContent = parseInt(num.textContent) - 1;
             btn.style.color = '';
             if (icon) icon.style.filter = 'grayscale(100%)';
+            persistReaction(btn, icon?.textContent || '❤️', false);
         }
     }
     else if (event.target.closest("[data-action='select-reaction']")) {
@@ -209,6 +281,13 @@ document.addEventListener("click", (event) => {
         if(!btn.classList.contains('mc-liked')) {
             btn.classList.add('mc-liked');
             btn.querySelector('.mc-like-count').textContent = parseInt(btn.querySelector('.mc-like-count').textContent) + 1;
+            persistReaction(btn, reaction, true);
+        } else {
+            trackInteraction('reaction', getReactionTarget(btn)?.targetId || '', {
+                source: 'public-feed',
+                reaction,
+                action: 'change'
+            });
         }
         event.target.parentElement.style.display = 'none';
     }

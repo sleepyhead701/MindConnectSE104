@@ -376,7 +376,7 @@ function renderMetrics() {
     const engagementEl = document.getElementById('metric-engagement');
     const interventionEl = document.getElementById('metric-intervention');
     const pendingBookings = Array.isArray(dashboardState?.bookings)
-        ? dashboardState.bookings.filter(booking => !['completed', 'resolved', 'cancelled'].includes(booking.status)).length
+        ? dashboardState.bookings.filter(booking => !['completed', 'resolved', 'cancelled', 'rescheduled'].includes(booking.status)).length
         : Number(dashboardState?.intervention?.pending_bookings || 0);
 
     if (sentimentEl) {
@@ -614,8 +614,8 @@ async function markBooking(bookingId, status, extra = {}) {
 
 async function activateSupportForLatestAlert() {
     const latestItem = getSupportQueue()
-        .filter(item => !['resolved', 'completed', 'cancelled'].includes(item.status))
-        .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))[0];
+        .filter(item => !['resolved', 'completed', 'cancelled', 'rescheduled'].includes(item.status))
+        .sort(compareSupportQueueItems)[0];
 
     if (!latestItem) {
         alert('Không có yêu cầu hỗ trợ đang chờ.');
