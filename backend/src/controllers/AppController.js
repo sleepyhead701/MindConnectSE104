@@ -778,80 +778,6 @@ const compressUploadedImage = async (req, res, next) => {
   }
 };
 
-const getDashboard = async (req, res, next) => {
-  try {
-    const since = parseDateFilter(req.query.range);
-    const dateMatch = since ? { created_at: { $gte: since } } : {};
-
-    let diaries;
-    let alerts;
-    let bookings;
-
-    if (isDbConnected()) {
-      [diaries, alerts, bookings] = await Promise.all([
-        Diary.find(dateMatch).sort({ created_at: -1 }).limit(200),
-        RiskAlert.find(dateMatch).sort({ created_at: -1 }).limit(100),
-        Booking.find(dateMatch).sort({ created_at: -1 }).limit(100)
-      ]);
-    } else {
-      const inRange = item => !since || new Date(item.created_at) >= since;
-      diaries = memoryStore.diaries.filter(inRange);
-      alerts = memoryStore.riskAlerts.filter(inRange);
-      bookings = memoryStore.bookings.filter(inRange);
-    }
-
-    const tagCounts = diaries.reduce((acc, diary) => {
-      (diary.tags || []).forEach(tag => {
-        acc[tag] = (acc[tag] || 0) + 1;
-      });
-      return acc;
-    }, {});
-
-    const topTopics = Object.entries(tagCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([tag, count]) => ({ tag, count }));
-
-    const openAlerts = alerts.filter(alert => alert.status !== 'resolved');
-    const highRiskCount = openAlerts.filter(alert => ['high', 'critical'].includes(alert.severity)).length;
-    const completedBookingsCount = bookings.filter(b => ['completed', 'resolved'].includes(b.status)).length;
-
-    let sentiment = 8.2;
-    if (diaries.length) {
-      const scored = diaries.filter(d => d.mood_score);
-      if (scored.length) {
-        sentiment = (scored.reduce((sum, d) => sum + d.mood_score, 0) / scored.length) * 2;
-        sentiment = Math.round(sentiment * 10) / 10;
-      }
-    }
-
-    let intervention_reduction = 0;
-    if (alerts.length > 0 && completedBookingsCount > 0) {
-      intervention_reduction = -Math.round((completedBookingsCount / alerts.length) * 100);
-      intervention_reduction = Math.max(intervention_reduction, -100);
-    } else if (bookings.length > 0) {
-      intervention_reduction = -15;
-    }
-
-    res.json({
-      success: true,
-      data: {
-        metrics: {
-          sentiment: sentiment,
-          high_risk_rate: diaries.length ? Math.round((highRiskCount / Math.max(diaries.length, 1)) * 1000) / 10 : 0,
-          engagement: diaries.length + bookings.length + alerts.length,
-          intervention_reduction: intervention_reduction
-        },
-        alerts: openAlerts.map(normalizeDocument),
-        bookings: bookings.map(normalizeDocument),
-        top_topics: topTopics
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 const getDashboardV2 = async (req, res, next) => {
   try {
     const since = parseDateFilter(req.query.range);
@@ -922,7 +848,7 @@ const getDashboardV2 = async (req, res, next) => {
       ...diaries.map(diary => ({ value: diary.mood_score, weight: 1 }))
     ].filter(item => item.value);
 
-    let sentiment = 7.2;
+    let sentiment = null;
     if (scoredMoodInputs.length) {
       const weightedTotal = scoredMoodInputs.reduce((sum, item) => sum + Number(item.value) * item.weight, 0);
       const totalWeight = scoredMoodInputs.reduce((sum, item) => sum + item.weight, 0);
@@ -937,7 +863,7 @@ const getDashboardV2 = async (req, res, next) => {
     const avgAfter = afterScores.length ? afterScores.reduce((sum, value) => sum + value, 0) / afterScores.length : null;
     const stressReduction = avgBefore && avgAfter
       ? clamp(Math.round(((avgAfter - avgBefore) / Math.max(5 - avgBefore, 1)) * 100), -100, 100)
-      : (completedBookings.length ? 28 : 0);
+      : 0;
 
     const activeRiskStudents = new Set([
       ...openAlerts.map(alert => alert.student_id_hash || hashStudentId(alert.user_id || alert.student_alias)),

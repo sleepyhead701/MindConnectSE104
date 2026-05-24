@@ -33,7 +33,7 @@ app.use((req, res, next) => {
   }
 
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Student-Client-Id');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Student-Client-Id, X-Demo-Role, X-Demo-Email');
 
   if (req.method === 'OPTIONS') {
     return res.sendStatus(204);

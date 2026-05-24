@@ -21,7 +21,14 @@ function getAuthSession() {
 
 function getAuthHeaders() {
     const session = getAuthSession();
-    return session?.token ? { Authorization: `Bearer ${session.token}` } : {};
+    const headers = session?.token ? { Authorization: `Bearer ${session.token}` } : {};
+
+    if (session?.token === 'mock-token') {
+        headers['X-Demo-Role'] = localStorage.getItem('mindconnect:role') || session?.user?.role || 'school';
+        headers['X-Demo-Email'] = session?.user?.email || 'school-demo@mindconnect.local';
+    }
+
+    return headers;
 }
 
 function logout() {
@@ -380,7 +387,10 @@ function renderMetrics() {
         : Number(dashboardState?.intervention?.pending_bookings || 0);
 
     if (sentimentEl) {
-        sentimentEl.innerText = `${metrics.sentiment}/10`;
+        const sentimentValue = Number(metrics.sentiment);
+        sentimentEl.innerText = Number.isFinite(sentimentValue) && sentimentValue > 0
+            ? `${sentimentValue}/10`
+            : 'Chưa có dữ liệu';
         renderMetricSubtext(sentimentEl, 'Từ diary, report và feedback');
     }
     if (supportRequestsEl) {
@@ -403,7 +413,7 @@ function renderTopTopics() {
     if (!listEl) return;
     const chart = listEl.closest('.card-body')?.querySelector('.topic-chart');
     if (!topics.length) {
-        listEl.innerHTML = '<li><span class="topic-name">Chưa có chủ đề nổi bật từ diary/feedback thật.</span></li>';
+        listEl.innerHTML = '<li><span class="topic-name">Chưa có chủ đề nổi bật từ diary, feedback hoặc bài đăng thật.</span></li>';
         if (chart) chart.innerHTML = '';
         return;
     }
