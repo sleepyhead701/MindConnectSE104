@@ -506,6 +506,7 @@ body {
 .mobile-menu-content .nav-icon {
     opacity: 1;
     color: var(--mc-ink-soft);
+    text-decoration: none !important;
     border-radius: 999px;
     font-size: 14px !important;
     font-weight: 600;
@@ -569,6 +570,42 @@ body {
     box-shadow: var(--mc-shadow-card) !important;
 }
 
+.mc-header-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mc-post-delete-btn {
+    border: 1px solid rgba(212, 46, 112, 0.18);
+    background: rgba(212, 46, 112, 0.06);
+    color: var(--mc-primary);
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.mc-post-delete-btn:hover {
+    background: var(--mc-primary);
+    color: white;
+}
+
+.mc-reply-tools {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mc-comment-delete-btn {
+    padding: 3px 8px;
+    font-size: 11px;
+}
+
 .mobile-menu-overlay {
     top: 64px;
 }
@@ -601,5 +638,10 @@ body {
 
     .notion-layout {
         padding-top: 26px;
+    }
+
+    .mc-header-actions {
+        width: 100%;
+        justify-content: flex-start;
     }
 }

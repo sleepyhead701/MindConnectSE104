@@ -1,24 +1,22 @@
-import { getStudentProfile, saveStudentProfile, getStudentSession } from '../studentState.js';
 import { escapeHtml } from '../utils/utils.js';
 import { updateNav } from '../utils/updateNav.js';
 import { animateMainContentSwap } from '../animations.js';
 import { showNotification } from '../utils/utils.js';
 import {
-    defaultChatHistory,
     getChatHistory,
     addChatMessage,
-    clearChatHistory,
-    setChatHistory,
-    saveChatHistory
+    clearAllChatHistory,
+    archiveCurrentChatSession,
+    getArchivedChatSessions
 } from '../studentState.js';
 import { callChatBotAPI } from '../API/callChatBotAPI.js';
 import { blockIfBackendNotReady } from '../API/blockIfBackendNotReady.js'
 import { trackInteraction } from "../API/analytics.js";
 import { createRiskAlert } from '../RiskAlert.js';
 import { getBackendReadyState } from '../../state.js';
-import { getChatHistoryRemoteLoaded, setChatHistoryRemoteLoaded } from '../studentState.js';
 import { apiRequest } from '../utils/utils.js';
 
+let selectedChatSessionId = 'current';
 
 function buildChatConnectionErrorReply(error) {
     const message = String(error?.message || '')
@@ -38,19 +36,72 @@ function buildChatConnectionErrorReply(error) {
     ].join('\n');
 }
 
-export function renderChat(options = {}) {
-    const container = document.getElementById('student-main-content');
-    updateNav(4);
-    animateMainContentSwap();
-    const shouldSyncHistory = options.syncHistory !== false;
+function formatSessionTime(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Không rõ thời gian';
+    return date.toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
 
-    const suggestions = [
-        'Mình đang căng thẳng vì deadline',
-        'Gợi ý bài tập thở 5 phút',
-        'Mình cần nói chuyện với ai đó'
-    ];
+function renderArchivedChatSessions(activeSessionId = selectedChatSessionId) {
+    const sessions = getArchivedChatSessions();
+    if (!sessions.length) {
+        return `
+            <div class="mc-chat-history-empty">
+                Chưa có phiên chat cũ. Khi bạn vào web lần sau, phiên hiện tại sẽ tự lưu vào đây.
+            </div>
+        `;
+    }
 
-    const messagesHtml = getChatHistory().map(msg => `
+    return sessions.map(session => {
+        const messageCount = Number(session.message_count || session.messages?.length || 0);
+        const isActive = activeSessionId === session.id;
+
+        return `
+            <button class="mc-chat-session ${isActive ? 'active' : ''}" type="button" data-action="select-session" data-session-id="${escapeHtml(session.id)}">
+                <span>
+                    <strong>${escapeHtml(session.title || 'Phiên chat')}</strong>
+                    <small>${escapeHtml(formatSessionTime(session.ended_at || session.started_at))} · ${messageCount} tin</small>
+                </span>
+                <span class="mc-chat-session-source">${escapeHtml(session.source === 'backend' ? 'Backend' : 'Local')}</span>
+            </button>
+        `;
+    }).join('');
+}
+
+function findArchivedChatSession(sessionId) {
+    return getArchivedChatSessions().find(session => session.id === sessionId) || null;
+}
+
+function getVisibleChatSession(currentMessages) {
+    if (selectedChatSessionId !== 'current') {
+        const archivedSession = findArchivedChatSession(selectedChatSessionId);
+        if (archivedSession) {
+            return {
+                id: archivedSession.id,
+                title: archivedSession.title || 'Phiên chat cũ',
+                messages: archivedSession.messages || [],
+                isCurrent: false
+            };
+        }
+        selectedChatSessionId = 'current';
+    }
+
+    return {
+        id: 'current',
+        title: 'Đoạn chat mới',
+        messages: currentMessages,
+        isCurrent: true
+    };
+}
+
+function renderChatMessages(messages = []) {
+    return messages.map(msg => `
         <div class="mc-message-row ${msg.sender === 'user' ? 'user' : 'ai'}">
             ${msg.sender === 'ai' ? '<div class="mc-ai-avatar">AI</div>' : ''}
             <div class="mc-message-bubble ${msg.sender === 'user' ? 'user' : 'ai'}">
@@ -58,6 +109,24 @@ export function renderChat(options = {}) {
             </div>
         </div>
     `).join('');
+}
+
+export function renderChat(options = {}) {
+    const container = document.getElementById('student-main-content');
+    updateNav(4);
+    animateMainContentSwap();
+
+    const suggestions = [
+        'Mình đang căng thẳng vì deadline',
+        'Gợi ý bài tập thở 5 phút',
+        'Mình cần nói chuyện với ai đó'
+    ];
+
+    const currentMessages = getChatHistory();
+    const visibleSession = getVisibleChatSession(currentMessages);
+    const messagesHtml = renderChatMessages(visibleSession.messages);
+    const archivedCount = getArchivedChatSessions().length;
+    const currentMessageCount = Math.max(currentMessages.length - 1, 0);
 
     container.innerHTML = `
         <section class="mc-page mc-chat-page">
@@ -68,11 +137,13 @@ export function renderChat(options = {}) {
             </div>
 
             <div class="mc-chat-panel">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
-                    <div style="font-weight:700; color:var(--deep-rose);">Lịch sử chat của tôi</div>
-                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                        <span style="font-size:12px; color:#777;">${Math.max(getChatHistory().length - 1, 0)} tin đã lưu</span>
-                        <button class="mc-btn mc-btn-outline" type="button" data-action="refresh">Tải lịch sử</button>
+                <div class="mc-chat-toolbar">
+                    <div>
+                        <strong>${escapeHtml(visibleSession.title)}</strong>
+                        <span>${visibleSession.isCurrent ? `${currentMessageCount} tin trong phiên mới` : `${Number(visibleSession.messages.length || 0)} tin trong phiên cũ`}</span>
+                    </div>
+                    <div>
+                        ${visibleSession.isCurrent ? '<button class="mc-btn mc-btn-outline" type="button" data-action="archive">Lưu phiên này</button>' : '<button class="mc-btn mc-btn-outline" type="button" data-action="select-session" data-session-id="current">Đoạn chat mới</button>'}
                         <button class="mc-btn mc-btn-danger" type="button" data-action="delete">Xóa lịch sử</button>
                     </div>
                 </div>
@@ -80,17 +151,37 @@ export function renderChat(options = {}) {
                     ${messagesHtml}
                 </div>
 
-                <div class="mc-chat-suggestions">
-                    ${suggestions.map(s => `
-                        <button type="button" data-action="suggest" data-suggestion="${escapeHtml(s)}">
-                            ${escapeHtml(s)}
-                        </button>
-                    `).join('')}
-                </div>
+                ${visibleSession.isCurrent ? `
+                    <div class="mc-chat-suggestions">
+                        ${suggestions.map(s => `
+                            <button type="button" data-action="suggest" data-suggestion="${escapeHtml(s)}">
+                                ${escapeHtml(s)}
+                            </button>
+                        `).join('')}
+                    </div>
 
-                <div class="mc-chat-input-row">
-                    <input type="text" id="chat-input" placeholder="Nhập tin nhắn...">
-                    <button class="mc-send-btn" type="button" aria-label="Gửi tin nhắn" data-action="send">→</button>
+                    <div class="mc-chat-input-row">
+                        <input type="text" id="chat-input" placeholder="Nhập tin nhắn...">
+                        <button class="mc-send-btn" type="button" aria-label="Gửi tin nhắn" data-action="send">→</button>
+                    </div>
+                ` : `
+                    <div class="mc-chat-readonly-note">
+                        Phiên chat cũ đang ở chế độ xem lại.
+                    </div>
+                `}
+
+                <div class="mc-chat-history-panel">
+                    <div class="mc-chat-history-heading">
+                        <strong>Lịch sử chat cũ</strong>
+                        <span>${archivedCount} phiên đã lưu</span>
+                    </div>
+                    <button class="mc-chat-new-session ${visibleSession.isCurrent ? 'active' : ''}" type="button" data-action="select-session" data-session-id="current">
+                        <span>
+                            <strong>Đoạn chat mới</strong>
+                            <small>${currentMessageCount} tin hiện tại</small>
+                        </span>
+                    </button>
+                    ${renderArchivedChatSessions()}
                 </div>
             </div>
         </section>
@@ -104,25 +195,27 @@ export function renderChat(options = {}) {
     // Add the listener only once to avoid duplicate handlers when re-rendering
     if (!container.__mcListenerAdded) {
         container.addEventListener('click', function onContainerClick(e) {
-            // no-op
-        });
-        // replace with the real handler reference so we can avoid adding again
-        container.removeEventListener('click', function onContainerClick(e) {});
-        container.addEventListener('click', function onContainerClick(e) {
         const btn = e.target.closest && e.target.closest('[data-action]');
         if (!btn) return;
         const action = btn.getAttribute('data-action');
-        if (action === 'refresh') {
-            refreshChatHistoryFromBackend();
+        if (action === 'select-session') {
+            selectedChatSessionId = btn.getAttribute('data-session-id') || 'current';
+            renderChat({ syncHistory: false });
+        } else if (action === 'archive') {
+            const archived = archiveCurrentChatSession({ reset: true });
+            selectedChatSessionId = 'current';
+            showNotification(archived ? 'Đã lưu phiên chat hiện tại vào lịch sử.' : 'Phiên hiện tại chưa có tin nhắn mới để lưu.');
+            renderChat({ syncHistory: false });
         } else if (action === 'delete') {
-            if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử chat?')) return;
-            clearChatHistory();
+            if (!confirm('Bạn có chắc muốn xóa toàn bộ lịch sử chat và phiên hiện tại?')) return;
+            clearAllChatHistory();
+            selectedChatSessionId = 'current';
             try {
                 if (getBackendReadyState()) {
                     apiRequest('/chat/clear', { method: 'POST' }).catch(() => {});
                 }
             } catch (e) {}
-            showNotification('Đã xóa lịch sử chat.');
+            showNotification('Đã xóa toàn bộ lịch sử chat và bắt đầu phiên mới.');
             renderChat({ syncHistory: false });
         } else if (action === 'suggest') {
             setChatSuggestion(btn.getAttribute('data-suggestion'));
@@ -139,59 +232,19 @@ export function renderChat(options = {}) {
         chatInput.addEventListener('keypress', function (e) { if (e.key === 'Enter') sendMsg(); });
     }
 
-    if (shouldSyncHistory && !getChatHistoryRemoteLoaded()) {
-        setChatHistoryRemoteLoaded(true);
-        refreshChatHistoryFromBackend({ silent: true });
-    }
-}
-
-async function refreshChatHistoryFromBackend(options = {}) {
-    if (!getBackendReadyState()) return;
-    try {
-        const remoteHistory = await apiRequest('/chat/history');
-        if (Array.isArray(remoteHistory) && remoteHistory.length) {
-            const rebuiltHistory = defaultChatHistory.map(message => ({
-                ...message,
-                created_at: message.created_at || new Date().toISOString()
-            }));
-
-            remoteHistory.forEach(item => {
-                if (item.user_message) {
-                    rebuiltHistory.push({
-                        sender: 'user',
-                        text: item.user_message,
-                        created_at: item.created_at
-                    });
-                }
-                if (item.ai_reply) {
-                    rebuiltHistory.push({
-                        sender: 'ai',
-                        text: item.ai_reply,
-                        created_at: item.created_at
-                    });
-                }
-            });
-
-            clearChatHistory();
-            setChatHistory(rebuiltHistory);
-            saveChatHistory();
-            renderChat({ syncHistory: false });
-        } else if (!options.silent) {
-            showNotification('Chưa có lịch sử chat từ backend. Mình vẫn giữ lịch sử local trên máy bạn.');
-        }
-    } catch (error) {
-        if (!options.silent) {
-            showNotification('Chưa tải được lịch sử chat từ backend, đang dùng lịch sử local.');
-        }
-    }
 }
 
 function handleEnter(e) { if (e.key === 'Enter') sendMsg(); }
 
 async function sendMsg() {
     if (blockIfBackendNotReady()) return;
+    if (selectedChatSessionId !== 'current') {
+        selectedChatSessionId = 'current';
+        renderChat({ syncHistory: false });
+    }
 
     const input = document.getElementById('chat-input');
+    if (!input) return;
     const txt = input.value.trim();
     if(!txt) return;
 

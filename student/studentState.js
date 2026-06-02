@@ -14,6 +14,9 @@ const CUSTOM_RESOURCES_KEY = 'mindconnect:custom-resources';
 const PRIVATE_DIARY_KEY = 'mindconnect:private-diary';
 const STUDENT_PROFILE_KEY = 'mindconnect:student-profile';
 const STUDENT_BOOKINGS_KEY = 'mindconnect:student-bookings';
+const ACTIVE_CHAT_KEY = 'mindconnect:chat-history';
+const ARCHIVED_CHAT_SESSIONS_KEY = 'mindconnect:chat-sessions';
+const MAX_ARCHIVED_CHAT_SESSIONS = 30;
 
 let currentMoodScore = 4;
 let chatHistory = defaultChatHistory.map(message => ({ ...message }));
@@ -82,20 +85,120 @@ export function addChatMessage(sender, text) {
     saveChatHistory();
 }
 
+function getDefaultChatHistory() {
+    return defaultChatHistory.map(message => ({
+        ...message,
+        created_at: message.created_at || new Date().toISOString()
+    }));
+}
+
+function normalizeChatMessage(message = {}) {
+    return {
+        sender: message.sender === 'user' ? 'user' : 'ai',
+        text: String(message.text || ''),
+        created_at: message.created_at || new Date().toISOString()
+    };
+}
+
+function hasMeaningfulChatMessages(messages = []) {
+    return Array.isArray(messages) && messages.some(message => message?.sender === 'user' && String(message.text || '').trim());
+}
+
+function buildArchivedChatSession(messages = [], source = 'local') {
+    const normalizedMessages = messages.map(normalizeChatMessage).filter(message => message.text.trim());
+    if (!hasMeaningfulChatMessages(normalizedMessages)) return null;
+
+    const firstUserMessage = normalizedMessages.find(message => message.sender === 'user');
+    const startedAt = normalizedMessages[0]?.created_at || new Date().toISOString();
+    const endedAt = normalizedMessages[normalizedMessages.length - 1]?.created_at || startedAt;
+    const title = String(firstUserMessage?.text || 'Phiên chat')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 80);
+
+    return {
+        id: `chat-session-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,
+        title: title || 'Phiên chat',
+        source,
+        started_at: startedAt,
+        ended_at: endedAt,
+        message_count: normalizedMessages.length,
+        messages: normalizedMessages
+    };
+}
+
+function getChatSessionSignature(session = {}) {
+    return [
+        session.source || '',
+        session.started_at || '',
+        session.ended_at || '',
+        session.title || '',
+        session.message_count || 0
+    ].join('|');
+}
+
 export function setChatHistory(messages) {
     chatHistory = Array.isArray(messages)
-        ? messages.map(message => ({
-            sender: message.sender === 'user' ? 'user' : 'ai',
-            text: String(message.text || ''),
-            created_at: message.created_at || new Date().toISOString()
-        }))
-        : defaultChatHistory.map(message => ({ ...message }));
+        ? messages.map(normalizeChatMessage)
+        : getDefaultChatHistory();
     chatHistoryLocalLoaded = true;
     saveChatHistory();
 }
 
 export function saveChatHistory() {
-    saveJson(getStudentStorageKey('mindconnect:chat-history'), chatHistory);
+    saveJson(getStudentStorageKey(ACTIVE_CHAT_KEY), chatHistory);
+}
+
+function saveArchivedChatSessions(sessions = []) {
+    saveJson(getStudentStorageKey(ARCHIVED_CHAT_SESSIONS_KEY), sessions.slice(0, MAX_ARCHIVED_CHAT_SESSIONS));
+}
+
+export function getArchivedChatSessions() {
+    const sessions = loadJson(getStudentStorageKey(ARCHIVED_CHAT_SESSIONS_KEY), []);
+    return Array.isArray(sessions)
+        ? sessions
+            .filter(session => Array.isArray(session.messages) && session.messages.length)
+            .map(session => ({
+                ...session,
+                messages: session.messages.map(normalizeChatMessage)
+            }))
+        : [];
+}
+
+export function archiveChatSession(messages, options = {}) {
+    const session = buildArchivedChatSession(messages, options.source || 'local');
+    if (!session) return null;
+
+    const signature = getChatSessionSignature(session);
+    const existingSessions = getArchivedChatSessions()
+        .filter(item => getChatSessionSignature(item) !== signature);
+    const nextSessions = [session, ...existingSessions].slice(0, MAX_ARCHIVED_CHAT_SESSIONS);
+    saveArchivedChatSessions(nextSessions);
+    return session;
+}
+
+export function resetCurrentChatSession() {
+    chatHistory = getDefaultChatHistory();
+    chatHistoryLocalLoaded = true;
+    saveChatHistory();
+}
+
+export function archiveCurrentChatSession(options = {}) {
+    const session = archiveChatSession(getChatHistory(), { source: options.source || 'local' });
+    if (options.reset !== false) {
+        resetCurrentChatSession();
+    }
+    return session;
+}
+
+export function resetChatForNewWebVisit() {
+    getChatHistory();
+    archiveCurrentChatSession({ source: 'previous-session', reset: true });
+}
+
+export function clearAllChatHistory() {
+    resetCurrentChatSession();
+    saveArchivedChatSessions([]);
 }
 
 function loadPrivateDiaryEntries() {
@@ -230,9 +333,11 @@ export function syncAuthProfileName(displayName) {
 
 export function getChatHistory() {
     if (!chatHistoryLocalLoaded) {
-        const remoteHistory = loadJson(getStudentStorageKey('mindconnect:chat-history'), null);
+        const remoteHistory = loadJson(getStudentStorageKey(ACTIVE_CHAT_KEY), null);
         if (Array.isArray(remoteHistory) && remoteHistory.length) {
-            chatHistory = remoteHistory;
+            chatHistory = remoteHistory.map(normalizeChatMessage);
+        } else {
+            chatHistory = getDefaultChatHistory();
         }
         chatHistoryLocalLoaded = true;
     }
@@ -240,9 +345,9 @@ export function getChatHistory() {
 }
 
 export function clearChatHistory() {
-    chatHistory = [];
+    chatHistory = getDefaultChatHistory();
     chatHistoryLocalLoaded = true;
-    saveJson(getStudentStorageKey('mindconnect:chat-history'), chatHistory);
+    saveChatHistory();
 }
 
 export function getChatHistoryRemoteLoaded() {

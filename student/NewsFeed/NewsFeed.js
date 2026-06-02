@@ -1,11 +1,12 @@
 import { updateNav } from '../utils/updateNav.js';
 import { animateMainContentSwap } from '../animations.js';
 import { getUserFeed, getAuthorAvatar, addUserFeed, savePublicFeed } from '../../state.js';
-import { getStudentProfile, getUserProfile } from '../studentState.js';
+import { getCurrentProfileNames, getStudentProfile, getUserProfile, isOwnedFeedPost } from '../studentState.js';
 import { escapeHtml, formatFeedTime, getInitials, renderAvatar } from '../utils/utils.js';
 import { addManualTag, getManualTags } from '../utils/tags.js';
 import { trackInteraction } from '../API/analytics.js';
 import { renderStudentDiary } from '../Diary/Diary.js';
+import { openBookingModal } from '../Booking/Booking.js';
 
 function getReactionCount(likes) {
     if (Array.isArray(likes)) {
@@ -104,6 +105,73 @@ function publishFeedPost() {
     renderStudentHome();
 }
 
+function deleteFeedPost(postIndex) {
+    const feed = getUserFeed();
+    const post = feed[postIndex];
+    if (!post) return;
+
+    if (!isOwnedFeedPost(post)) {
+        alert('Bạn chỉ có thể xóa bài đăng của chính mình.');
+        return;
+    }
+
+    if (!confirm('Bạn có chắc muốn xóa bài đăng này không?')) {
+        return;
+    }
+
+    const [removedPost] = feed.splice(postIndex, 1);
+    savePublicFeed();
+    trackInteraction('post', removedPost?.id || `post-${postIndex}`, {
+        source: 'public-feed',
+        action: 'delete',
+        tag_count: Array.isArray(removedPost?.tags) ? removedPost.tags.length : 0,
+        comment_count: Array.isArray(removedPost?.commentObjects) ? removedPost.commentObjects.length : Number(removedPost?.comments || 0)
+    });
+    renderStudentHome();
+}
+
+function isOwnedFeedComment(comment) {
+    const profile = getStudentProfile();
+    if (comment?.owner_email && profile.email) {
+        return String(comment.owner_email).toLowerCase() === String(profile.email).toLowerCase();
+    }
+
+    const names = getCurrentProfileNames(profile);
+    return Boolean(comment?.isUser && names.has(comment.author));
+}
+
+function deleteFeedComment(postIndex, commentIndex) {
+    const feed = getUserFeed();
+    const post = feed[postIndex];
+    const comments = Array.isArray(post?.commentObjects) ? post.commentObjects : [];
+    const comment = comments[commentIndex];
+    if (!post || !comment) return;
+
+    if (!isOwnedFeedComment(comment)) {
+        alert('Bạn chỉ có thể xóa bình luận của chính mình.');
+        return;
+    }
+
+    if (!confirm('Bạn có chắc muốn xóa bình luận này không?')) {
+        return;
+    }
+
+    const [removedComment] = comments.splice(commentIndex, 1);
+    post.comments = comments.length;
+    savePublicFeed();
+    trackInteraction('comment', removedComment?.id || `${post.id || `post-${postIndex}`}-comment-${commentIndex}`, {
+        source: 'public-feed',
+        action: 'delete',
+        post_id: post.id || ''
+    });
+    renderStudentHome();
+}
+
+function renderCommentDeleteButton(postIndex, commentIndex, comment) {
+    if (!isOwnedFeedComment(comment)) return '';
+    return `<button type="button" class="mc-post-delete-btn mc-comment-delete-btn" data-action="delete-comment" data-post-index="${postIndex}" data-comment-index="${commentIndex}" aria-label="Xóa bình luận">Xóa</button>`;
+}
+
 export function renderStudentHome() {
     const container = document.getElementById('student-main-content');
     updateNav(0);
@@ -115,6 +183,7 @@ export function renderStudentHome() {
         const comments = Array.isArray(post.commentObjects) ? post.commentObjects : [];
         const commentCount = comments.length || post.comments || 0;
         const postBody = escapeHtml(post.content);
+        const canDeletePost = isOwnedFeedPost(post);
 
         const commentsHtml = comments.length > 0
             ? `
@@ -125,7 +194,10 @@ export function renderStudentHome() {
                             <div class="mc-reply-content-box">
                                 <div class="mc-reply-meta">
                                     <strong>${escapeHtml(c.author)}</strong>
-                                <span>${formatFeedTime(c.date)}</span>
+                                    <div class="mc-reply-tools">
+                                        <span>${formatFeedTime(c.date)}</span>
+                                        ${renderCommentDeleteButton(index, commentIndex, c)}
+                                    </div>
                             </div>
                             <p>${escapeHtml(c.content)}</p>
                             <div style="margin-top: 8px; position: relative; display: inline-block;" class="mc-reaction-wrapper" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
@@ -151,8 +223,11 @@ export function renderStudentHome() {
                     ${renderAvatar(post.author, post.author_avatar || getUserProfile(post.author)?.avatarUrl || getAuthorAvatar(post), index)}
                     <div class="mc-feed-main">
                         <div class="mc-feed-meta">
-                            <h3>${escapeHtml(post.author)}</h3>
-                            <span>${formatFeedTime(postDate)}</span>
+                            <div>
+                                <h3>${escapeHtml(post.author)}</h3>
+                                <span>${formatFeedTime(postDate)}</span>
+                            </div>
+                            ${canDeletePost ? `<button type="button" class="mc-post-delete-btn" data-action="delete-post" data-post-index="${index}" aria-label="Xóa bài đăng">Xóa</button>` : ''}
                         </div>
                         <p class="mc-feed-text">${postBody}</p>
 
@@ -193,7 +268,10 @@ export function renderStudentHome() {
                     <h1>News feed</h1>
                     <p>Chia sẻ ẩn danh, lắng nghe nhau.</p>
                 </div>
-                <button class="mc-btn mc-btn-outline" type="button" data-action="diary">+ Viết Nhật ký</button>
+                <div class="mc-header-actions">
+                    <button class="mc-btn mc-btn-primary" type="button" data-action="book-session">Đặt lịch tư vấn</button>
+                    <button class="mc-btn mc-btn-outline" type="button" data-action="diary">+ Viết Nhật ký</button>
+                </div>
             </div>
             <div class="mc-panel" style="margin-bottom: 18px;">
                 <label class="mc-field-label" for="feed-post-content">Đăng bài lên News feed</label>
@@ -223,7 +301,7 @@ window.submitComment = function submitComment(postIndex, rawContent) {
         post.commentObjects = [];
     }
 
-    post.commentObjects.push({
+    const comment = {
         id: `comment-${Date.now()}`,
         author: profile.displayName || profile.name,
         author_avatar: profile.avatarUrl,
@@ -232,11 +310,14 @@ window.submitComment = function submitComment(postIndex, rawContent) {
         content,
         likes: 0,
         isUser: true
-    });
+    };
+
+    post.commentObjects.push(comment);
     post.comments = post.commentObjects.length;
     savePublicFeed();
-    trackInteraction('comment', post.id, {
+    trackInteraction('comment', comment.id, {
         source: 'public-feed',
+        post_id: post.id || '',
         content_length: content.length
     });
     renderStudentHome();
@@ -249,8 +330,19 @@ document.addEventListener("click", (event) => {
     else if (event.target.closest("[data-action='publishPost']")) {
         publishFeedPost();
     }
+    else if (event.target.closest("[data-action='delete-post']")) {
+        const btn = event.target.closest("[data-action='delete-post']");
+        deleteFeedPost(Number(btn?.dataset?.postIndex));
+    }
+    else if (event.target.closest("[data-action='delete-comment']")) {
+        const btn = event.target.closest("[data-action='delete-comment']");
+        deleteFeedComment(Number(btn?.dataset?.postIndex), Number(btn?.dataset?.commentIndex));
+    }
     else if (event.target.closest("[data-action='diary']")) {
         renderStudentDiary();
+    }
+    else if (event.target.closest("[data-action='book-session']")) {
+        openBookingModal();
     }
     else if (event.target.closest("[data-action='toggle-like']")) {
         const btn = event.target.closest('button');

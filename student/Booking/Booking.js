@@ -1,5 +1,6 @@
 import { blockIfBackendNotReady } from '../API/blockIfBackendNotReady.js'
 import { getCurrentMoodScore, setCurrentMoodScore, getStudentBookings, setStudentBookings } from '../studentState.js';
+import { addStudentNotification } from './BookingNotifications.js';
 import { apiRequest } from '../utils/utils.js';
 import { getSupportLocations } from '../../state.js';
 import { escapeHtml } from '../utils/utils.js';
@@ -22,9 +23,9 @@ function renderSupportLocationOptions(selectedLocation = getSupportLocation()) {
 export function getBookingStatusLabel(status) {
     const labels = {
         new: 'Đang chờ',
-        scheduled: 'Đã xếp lịch',
+        scheduled: 'Đã xác nhận',
         rescheduled: 'Đã hẹn lại',
-        completed: 'Hoàn tất',
+        completed: 'Đã hoàn thành',
         cancelled: 'Đã hủy',
         offline: 'Lưu tạm trên máy'
     };
@@ -142,17 +143,18 @@ async function submitStudentFeedback() {
 }
 
 export function openBookingModal() {
+    const existing = document.getElementById('booking-modal');
+    if (existing) existing.remove();
+
     const modal = document.createElement('div');
     modal.id = 'booking-modal';
     modal.className = 'modal-overlay';
     
-    modal.onclick = function(e) { if(e.target === modal) closeBookingModal(); }
-
     modal.innerHTML = `
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
                 <h3 style="color: var(--deep-rose); font-family: var(--font-heading);">Đặt lịch tham vấn</h3>
-                <span id="close-booking-btn" style="font-size: 24px; cursor:pointer; color: #999;">&times;</span>
+                <button type="button" id="close-booking-btn" aria-label="Đóng" style="font-size: 24px; cursor:pointer; color: #999; border:0; background:transparent;">&times;</button>
             </div>
 
             <div class="info-row"><span class="label">📞 Hotline hỗ trợ:</span><a href="tel:19001234" class="val" style="text-decoration:none;">1900.1234</a></div>
@@ -175,11 +177,19 @@ export function openBookingModal() {
             <button class="btn-primary" id="confirm-booking-btn" style="width:100%; padding: 12px;" type="button">Xác nhận đặt lịch</button>
         </div>
     `;
-    document.querySelector('.mobile-frame').appendChild(modal);
+    (document.querySelector('.mobile-frame') || document.body).appendChild(modal);
     
     modal.onclick = function(e) { if(e.target === modal) closeBookingModal(); };
-    document.getElementById('close-booking-btn').addEventListener('click', closeBookingModal);
-    document.getElementById('confirm-booking-btn').addEventListener('click', handleConfirmBooking);
+    modal.querySelector('#close-booking-btn')?.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        closeBookingModal();
+    });
+    modal.querySelector('#confirm-booking-btn')?.addEventListener('click', handleConfirmBooking);
+}
+
+if (typeof window !== 'undefined') {
+    window.openBookingModal = openBookingModal;
 }
 
 function closeBookingModal() {
@@ -196,8 +206,6 @@ function isWithinBusinessHours(dateTimeString) {
 }
 
 export async function handleConfirmBooking() {
-    if (blockIfBackendNotReady()) return;
-
     const requestedTime = document.getElementById('booking-time')?.value || null;
     const note = document.getElementById('booking-note')?.value || '';
     const selectedLocation = getSupportLocation(document.getElementById('booking-location')?.value);
@@ -225,6 +233,15 @@ export async function handleConfirmBooking() {
             before_mood_score: getCurrentMoodScore()
         });
         setStudentBookings([booking, ...getStudentBookings()]);
+        addStudentNotification({
+            id: `booking-created:${booking?.id || requestedTime || Date.now()}`,
+            type: 'booking',
+            title: 'Đã gửi yêu cầu đặt lịch',
+            message: `Yêu cầu đặt lịch của bạn đã được ghi nhận${requestedTime ? ` vào ${formatBookingDateTime(requestedTime)}` : ''} tại ${selectedLocation}.`,
+            booking_id: booking?.id || '',
+            status: booking?.status || 'new'
+        });
+        document.dispatchEvent(new CustomEvent('mindconnect:bookings-updated'));
     } catch (error) {
         const localBooking = {
             id: `local-booking-${Date.now()}`,
@@ -236,6 +253,15 @@ export async function handleConfirmBooking() {
             created_at: new Date().toISOString()
         };
         setStudentBookings([localBooking, ...getStudentBookings()]);
+        addStudentNotification({
+            id: `booking-created:${localBooking.id}`,
+            type: 'booking',
+            title: 'Lịch hẹn đang lưu tạm',
+            message: `Backend chưa lưu được lịch này. App đang giữ lịch tạm vào ${formatBookingDateTime(requestedTime)} tại ${selectedLocation}.`,
+            booking_id: localBooking.id,
+            status: 'offline'
+        });
+        document.dispatchEvent(new CustomEvent('mindconnect:bookings-updated'));
 
         const localBookingAlert = {
             id: `BK-${Date.now()}`,

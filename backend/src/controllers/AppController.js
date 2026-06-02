@@ -155,6 +155,235 @@ const normalizeDocument = (doc) => {
   };
 };
 
+const bookingStatusLabels = {
+  new: 'Đang chờ',
+  scheduled: 'Đã xác nhận',
+  rescheduled: 'Đã hẹn lại',
+  completed: 'Đã hoàn thành',
+  cancelled: 'Đã hủy'
+};
+
+const getBookingStatusLabel = (status) => bookingStatusLabels[status] || status || 'Đang chờ';
+
+const getAdminActorLabel = (req) => (
+  req.user?.email ||
+  req.user?.name ||
+  req.headers['x-demo-email'] ||
+  'Nhà trường'
+);
+
+const makeBookingTimelineEvent = ({
+  action,
+  actor_role = 'system',
+  actor_label = 'MindConnect',
+  status = '',
+  message = '',
+  note = '',
+  requested_time = null,
+  location = '',
+  created_at = new Date()
+}) => ({
+  id: makeMemoryId('booking-event'),
+  action,
+  actor_role,
+  actor_label,
+  status,
+  message,
+  note: String(note || '').slice(0, 1000),
+  requested_time,
+  location,
+  created_at
+});
+
+const makePublicBookingUpdate = ({
+  action,
+  status = '',
+  message = '',
+  requested_time = null,
+  location = '',
+  created_at = new Date()
+}) => ({
+  id: makeMemoryId('booking-update'),
+  action,
+  status,
+  label: getBookingStatusLabel(status),
+  message,
+  requested_time,
+  location,
+  read: false,
+  created_at
+});
+
+const getPublicBookingMessage = ({ status, requested_time, location }) => {
+  if (status === 'scheduled') {
+    return `Lịch hẹn của bạn đã được xác nhận tại ${location || 'địa điểm hỗ trợ'}.`;
+  }
+  if (status === 'rescheduled') {
+    return `Lịch hẹn của bạn đã được hẹn lại. Thời gian/địa điểm mới đã được cập nhật.`;
+  }
+  if (status === 'completed') {
+    return 'Ca hỗ trợ của bạn đã được đánh dấu hoàn thành. Bạn có thể gửi feedback sau buổi hỗ trợ.';
+  }
+  if (status === 'cancelled') {
+    return 'Lịch hẹn của bạn đã được hủy. Bạn có thể đặt lịch mới nếu vẫn cần hỗ trợ.';
+  }
+  return requested_time
+    ? `Yêu cầu đặt lịch của bạn đã được ghi nhận tại ${location || 'địa điểm hỗ trợ'}.`
+    : 'Yêu cầu đặt lịch của bạn đã được ghi nhận.';
+};
+
+const sanitizeStudentBooking = (booking) => {
+  const normalized = normalizeDocument(booking);
+  delete normalized.internal_notes;
+  delete normalized.timeline;
+  normalized.public_updates = Array.isArray(normalized.public_updates)
+    ? normalized.public_updates.map(update => ({
+      id: update.id,
+      action: update.action,
+      status: update.status,
+      label: update.label || getBookingStatusLabel(update.status),
+      message: update.message,
+      requested_time: update.requested_time,
+      location: update.location,
+      read: Boolean(update.read),
+      created_at: update.created_at
+    }))
+    : [];
+  return normalized;
+};
+
+const getBookingIdentity = (booking = {}) => (
+  booking.student_id_hash ||
+  hashStudentId(booking.user_id || booking.student_alias || booking.id)
+);
+
+const terminalBookingStatuses = new Set(['completed', 'resolved', 'cancelled', 'rescheduled']);
+
+const buildInterventionHistory = (bookings = [], feedbacks = []) => {
+  const byStudent = new Map();
+  const ensureStudent = (studentHash) => {
+    const key = studentHash || 'SV-ANON';
+    if (!byStudent.has(key)) {
+      byStudent.set(key, {
+        student_id_hash: key,
+        total_bookings: 0,
+        completed_bookings: 0,
+        latest_status: 'new',
+        latest_at: null,
+        bookings: [],
+        internal_notes: [],
+        events: []
+      });
+    }
+    return byStudent.get(key);
+  };
+
+  bookings.forEach(booking => {
+    const normalized = normalizeDocument(booking);
+    const studentHash = getBookingIdentity(normalized);
+    const row = ensureStudent(studentHash);
+    row.total_bookings += 1;
+    if (['completed', 'resolved'].includes(normalized.status)) row.completed_bookings += 1;
+    const bookingLatestAt = normalized.updated_at || normalized.created_at || row.latest_at;
+    if (bookingLatestAt && (!row.latest_at || new Date(bookingLatestAt) > new Date(row.latest_at))) {
+      row.latest_status = normalized.status || row.latest_status;
+      row.latest_at = bookingLatestAt;
+    }
+
+    const bookingId = String(normalized.id || normalized._id || '');
+    row.bookings.push({
+      id: bookingId,
+      status: normalized.status || 'new',
+      requested_time: normalized.requested_time,
+      location: normalized.location,
+      note: normalized.note,
+      urgency_score: normalized.urgency_score,
+      before_mood_score: normalized.before_mood_score,
+      after_mood_score: normalized.after_mood_score,
+      rescheduled_from: normalized.rescheduled_from || '',
+      rescheduled_at: normalized.rescheduled_at || null,
+      created_at: normalized.created_at,
+      updated_at: normalized.updated_at,
+      latest_at: bookingLatestAt || normalized.created_at
+    });
+
+    row.events.push({
+      id: `${bookingId}-created`,
+      booking_id: bookingId,
+      type: 'booking',
+      action: 'created',
+      actor_role: 'student',
+      actor_label: normalized.student_alias || 'Sinh viên',
+      status: normalized.status || 'new',
+      message: normalized.note || 'Sinh viên gửi yêu cầu đặt lịch.',
+      location: normalized.location,
+      requested_time: normalized.requested_time,
+      created_at: normalized.created_at
+    });
+
+    (Array.isArray(normalized.timeline) ? normalized.timeline : []).forEach(event => {
+      row.events.push({
+        ...event,
+        booking_id: bookingId,
+        type: 'timeline'
+      });
+    });
+
+    (Array.isArray(normalized.internal_notes) ? normalized.internal_notes : []).forEach(note => {
+      row.internal_notes.push({
+        ...note,
+        booking_id: bookingId
+      });
+    });
+  });
+
+  feedbacks.forEach(feedback => {
+    const normalized = normalizeDocument(feedback);
+    const studentHash = normalized.student_id_hash || hashStudentId(normalized.user_id || normalized.id);
+    const row = ensureStudent(studentHash);
+    row.events.push({
+      id: `${normalized.id}-feedback`,
+      type: 'feedback',
+      action: 'feedback',
+      actor_role: 'student',
+      actor_label: 'Sinh viên',
+      status: normalized.sentiment_score >= 65 ? 'positive' : 'attention',
+      message: normalized.report_text || normalized.rating_text || 'Sinh viên gửi feedback.',
+      created_at: normalized.created_at
+    });
+  });
+
+  return Array.from(byStudent.values())
+    .map(row => {
+      const sortedEvents = row.events
+        .filter(event => event.created_at)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 12);
+      const sortedBookings = row.bookings
+        .filter(booking => booking.id)
+        .sort((a, b) => new Date(b.latest_at || b.created_at || 0) - new Date(a.latest_at || a.created_at || 0));
+      const activeBookings = sortedBookings.filter(booking => !terminalBookingStatuses.has(booking.status));
+      const currentBooking = activeBookings[0] || null;
+
+      return {
+        ...row,
+        latest_status: currentBooking?.status || row.latest_status,
+        latest_at: currentBooking?.latest_at || sortedEvents[0]?.created_at || row.latest_at,
+        bookings: sortedBookings,
+        active_bookings: activeBookings,
+        current_booking: currentBooking,
+        events: sortedEvents,
+        internal_notes: row.internal_notes
+          .filter(note => note.note)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 6)
+      };
+    })
+    .filter(row => row.current_booking)
+    .sort((a, b) => new Date(b.latest_at || 0) - new Date(a.latest_at || 0))
+    .slice(0, 20);
+};
+
 const parseDateFilter = (range) => {
   if (range === 'today') {
     const start = new Date();
@@ -419,6 +648,31 @@ const createBooking = async (req, res, next) => {
       before_mood_score: bookingDraft.before_mood_score,
       after_mood_score: toNumber(req.body.after_mood_score),
       status: 'new',
+      internal_notes: [],
+      timeline: [
+        makeBookingTimelineEvent({
+          action: 'created',
+          actor_role: 'student',
+          actor_label: req.body.student_alias || 'Sinh viên',
+          status: 'new',
+          message: 'Sinh viên gửi yêu cầu đặt lịch.',
+          requested_time: bookingDraft.requested_time,
+          location: req.body.location || 'Phòng tham vấn 102 - Khu B'
+        })
+      ],
+      public_updates: [
+        makePublicBookingUpdate({
+          action: 'created',
+          status: 'new',
+          message: getPublicBookingMessage({
+            status: 'new',
+            requested_time: bookingDraft.requested_time,
+            location: req.body.location || 'Phòng tham vấn 102 - Khu B'
+          }),
+          requested_time: bookingDraft.requested_time,
+          location: req.body.location || 'Phòng tham vấn 102 - Khu B'
+        })
+      ],
       created_at: new Date()
     };
 
@@ -548,7 +802,7 @@ const listMyBookings = async (req, res, next) => {
 
     res.json({
       success: true,
-      data: bookings.map(normalizeDocument)
+      data: bookings.map(sanitizeStudentBooking)
     });
   } catch (error) {
     next(error);
@@ -558,9 +812,9 @@ const listMyBookings = async (req, res, next) => {
 const updateBooking = async (req, res, next) => {
   try {
     const updates = {
-      status: req.body.status,
       updated_at: new Date()
     };
+    if (req.body.status !== undefined) updates.status = req.body.status;
     if (req.body.after_mood_score !== undefined) updates.after_mood_score = toNumber(req.body.after_mood_score);
     if (req.body.before_mood_score !== undefined) updates.before_mood_score = toNumber(req.body.before_mood_score);
     if (req.body.location) updates.location = String(req.body.location).slice(0, 200);
@@ -570,36 +824,115 @@ const updateBooking = async (req, res, next) => {
 
     let booking;
     let followUpBooking = null;
+    const internalNoteText = String(req.body.internal_note || '').trim().slice(0, 1000);
+    const actorLabel = getAdminActorLabel(req);
+
     if (isDbConnected()) {
       const existingBooking = mongoose.Types.ObjectId.isValid(req.params.id)
         ? await Booking.findById(req.params.id)
         : null;
+
       if (existingBooking && updates.status === 'rescheduled') {
         updates.rescheduled_at = new Date();
+        const followUpStatus = 'new';
+        const followUpLocation = updates.location || existingBooking.location;
+        const followUpTime = updates.requested_time || existingBooking.requested_time;
         followUpBooking = await Booking.create({
           user_id: existingBooking.user_id || null,
           student_alias: existingBooking.student_alias,
           student_id_hash: existingBooking.student_id_hash,
           class_name: existingBooking.class_name,
           department: existingBooking.department,
-          location: updates.location || existingBooking.location,
-          requested_time: updates.requested_time || existingBooking.requested_time,
+          location: followUpLocation,
+          requested_time: followUpTime,
           note: updates.note || existingBooking.note,
           urgency_score: Math.max(1, Number(existingBooking.urgency_score || 55) - 1),
           before_mood_score: existingBooking.before_mood_score,
           after_mood_score: existingBooking.after_mood_score,
-          status: 'new',
+          status: followUpStatus,
           rescheduled_from: String(existingBooking._id),
           rescheduled_at: new Date(),
+          timeline: [
+            makeBookingTimelineEvent({
+              action: 'created_from_reschedule',
+              actor_role: 'school',
+              actor_label: actorLabel,
+              status: followUpStatus,
+              message: 'Nhà trường tạo lịch hẹn mới sau thao tác hẹn lại.',
+              requested_time: followUpTime,
+              location: followUpLocation
+            })
+          ],
+          public_updates: [
+            makePublicBookingUpdate({
+              action: 'rescheduled_follow_up',
+              status: followUpStatus,
+              message: getPublicBookingMessage({
+                status: 'rescheduled',
+                requested_time: followUpTime,
+                location: followUpLocation
+              }),
+              requested_time: followUpTime,
+              location: followUpLocation
+            })
+          ],
+          internal_notes: internalNoteText
+            ? [{
+              id: makeMemoryId('internal-note'),
+              author: actorLabel,
+              note: internalNoteText,
+              created_at: new Date()
+            }]
+            : [],
           created_at: new Date()
         });
       }
-      booking = existingBooking
-        ? await Booking.findByIdAndUpdate(existingBooking._id, updates, { new: true })
-        : null;
+
+      if (existingBooking) {
+        const nextStatus = updates.status || existingBooking.status;
+        const nextTime = updates.requested_time !== undefined ? updates.requested_time : existingBooking.requested_time;
+        const nextLocation = updates.location || existingBooking.location;
+        const timelineEvent = makeBookingTimelineEvent({
+          action: updates.status ? `status_${updates.status}` : 'updated',
+          actor_role: 'school',
+          actor_label: actorLabel,
+          status: nextStatus,
+          message: req.body.timeline_message || `Nhà trường cập nhật trạng thái: ${getBookingStatusLabel(nextStatus)}.`,
+          note: internalNoteText,
+          requested_time: nextTime,
+          location: nextLocation
+        });
+        const publicUpdate = updates.status || updates.requested_time !== undefined || updates.location
+          ? makePublicBookingUpdate({
+            action: updates.status ? `status_${updates.status}` : 'updated',
+            status: nextStatus,
+            message: getPublicBookingMessage({
+              status: nextStatus,
+              requested_time: nextTime,
+              location: nextLocation
+            }),
+            requested_time: nextTime,
+            location: nextLocation
+          })
+          : null;
+        const updateOperation = { $set: updates, $push: { timeline: timelineEvent } };
+        if (publicUpdate) updateOperation.$push.public_updates = publicUpdate;
+        if (internalNoteText) {
+          updateOperation.$push.internal_notes = {
+            id: makeMemoryId('internal-note'),
+            author: actorLabel,
+            note: internalNoteText,
+            created_at: new Date()
+          };
+        }
+        booking = await Booking.findByIdAndUpdate(existingBooking._id, updateOperation, { new: true });
+      }
     } else {
       booking = memoryStore.bookings.find(item => item.id === req.params.id);
       if (booking) {
+        const nextStatus = updates.status || booking.status;
+        const nextTime = updates.requested_time !== undefined ? updates.requested_time : booking.requested_time;
+        const nextLocation = updates.location || booking.location;
         if (updates.status === 'rescheduled') {
           updates.rescheduled_at = new Date();
           followUpBooking = {
@@ -618,10 +951,76 @@ const updateBooking = async (req, res, next) => {
             status: 'new',
             rescheduled_from: String(booking.id),
             rescheduled_at: new Date(),
+            timeline: [
+              makeBookingTimelineEvent({
+                action: 'created_from_reschedule',
+                actor_role: 'school',
+                actor_label: actorLabel,
+                status: 'new',
+                message: 'Nhà trường tạo lịch hẹn mới sau thao tác hẹn lại.',
+                requested_time: updates.requested_time || booking.requested_time,
+                location: updates.location || booking.location
+              })
+            ],
+            public_updates: [
+              makePublicBookingUpdate({
+                action: 'rescheduled_follow_up',
+                status: 'new',
+                message: getPublicBookingMessage({
+                  status: 'rescheduled',
+                  requested_time: updates.requested_time || booking.requested_time,
+                  location: updates.location || booking.location
+                }),
+                requested_time: updates.requested_time || booking.requested_time,
+                location: updates.location || booking.location
+              })
+            ],
+            internal_notes: internalNoteText
+              ? [{
+                id: makeMemoryId('internal-note'),
+                author: actorLabel,
+                note: internalNoteText,
+                created_at: new Date()
+              }]
+              : [],
             created_at: new Date(),
             updated_at: null
           };
           memoryStore.bookings.push(followUpBooking);
+        }
+        if (!Array.isArray(booking.timeline)) booking.timeline = [];
+        booking.timeline.push(makeBookingTimelineEvent({
+          action: updates.status ? `status_${updates.status}` : 'updated',
+          actor_role: 'school',
+          actor_label: actorLabel,
+          status: nextStatus,
+          message: req.body.timeline_message || `Nhà trường cập nhật trạng thái: ${getBookingStatusLabel(nextStatus)}.`,
+          note: internalNoteText,
+          requested_time: nextTime,
+          location: nextLocation
+        }));
+        if (updates.status || updates.requested_time !== undefined || updates.location) {
+          if (!Array.isArray(booking.public_updates)) booking.public_updates = [];
+          booking.public_updates.push(makePublicBookingUpdate({
+            action: updates.status ? `status_${updates.status}` : 'updated',
+            status: nextStatus,
+            message: getPublicBookingMessage({
+              status: nextStatus,
+              requested_time: nextTime,
+              location: nextLocation
+            }),
+            requested_time: nextTime,
+            location: nextLocation
+          }));
+        }
+        if (internalNoteText) {
+          if (!Array.isArray(booking.internal_notes)) booking.internal_notes = [];
+          booking.internal_notes.push({
+            id: makeMemoryId('internal-note'),
+            author: actorLabel,
+            note: internalNoteText,
+            created_at: new Date()
+          });
         }
         Object.assign(booking, updates);
         persistMemoryStore();
@@ -820,11 +1219,66 @@ const getDashboardV2 = async (req, res, next) => {
     feedbacks.forEach(feedback => {
       inferTagsFromText(`${feedback.report_text || ''} ${feedback.rating_text || ''}`).forEach(registerTag);
     });
-    interactions
-      .filter(item => item.type === 'post' && item.metadata?.source === 'public-feed')
-      .forEach(item => {
-        (Array.isArray(item.metadata?.tags) ? item.metadata.tags : []).forEach(registerTag);
-      });
+    const publicFeedEvents = interactions.filter(item => item.metadata?.source === 'public-feed');
+    const deletedPublicPostIds = new Set(
+      publicFeedEvents
+        .filter(item => item.type === 'post' && item.metadata?.action === 'delete')
+        .map(item => String(item.target_id || ''))
+        .filter(Boolean)
+    );
+    const deletedPublicCommentIds = new Set(
+      publicFeedEvents
+        .filter(item => item.type === 'comment' && item.metadata?.action === 'delete')
+        .map(item => String(item.target_id || ''))
+        .filter(Boolean)
+    );
+    const publicFeedPosts = publicFeedEvents.filter(item => (
+      item.type === 'post' &&
+      item.metadata?.action !== 'delete' &&
+      !deletedPublicPostIds.has(String(item.target_id || ''))
+    ));
+    const isActivePublicFeedInteraction = (item) => {
+      if (item.metadata?.source !== 'public-feed') return false;
+      const postId = String(item.metadata?.post_id || item.target_id || '');
+      const targetId = String(item.target_id || '');
+      if (deletedPublicPostIds.has(postId)) return false;
+      if (item.type === 'comment' && (item.metadata?.action === 'delete' || deletedPublicCommentIds.has(targetId))) return false;
+      if (item.type === 'reaction' && item.metadata?.target_type === 'comment' && deletedPublicCommentIds.has(targetId)) return false;
+      return !deletedPublicPostIds.has(postId);
+    };
+
+    const observedStudentIds = new Set();
+    const studentEngagementCounts = {};
+    const observeStudent = (value) => {
+      const studentHash = value && String(value).startsWith('SV-')
+        ? String(value)
+        : hashStudentId(value);
+      observedStudentIds.add(studentHash);
+      if (!studentEngagementCounts[studentHash]) studentEngagementCounts[studentHash] = 0;
+      return studentHash;
+    };
+    const addEngagement = (value, amount = 1) => {
+      const studentHash = observeStudent(value);
+      studentEngagementCounts[studentHash] += amount;
+    };
+
+    diaries.forEach(item => addEngagement(item.student_id_hash || item.user_id || item.author_alias || item.id, 1));
+    feedbacks.forEach(item => addEngagement(item.student_id_hash || item.user_id || item.id, 1));
+    bookings.forEach(item => addEngagement(item.student_id_hash || item.user_id || item.student_alias || item.id, 1));
+    alerts.forEach(item => observeStudent(item.student_id_hash || item.user_id || item.student_alias || item.id));
+    interactions.forEach(item => addEngagement(item.student_id_hash || item.user_id || item.id, 1));
+    const lowEngagementStudents = Array.from(observedStudentIds)
+      .map(studentHash => ({
+        student_id_hash: studentHash,
+        interaction_count: studentEngagementCounts[studentHash] || 0
+      }))
+      .filter(item => item.interaction_count <= 1)
+      .sort((a, b) => a.interaction_count - b.interaction_count)
+      .slice(0, 20);
+
+    publicFeedPosts.forEach(item => {
+      (Array.isArray(item.metadata?.tags) ? item.metadata.tags : []).forEach(registerTag);
+    });
 
     const totalTopicSignals = Math.max(Object.values(tagCounts).reduce((sum, value) => sum + value, 0), 1);
     const topTopics = Object.entries(tagCounts)
@@ -873,17 +1327,12 @@ const getDashboardV2 = async (req, res, next) => {
         .map(booking => booking.student_id_hash || hashStudentId(booking.user_id || booking.student_alias))
     ]);
 
-    const totalSignals = Math.max(new Set([
-      ...diaries.map(item => item.user_id || item.author_alias || item.id),
-      ...feedbacks.map(item => item.student_id_hash || item.user_id || item.id),
-      ...bookings.map(item => item.student_id_hash || item.user_id || item.id)
-    ]).size, 1);
+    const totalSignals = Math.max(observedStudentIds.size, 1);
 
-    const publicFeedPosts = interactions.filter(item => item.type === 'post' && item.metadata?.source === 'public-feed');
     const engagementBreakdown = {
       posts: publicFeedPosts.length,
-      reactions: interactions.filter(item => item.type === 'reaction' && item.metadata?.source === 'public-feed').length,
-      comments: interactions.filter(item => item.type === 'comment' && item.metadata?.source === 'public-feed').length,
+      reactions: interactions.filter(item => item.type === 'reaction' && isActivePublicFeedInteraction(item)).length,
+      comments: interactions.filter(item => item.type === 'comment' && isActivePublicFeedInteraction(item)).length,
       chats: interactions.filter(item => item.type === 'chat').length,
       bookings: bookings.length,
       feedbacks: feedbacks.length,
@@ -962,6 +1411,8 @@ const getDashboardV2 = async (req, res, next) => {
         },
         alerts: openAlerts.map(normalizeDocument),
         bookings: bookings.map(normalizeDocument),
+        intervention_history: buildInterventionHistory(bookings, feedbacks),
+        low_engagement_students: lowEngagementStudents,
         risk_queue: riskQueue,
         feedback: feedbacks.slice(0, 8).map(normalizeDocument),
         feedback_summary: {

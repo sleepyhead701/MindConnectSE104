@@ -15,6 +15,7 @@ export function normalizeStudentBooking(booking = {}) {
         after_mood_score: booking.after_mood_score ?? null,
         rescheduled_from: booking.rescheduled_from || '',
         rescheduled_at: booking.rescheduled_at || null,
+        public_updates: Array.isArray(booking.public_updates) ? booking.public_updates : [],
         created_at: booking.created_at || new Date().toISOString(),
         updated_at: booking.updated_at || null
     };

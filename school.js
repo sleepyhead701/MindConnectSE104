@@ -111,6 +111,8 @@ function getEmptyDashboardState(errorMessage = '') {
         },
         alerts: [],
         bookings: [],
+        intervention_history: [],
+        low_engagement_students: [],
         risk_queue: [],
         feedback: [],
         feedback_summary: { total: 0, positive: 0, negative: 0, avg_sentiment: 0 },
@@ -209,9 +211,9 @@ function getStatusLabel(status) {
     const labels = {
         new: 'Đang chờ',
         contacted: 'Đã liên hệ',
-        scheduled: 'Đã xếp lịch',
-        rescheduled: 'Hẹn lại',
-        completed: 'Hoàn tất',
+        scheduled: 'Đã xác nhận',
+        rescheduled: 'Đã hẹn lại',
+        completed: 'Đã hoàn thành',
         resolved: 'Đã xử lý',
         cancelled: 'Đã hủy'
     };
@@ -408,12 +410,15 @@ function renderMetrics() {
 }
 
 function renderTopTopics() {
-    const topics = Array.isArray(dashboardState?.top_topics) ? dashboardState.top_topics : [];
+    const topics = MindConnectAdminFeatures.getFilteredTopics(Array.isArray(dashboardState?.top_topics) ? dashboardState.top_topics : []);
     const listEl = document.getElementById('top-topic-list');
     if (!listEl) return;
     const chart = listEl.closest('.card-body')?.querySelector('.topic-chart');
     if (!topics.length) {
-        listEl.innerHTML = '<li><span class="topic-name">Chưa có chủ đề nổi bật từ diary, feedback hoặc bài đăng thật.</span></li>';
+        const emptyText = MindConnectAdminFeatures.hasActiveFilters?.()
+            ? 'Không có chủ đề phù hợp với bộ lọc hiện tại.'
+            : 'Chưa có chủ đề nổi bật từ diary, feedback hoặc bài đăng thật.';
+        listEl.innerHTML = `<li><span class="topic-name">${emptyText}</span></li>`;
         if (chart) chart.innerHTML = '';
         return;
     }
@@ -479,11 +484,14 @@ function renderEngagementBreakdown() {
 }
 
 function renderAIReport() {
-    const report = Array.isArray(dashboardState?.ai_report) ? dashboardState.ai_report : [];
+    const report = MindConnectAdminFeatures.getFilteredTopics(Array.isArray(dashboardState?.ai_report) ? dashboardState.ai_report : []);
     const tableBody = document.getElementById('ai-report-body') || document.querySelector('.analysis-table tbody');
     if (!tableBody) return;
     if (!report.length) {
-        tableBody.innerHTML = '<tr><td colspan="5" style="padding:16px; text-align:center; color:#888;">Chưa có đủ diary/feedback để tạo AI Report.</td></tr>';
+        const emptyText = MindConnectAdminFeatures.hasActiveFilters?.()
+            ? 'Không có AI Report phù hợp với bộ lọc hiện tại.'
+            : 'Chưa có đủ diary/feedback để tạo AI Report.';
+        tableBody.innerHTML = `<tr><td colspan="5" style="padding:16px; text-align:center; color:#888;">${emptyText}</td></tr>`;
         return;
     }
 
@@ -512,12 +520,15 @@ function renderConsultationCases(alerts) {
         head.innerHTML = '<tr><th>Student hash</th><th>Địa điểm</th><th>Ngày giờ</th><th>Điểm / trạng thái</th><th>Hành động</th></tr>';
     }
 
-    const queue = getSupportQueue()
+    const queue = MindConnectAdminFeatures.getFilteredSupportQueue(getSupportQueue())
         .filter(item => !['resolved', 'completed', 'cancelled', 'rescheduled'].includes(item.status))
         .sort(compareSupportQueueItems);
 
     if (!queue.length) {
-        body.innerHTML = '<tr><td colspan="5" style="padding:16px; text-align:center; color:#888;">Chưa có ca tư vấn hoặc yêu cầu hỗ trợ đang chờ.</td></tr>';
+        const emptyText = MindConnectAdminFeatures.hasActiveFilters?.()
+            ? 'Không có ca tư vấn phù hợp với bộ lọc hiện tại.'
+            : 'Chưa có ca tư vấn hoặc yêu cầu hỗ trợ đang chờ.';
+        body.innerHTML = `<tr><td colspan="5" style="padding:16px; text-align:center; color:#888;">${emptyText}</td></tr>`;
         return;
     }
 
@@ -536,6 +547,7 @@ function renderConsultationCases(alerts) {
                 <td style="text-align:right;">
                     <button class="btn-action-sm btn-success" onclick="handleConsultation('success', '${rowId}')">✔ Xong</button>
                     <button class="btn-action-sm btn-warn" onclick="handleConsultation('fail', '${rowId}')">📅 Hẹn lại</button>
+                    ${item.type === 'booking' ? `<button class="btn-action-sm btn-note" onclick="openInternalNote('${escapeHtml(item.id)}')">Ghi chú</button>` : ''}
                 </td>
             </tr>
         `;
@@ -564,28 +576,39 @@ function renderInterventionSummary() {
 
 function renderFeedbackSummary() {
     const summary = dashboardState?.feedback_summary || {};
-    const feedbacks = Array.isArray(dashboardState?.feedback) ? dashboardState.feedback : [];
+    const allFeedbacks = Array.isArray(dashboardState?.feedback) ? dashboardState.feedback : [];
+    const feedbacks = MindConnectAdminFeatures.getFilteredFeedback
+        ? MindConnectAdminFeatures.getFilteredFeedback(allFeedbacks)
+        : allFeedbacks;
     const totalEl = document.getElementById('feedback-total');
     const positiveEl = document.getElementById('feedback-positive-rate');
     const sentimentEl = document.getElementById('feedback-sentiment');
     const listEl = document.getElementById('feedback-live-list');
+    const positiveCount = feedbacks.filter(item => Number(item.sentiment_score || 50) >= 65).length;
+    const avgSentiment = feedbacks.length
+        ? Math.round(feedbacks.reduce((sum, item) => sum + Number(item.sentiment_score || 0), 0) / feedbacks.length)
+        : Number(summary.avg_sentiment || 0);
 
-    if (totalEl) totalEl.innerText = formatNumber(summary.total);
-    if (positiveEl) positiveEl.innerText = formatPercent(dashboardState?.metrics?.positive_feedback_rate);
-    if (sentimentEl) sentimentEl.innerText = `${summary.avg_sentiment || 0}/100`;
+    if (totalEl) totalEl.innerText = formatNumber(feedbacks.length);
+    if (positiveEl) positiveEl.innerText = formatPercent(feedbacks.length ? Math.round((positiveCount / feedbacks.length) * 100) : 0);
+    if (sentimentEl) sentimentEl.innerText = `${avgSentiment}/100`;
 
     if (!listEl) return;
     if (!feedbacks.length) {
-        listEl.innerHTML = '<div class="feedback-item improvement"><p class="feedback-text">Chưa có feedback mới từ sinh viên.</p></div>';
+        const emptyText = allFeedbacks.length
+            ? 'Không có feedback phù hợp với bộ lọc hiện tại.'
+            : 'Chưa có feedback mới từ sinh viên.';
+        listEl.innerHTML = `<div class="feedback-item improvement"><p class="feedback-text">${emptyText}</p></div>`;
         return;
     }
 
     listEl.innerHTML = feedbacks.map(item => {
         const positive = Number(item.sentiment_score || 50) >= 65;
+        const studentHash = item.student_id_hash || 'SV-ANON';
         return `
-            <div class="feedback-item ${positive ? 'positive' : 'improvement'}">
+            <div class="feedback-item ${positive ? 'positive' : 'improvement'}" role="button" tabindex="0" data-student-hash="${escapeHtml(studentHash)}" onclick="MindConnectAdminFeatures.openStudentFeedbackDetail(this.dataset.studentHash)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();MindConnectAdminFeatures.openStudentFeedbackDetail(this.dataset.studentHash);}">
                 <div class="feedback-header">
-                    <span class="feedback-author">${escapeHtml(item.student_id_hash || 'SV-ANON')}</span>
+                    <span class="feedback-author">${escapeHtml(studentHash)}</span>
                     <span class="feedback-time">${formatAlertTime(item.created_at)}</span>
                     <span class="feedback-tag ${positive ? 'positive' : 'improvement'}">${positive ? 'Tích cực' : 'Cần chú ý'}</span>
                 </div>
@@ -596,7 +619,8 @@ function renderFeedbackSummary() {
     }).join('');
 }
 
-function renderDashboardSections() {
+function renderDashboardSections(options = {}) {
+    if (!options.keepFilterPanel) MindConnectAdminFeatures.renderDashboardFilters();
     renderMetrics();
     renderEngagementBreakdown();
     renderTopTopics();
@@ -604,13 +628,14 @@ function renderDashboardSections() {
     renderConsultationCases([]);
     renderInterventionSummary();
     renderFeedbackSummary();
+    MindConnectAdminFeatures.renderInterventionHistory();
 }
 
 async function markBooking(bookingId, status, extra = {}) {
     try {
         const result = await apiRequest(`/api/bookings/${bookingId}`, {
             method: 'PATCH',
-            body: JSON.stringify({ status, ...extra })
+            body: JSON.stringify({ ...(status ? { status } : {}), ...extra })
         });
         return result;
     } catch (error) {
@@ -676,6 +701,13 @@ function renderInterventionsView() {
                     <thead></thead>
                     <tbody id="consultation-case-body"></tbody>
                 </table>
+            </div>
+        </div>
+
+        <div class="dash-card" style="margin-top:16px;">
+            <div class="card-header"><h3 class="card-title">🧾 Tóm tắt can thiệp theo sinh viên</h3><span class="data-badge">Summary</span></div>
+            <div class="card-body">
+                <div id="intervention-history-list"></div>
             </div>
         </div>
     `;
@@ -746,7 +778,7 @@ function showAllTopics() {
 }
 
 function exportReport() {
-    exportDashboardData();
+    MindConnectAdminFeatures.exportDashboardPdf();
 }
 
 function generateWeeklyReport() {
@@ -786,12 +818,37 @@ function setupSidebarNavigation() {
             switchView(this.dataset.view || 'dashboard');
         });
     });
+
+    document.addEventListener('input', event => {
+        MindConnectAdminFeatures.handleFilterInput(event);
+    });
+
+    document.addEventListener('change', event => {
+        MindConnectAdminFeatures.handleFilterChange(event);
+    });
+}
+
+function initializeAdminFeatures() {
+    MindConnectAdminFeatures.init({
+        getDashboardState: () => dashboardState,
+        renderDashboardSections,
+        markBooking,
+        escapeHtml,
+        formatAlertTime,
+        formatNumber,
+        getStatusLabel,
+        formatFullDateTime,
+        formatDateTimeLocalValue,
+        parseAdminDateTimeInput,
+        showNotification
+    });
 }
 
 // ============================================
 // 15. INITIALIZATION
 // ============================================
 window.onload = function() {
+    initializeAdminFeatures();
     updateDashboardData();
     setupSidebarNavigation();
 };

@@ -61,6 +61,18 @@ const bookingSchema = new mongoose.Schema({
     maxlength: 1000,
     default: ''
   },
+  internal_notes: {
+    type: [mongoose.Schema.Types.Mixed],
+    default: []
+  },
+  timeline: {
+    type: [mongoose.Schema.Types.Mixed],
+    default: []
+  },
+  public_updates: {
+    type: [mongoose.Schema.Types.Mixed],
+    default: []
+  },
   status: {
     type: String,
     enum: ['new', 'scheduled', 'rescheduled', 'completed', 'cancelled'],

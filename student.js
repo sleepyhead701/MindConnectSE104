@@ -2,7 +2,7 @@
 
 // --- 1. DỮ LIỆU & TRẠNG THÁI (STATE) ---
 import { loadJson, savePublicFeed,  saveJson } from './state.js';
-import { getAuthSession, getStudentSession } from './student/studentState.js';
+import { getAuthSession, getStudentSession, resetChatForNewWebVisit } from './student/studentState.js';
 import { getStudentProfileKey } from './student/studentState.js';
 import { getUserFeed, addUserFeed } from './state.js';
 import { getStudentProfile, getPrivateDiaryEntries } from './student/studentState.js';
@@ -23,6 +23,7 @@ import { normalizeVietnamese } from './student/utils/normalizeVietnamese.js';
 // --- 2. KHỞI TẠO (INIT) ---
 window.onload = async function() {
     setBackendReadyState(false);
+    resetChatForNewWebVisit();
     showLoadingScreen(); // Hiển thị màn hình
     updateStudentProfileBadge();
     await loadFeedFromBackend();
