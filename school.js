@@ -1,5 +1,11 @@
 // school.js - School Admin Dashboard Logic
 
+const _authSession = JSON.parse(localStorage.getItem('mindconnect:auth') || 'null');
+const _authRole = localStorage.getItem('mindconnect:role');
+if (!_authSession || (_authRole !== 'school' && _authRole !== 'admin')) {
+    window.location.href = 'index.html';
+}
+
 // ============================================
 // 1. CONSTANTS & CONFIGURATION
 // ============================================
