@@ -1,5 +1,11 @@
 // student.js - FULL VERSION (MERGED)
 
+const _authSession = JSON.parse(localStorage.getItem('mindconnect:auth') || 'null');
+const _authRole = localStorage.getItem('mindconnect:role');
+if (!_authSession || _authRole !== 'student') {
+    window.location.href = 'index.html';
+}
+
 // --- 1. DỮ LIỆU & TRẠNG THÁI (STATE) ---
 import { loadJson, savePublicFeed,  saveJson } from '../shared/state.js';
 import { getAuthSession, getStudentSession, resetChatForNewWebVisit } from './studentState.js';
