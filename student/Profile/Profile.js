@@ -24,7 +24,7 @@ import {
 import { getBackendReadyState } from '../../shared/state.js';
 import { apiRequest} from '../utils/utils.js';
 import { getAuthHeaders } from '../API/getAuthHeaders.js';
-import { formatBookingDateTime, getBookingStatusLabel, getSupportLocation } from '../Booking/Booking.js';
+import { getBookingStatusLabel, getSupportLocation } from '../Booking/Booking.js';
 
 const MAX_AVATAR_BYTES = 500 * 1024;
 const MAX_AVATAR_INPUT_BYTES = 5 * 1024 * 1024;
@@ -209,7 +209,9 @@ export function renderProfile() {
     const profile = getStudentProfile();
     const avatarUrl = profile.avatarUrl || 'assets/images/logo.png';
     const bookingsHtml = renderStudentBookingsHtml(getStudentBookings());
-    const notificationsHtml = renderStudentNotificationsHtml(getStudentNotifications());
+    const studentNotifications = getStudentNotifications();
+    const notificationsHtml = renderStudentNotificationsHtml(studentNotifications);
+    const unreadCount = studentNotifications.filter(notification => !notification.read).length;
 
     container.innerHTML = `
         <section class="mc-page">
@@ -252,31 +254,36 @@ export function renderProfile() {
                 </div>
             </div>
 
-            <div class="mc-panel" style="margin-top:16px;">
-                <div class="mc-chart-header">
+            <div class="mc-panel mc-booking-section mc-booking-notification-section">
+                <div class="mc-booking-section-header">
                     <div>
+                        <p class="mc-kicker">Cập nhật hỗ trợ</p>
                         <h3>Thông báo lịch hẹn</h3>
                         <p>Cập nhật khi lịch hẹn được tạo, xác nhận, hẹn lại hoặc sắp tới giờ.</p>
                     </div>
-                    <button class="mc-btn mc-btn-outline" type="button" data-action="mark-notifications-read">Đánh dấu đã đọc</button>
+                    <div class="mc-booking-header-actions">
+                        <span class="mc-booking-count-pill" id="student-notification-unread-count">${escapeHtml(String(unreadCount))} mới</span>
+                        <button class="mc-btn mc-btn-outline mc-booking-secondary-btn" type="button" data-action="mark-notifications-read">Đánh dấu đã đọc</button>
+                    </div>
                 </div>
-                <div id="student-notification-list">
+                <div id="student-notification-list" class="mc-booking-list mc-notification-list">
                     ${notificationsHtml}
                 </div>
             </div>
 
-            <div class="mc-panel" style="margin-top:16px;">
-                <div class="mc-chart-header">
+            <div class="mc-panel mc-booking-section">
+                <div class="mc-booking-section-header">
                     <div>
+                        <p class="mc-kicker">Tham vấn</p>
                         <h3>Lịch hẹn của tôi</h3>
                         <p>Theo dõi các yêu cầu tham vấn bạn đã gửi cho nhà trường.</p>
                     </div>
-                    <div class="mc-header-actions">
+                    <div class="mc-booking-header-actions">
                         <button class="mc-btn mc-btn-primary" type="button" data-action="book-session">Đặt lịch mới</button>
-                        <button class="mc-btn mc-btn-outline" type="button" data-action="refresh-bookings">Làm mới</button>
+                        <button class="mc-btn mc-btn-outline mc-booking-secondary-btn" type="button" data-action="refresh-bookings">Làm mới</button>
                     </div>
                 </div>
-                <div id="student-booking-list">
+                <div id="student-booking-list" class="mc-booking-list mc-appointment-list">
                     ${bookingsHtml}
                 </div>
             </div>
@@ -316,42 +323,46 @@ document.addEventListener('click', event => {
 function renderStudentNotificationsHtml(notifications = []) {
     if (!notifications.length) {
         return `
-            <div style="padding:16px; border:1px dashed #ead7df; border-radius:12px; color:#777; background:#fffafa;">
-                Chưa có thông báo lịch hẹn nào.
+            <div class="mc-booking-empty">
+                <strong>Chưa có thông báo lịch hẹn nào.</strong>
+                <span>Khi lịch hẹn thay đổi, cập nhật sẽ xuất hiện tại đây.</span>
             </div>
         `;
     }
 
-    return notifications.slice(0, 8).map(notification => `
-        <div style="padding:12px 14px; border:1px solid ${notification.read ? '#f0dfe6' : '#e782a4'}; border-radius:12px; margin-top:10px; background:${notification.read ? '#fff' : '#fff7fb'};">
-            <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
-                <div>
+    return notifications.slice(0, 8).map(notification => {
+        const status = normalizeBookingStatus(notification.status);
+        return `
+        <article class="mc-notification-card ${notification.read ? 'is-read' : 'is-new'} mc-status-${escapeHtml(status)}">
+            <div class="mc-booking-marker" aria-hidden="true"></div>
+            <div class="mc-notification-body">
+                <div class="mc-booking-card-top">
                     <strong>${escapeHtml(notification.title)}</strong>
-                    <p style="margin:4px 0 0; color:#666; font-size:13px;">${escapeHtml(notification.message)}</p>
+                    <span class="mc-booking-chip ${notification.read ? 'is-read' : 'is-new'}">${notification.read ? 'Đã đọc' : 'Mới'}</span>
                 </div>
-                <span class="badge ${notification.read ? 'bg-low' : 'bg-med'}">${notification.read ? 'Đã đọc' : 'Mới'}</span>
+                <p>${escapeHtml(notification.message)}</p>
+                <span class="mc-booking-meta">${escapeHtml(formatNotificationTime(notification.created_at))}</span>
             </div>
-        </div>
-    `).join('');
+        </article>
+    `;
+    }).join('');
 }
 
 function renderStudentNotificationsList() {
     const list = document.getElementById('student-notification-list');
     if (list) list.innerHTML = renderStudentNotificationsHtml(getStudentNotifications());
-}
-
-function getBookingStatusBadgeClass(status) {
-    if (status === 'completed' || status === 'scheduled') return 'bg-low';
-    if (status === 'rescheduled' || status === 'offline') return 'bg-med';
-    if (status === 'cancelled') return 'bg-med';
-    return 'bg-high';
+    const unreadCounter = document.getElementById('student-notification-unread-count');
+    if (unreadCounter) {
+        unreadCounter.textContent = `${getStudentNotifications().filter(notification => !notification.read).length} mới`;
+    }
 }
 
 function renderStudentBookingsHtml(bookings = []) {
     if (!bookings.length) {
         return `
-            <div style="padding:16px; border:1px dashed #ead7df; border-radius:12px; color:#777; background:#fffafa;">
-                Bạn chưa có lịch hẹn nào. Khi đặt lịch tham vấn, trạng thái lịch hẹn sẽ xuất hiện ở đây.
+            <div class="mc-booking-empty">
+                <strong>Bạn chưa có lịch hẹn nào.</strong>
+                <span>Khi đặt lịch tham vấn, trạng thái lịch hẹn sẽ xuất hiện ở đây.</span>
             </div>
         `;
     }
@@ -360,23 +371,68 @@ function renderStudentBookingsHtml(bookings = []) {
         const latestUpdate = Array.isArray(booking.public_updates) && booking.public_updates.length
             ? booking.public_updates[booking.public_updates.length - 1]
             : null;
+        const status = normalizeBookingStatus(booking.status);
+        const dateParts = formatBookingScheduleParts(booking.requested_time);
         return `
-        <div style="padding:14px; border:1px solid #f0dfe6; border-radius:12px; margin-top:10px; background:#fff;">
-            <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap;">
-                <div>
-                    <strong>${formatBookingDateTime(booking.requested_time)}</strong>
-                    <p style="margin:4px 0 0; color:#666; font-size:13px;">${escapeHtml(booking.location || getSupportLocation())}</p>
-                </div>
-                <span class="badge ${getBookingStatusBadgeClass(booking.status)}">
-                    ${escapeHtml(getBookingStatusLabel(booking.status))}
-                </span>
+        <article class="mc-appointment-card mc-status-${escapeHtml(status)}">
+            <div class="mc-appointment-date" aria-label="${escapeHtml(dateParts.label)}">
+                <strong>${escapeHtml(dateParts.day)}</strong>
+                <span>${escapeHtml(dateParts.month)}</span>
             </div>
-            ${booking.note ? `<p style="margin:10px 0 0; color:#555; font-size:13px;">${escapeHtml(booking.note)}</p>` : ''}
-            ${latestUpdate?.message ? `<p style="margin:8px 0 0; color:#666; font-size:12px;">Cập nhật mới nhất: ${escapeHtml(latestUpdate.message)}</p>` : ''}
-            ${booking.rescheduled_from ? `<p style="margin:8px 0 0; color:#9a6b00; font-size:12px;">Lịch này được tạo từ một lần hẹn lại.</p>` : ''}
-        </div>
+            <div class="mc-appointment-main">
+                <div class="mc-booking-card-top">
+                    <div>
+                        <strong>${escapeHtml(dateParts.time)}</strong>
+                        <p>${escapeHtml(booking.location || getSupportLocation())}</p>
+                    </div>
+                    <span class="mc-booking-chip mc-status-chip mc-status-${escapeHtml(status)}">
+                        ${escapeHtml(getBookingStatusLabel(booking.status))}
+                    </span>
+                </div>
+                ${booking.note ? `<p class="mc-appointment-note">${escapeHtml(booking.note)}</p>` : ''}
+                ${latestUpdate?.message ? `<p class="mc-appointment-update">Cập nhật mới nhất: ${escapeHtml(latestUpdate.message)}</p>` : ''}
+                ${booking.rescheduled_from ? `<p class="mc-appointment-warning">Lịch này được tạo từ một lần hẹn lại.</p>` : ''}
+            </div>
+        </article>
     `;
     }).join('');
+}
+
+function normalizeBookingStatus(status) {
+    return String(status || 'new').replace(/[^a-z0-9_-]/gi, '').toLowerCase() || 'new';
+}
+
+function formatNotificationTime(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Vừa cập nhật';
+    return date.toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit'
+    });
+}
+
+function formatBookingScheduleParts(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return {
+            day: '--',
+            month: 'Chưa chọn',
+            time: 'Chưa chọn thời gian',
+            label: 'Chưa chọn thời gian'
+        };
+    }
+
+    return {
+        day: date.toLocaleDateString('vi-VN', { day: '2-digit' }),
+        month: `Th${date.toLocaleDateString('vi-VN', { month: '2-digit' })}`,
+        time: date.toLocaleTimeString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit'
+        }),
+        label: date.toLocaleString('vi-VN')
+    };
 }
 
 function renderStudentBookingsList() {
