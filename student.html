@@ -39,6 +39,9 @@
                     <button type="button" class="dropdown-item" data-action="resources-blog">
                         <span>Blog</span>
                     </button>
+                    <button type="button" class="dropdown-item" data-action="resources-podcasts">
+                        <span>Podcasts</span>
+                    </button>
                     <button type="button" class="dropdown-item" data-action="resources-tools">
                         <span>Tools</span>
                     </button>
@@ -178,6 +181,9 @@
                     }
                     else if (action === 'resources-blog') {
                         navigateResourceMenu('blog');
+                    }
+                    else if (action === 'resources-podcasts') {
+                        navigateResourceMenu('podcasts');
                     }
                     else if (action === 'resources-tools') {
                         navigateResourceMenu('tools');

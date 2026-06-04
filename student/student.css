@@ -10,6 +10,147 @@ body {
     padding-top: 70px;
 }
 
+.mc-alert-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(28, 24, 31, 0.46);
+    backdrop-filter: blur(8px);
+    animation: mcAlertFadeIn 160ms ease-out;
+}
+
+.mc-alert-dialog {
+    width: min(100%, 420px);
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 16px;
+    align-items: start;
+    background: #fffdf9;
+    border: 1px solid rgba(212, 46, 112, 0.18);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 24px 70px rgba(57, 40, 51, 0.24);
+    outline: none;
+    transform-origin: center;
+    animation: mcAlertPopIn 180ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.mc-alert-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fff0d9;
+    color: #b86200;
+    border: 1px solid rgba(184, 98, 0, 0.22);
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.mc-alert-body {
+    min-width: 0;
+}
+
+.mc-alert-kicker {
+    margin: 0 0 4px;
+    color: var(--mc-primary, #d42e70);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.mc-alert-dialog h2 {
+    margin: 0;
+    color: var(--mc-ink, #33232b);
+    font-family: var(--font-heading, inherit);
+    font-size: 24px;
+    line-height: 1.16;
+    letter-spacing: 0;
+}
+
+.mc-alert-dialog p#mc-alert-message {
+    margin: 10px 0 0;
+    color: var(--mc-ink-soft, #6c5963);
+    font-size: 15px;
+    line-height: 1.55;
+    word-break: break-word;
+}
+
+.mc-alert-button {
+    grid-column: 1 / -1;
+    justify-self: end;
+    min-width: 118px;
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 22px;
+    background: var(--mc-gradient-rose, linear-gradient(135deg, #d42e70, #f06f93));
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 12px 26px rgba(212, 46, 112, 0.28);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.mc-alert-button:hover,
+.mc-alert-button:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 32px rgba(212, 46, 112, 0.34);
+    outline: none;
+}
+
+@keyframes mcAlertFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes mcAlertPopIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 520px) {
+    .mc-alert-overlay {
+        padding: 18px;
+    }
+
+    .mc-alert-dialog {
+        grid-template-columns: 40px 1fr;
+        gap: 12px;
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .mc-alert-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
+    }
+
+    .mc-alert-dialog h2 {
+        font-size: 21px;
+    }
+
+    .mc-alert-button {
+        width: 100%;
+        justify-self: stretch;
+    }
+}
+
 /* Ẩn khung trình chiếu 16:9 cũ */
 #presentation-frame {
     width: 100% !important;

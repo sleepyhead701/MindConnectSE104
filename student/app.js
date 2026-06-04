@@ -14,7 +14,7 @@ import { getUserFeed, addUserFeed } from '../shared/state.js';
 import { getStudentProfile, getPrivateDiaryEntries } from './studentState.js';
 import { findUserBySession, findUserByName } from './studentState.js';
 import { getBackendReadyState, setBackendReadyState } from '../shared/state.js';
-import { escapeHtml, apiRequest } from './utils/utils.js';
+import { escapeHtml, apiRequest, installCustomAlertDialog } from './utils/utils.js';
 import { getAPIBaseUrl } from '../shared/state.js';
 
 import { saveStudentProfile } from './studentState.js';
@@ -27,6 +27,8 @@ import { normalizeVietnamese } from './utils/normalizeVietnamese.js';
 
 
 // --- 2. KHỞI TẠO (INIT) ---
+installCustomAlertDialog();
+
 window.onload = async function() {
     setBackendReadyState(false);
     resetChatForNewWebVisit();

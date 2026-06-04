@@ -287,6 +287,146 @@ export const resourcesDB = [
         duration: 'App',
         img: 'https://images.unsplash.com/photo-1495364141860-b0d03eccd065?w=800&q=80',
         url: 'https://pomodoro.pomodorotechnique.com/'
+    },
+    {
+        type: 'Video',
+        title: 'NIMH - Stress va Anxiety trong 60 giay',
+        duration: '1 phut',
+        img: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+        url: 'https://www.nimh.nih.gov/news/media/2021/mental-health-minute-stress-and-anxiety-in-adolescents'
+    },
+    {
+        type: 'Video',
+        title: 'Johns Hopkins - Deep Breathing giam stress',
+        duration: 'Video huong dan',
+        img: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
+        url: 'https://www.hopkinsmedicine.org/video/reducing-stress-through-deep-breathing-1-of-3'
+    },
+    {
+        type: 'Video',
+        title: 'SAMHSA - Breathing Exercise va coping strategies',
+        duration: 'Video tu cham soc',
+        img: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
+        url: 'https://www.samhsa.gov/resource/dbhis/stress-management-techniques-healthy-coping-strategies-breathing-exercise'
+    },
+    {
+        type: 'Video',
+        title: 'UAMS Health - Box Breathing',
+        duration: 'Bai tho ngan',
+        img: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
+        url: 'https://uamshealth.com/clinical-resource/box-breathing/'
+    },
+    {
+        type: 'Blog',
+        title: 'NIMH - Stress hay Anxiety?',
+        duration: '7 phut doc',
+        img: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80',
+        url: 'https://www.nimh.nih.gov/health/publications/so-stressed-out-fact-sheet'
+    },
+    {
+        type: 'Blog',
+        title: 'UNICEF Viet Nam - Suc khoe tam than',
+        duration: '6 phut doc',
+        img: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80',
+        url: 'https://www.unicef.org/vietnam/vi/suc-khoe-tam-than'
+    },
+    {
+        type: 'Blog',
+        title: 'WHO Viet Nam - Chu de suc khoe tam than',
+        duration: 'Nguon chinh thong',
+        img: 'https://images.unsplash.com/photo-1494172961521-33799ddd43a5?w=800&q=80',
+        url: 'https://www.who.int/vietnam/vi/health-topics/mental-health'
+    },
+    {
+        type: 'Blog',
+        title: 'NHS - Student stress',
+        duration: '5 phut doc',
+        img: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&q=80',
+        url: 'https://www.nhs.uk/conditions/stress-anxiety-depression/student-stress/'
+    },
+    {
+        type: 'Book',
+        title: 'WHO - Doing What Matters in Times of Stress',
+        duration: 'Illustrated guide',
+        img: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=800&q=80',
+        url: 'https://iris.who.int/handle/10665/331901'
+    },
+    {
+        type: 'Book',
+        title: 'CCI - Mastering Your Worries workbook',
+        duration: 'CBT workbook',
+        img: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80',
+        url: 'https://www.cci.health.wa.gov.au/Resources/Looking-After-Yourself/Anxiety'
+    },
+    {
+        type: 'Book',
+        title: 'CCI - Put Off Procrastinating workbook',
+        duration: 'Hoc tap va deadline',
+        img: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&q=80',
+        url: 'https://www.cci.health.wa.gov.au/Resources/Looking-After-Yourself/Procrastination'
+    },
+    {
+        type: 'Book',
+        title: 'JED - Going to College with a Mental Health Condition',
+        duration: 'Guide PDF',
+        img: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80',
+        url: 'https://jedfoundation.org/wp-content/uploads/2023/08/Going-to-College-MHC-Guide-8.10.23-1.pdf'
+    },
+    {
+        type: 'Podcast',
+        title: 'UCLA Mindful - Weekly Meditations and Talks',
+        duration: 'Podcast series',
+        img: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&q=80',
+        url: 'https://www.uclahealth.org/uclamindful/weekly-meditations-talks'
+    },
+    {
+        type: 'Podcast',
+        title: 'Greater Good - Happiness Break',
+        duration: 'Short practices',
+        img: 'https://images.unsplash.com/photo-1590602846989-e99596d2a6ee?w=800&q=80',
+        url: 'https://greatergood.berkeley.edu/podcasts'
+    },
+    {
+        type: 'Podcast',
+        title: 'The Science of Happiness',
+        duration: 'Podcast series',
+        img: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=800&q=80',
+        url: 'https://greatergood.berkeley.edu/podcasts'
+    },
+    {
+        type: 'Podcast',
+        title: 'The Happiness Lab with Dr. Laurie Santos',
+        duration: 'Podcast series',
+        img: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=800&q=80',
+        url: 'https://www.pushkin.fm/podcasts/the-happiness-lab-with-dr-laurie-santos'
+    },
+    {
+        type: 'Công cụ',
+        title: 'NHS Inform - Controlled Breathing Exercise',
+        duration: 'Bai tho 3-3-3-3',
+        img: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
+        url: 'https://www.nhsinform.scot/healthy-living/mental-wellbeing/breathing-and-relaxation-exercises/controlled-breathing-exercise/'
+    },
+    {
+        type: 'Công cụ',
+        title: 'UCLA Mindful - Guided Meditations',
+        duration: 'Audio mien phi',
+        img: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=800&q=80',
+        url: 'https://www.uclahealth.org/uclamindful/guided-meditations'
+    },
+    {
+        type: 'Công cụ',
+        title: 'Greater Good in Action - Science-based practices',
+        duration: 'Bo bai tap',
+        img: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
+        url: 'https://ggia.berkeley.edu/'
+    },
+    {
+        type: 'Công cụ',
+        title: 'Pomofocus - Pomodoro Timer',
+        duration: 'Focus timer',
+        img: 'https://images.unsplash.com/photo-1495364141860-b0d03eccd065?w=800&q=80',
+        url: 'https://pomofocus.io/'
     }
 ];
 

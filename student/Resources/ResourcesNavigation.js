@@ -6,6 +6,7 @@ export function navigateResourceMenu(routeKey) {
         videos: { hash: 'resources/videos', filter: 'Video' },
         books: { hash: 'resources/books', filter: 'Book' },
         blog: { hash: 'resources/blog', filter: 'Blog' },
+        podcasts: { hash: 'resources/podcasts', filter: 'Podcast' },
         tools: { hash: 'resources/tools', filter: 'Công cụ' }
     };
     const target = routes[routeKey] || routes.topics;

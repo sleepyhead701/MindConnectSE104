@@ -112,3 +112,85 @@ export function showNotification(text, options = {}) {
         setTimeout(() => notif.remove(), duration);
     }
 }
+
+let activeAlertDialog = null;
+let alertRestoreFocusEl = null;
+let activeAlertCleanup = null;
+
+export function showAlertDialog(message, options = {}) {
+    if (typeof document === 'undefined') {
+        return;
+    }
+
+    if (activeAlertDialog) {
+        activeAlertCleanup?.();
+    }
+
+    const config = {
+        title: options.title || 'Cảnh báo',
+        confirmLabel: options.confirmLabel || 'Đã hiểu',
+        variant: options.variant || 'warning'
+    };
+    alertRestoreFocusEl = typeof HTMLElement !== 'undefined' && document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+
+    const overlay = document.createElement('div');
+    overlay.className = `mc-alert-overlay mc-alert-${config.variant}`;
+    overlay.setAttribute('role', 'presentation');
+    overlay.innerHTML = `
+        <section class="mc-alert-dialog" role="alertdialog" aria-modal="true" aria-labelledby="mc-alert-title" aria-describedby="mc-alert-message" tabindex="-1">
+            <div class="mc-alert-icon" aria-hidden="true">!</div>
+            <div class="mc-alert-body">
+                <p class="mc-alert-kicker">MindConnect</p>
+                <h2 id="mc-alert-title">${escapeHtml(config.title)}</h2>
+                <p id="mc-alert-message">${escapeHtml(message)}</p>
+            </div>
+            <button class="mc-alert-button" type="button">${escapeHtml(config.confirmLabel)}</button>
+        </section>
+    `;
+
+    const closeDialog = () => {
+        if (overlay.isConnected) {
+            overlay.remove();
+        }
+        if (activeAlertDialog === overlay) {
+            activeAlertDialog = null;
+        }
+        if (activeAlertCleanup === closeDialog) {
+            activeAlertCleanup = null;
+        }
+        alertRestoreFocusEl?.focus?.();
+        alertRestoreFocusEl = null;
+        document.removeEventListener('keydown', handleKeydown);
+    };
+
+    const handleKeydown = (event) => {
+        if (event.key === 'Escape' || event.key === 'Enter') {
+            event.preventDefault();
+            closeDialog();
+        }
+    };
+
+    overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) closeDialog();
+    });
+    overlay.querySelector('.mc-alert-button')?.addEventListener('click', closeDialog);
+
+    (document.querySelector('.mobile-frame') || document.body).appendChild(overlay);
+    activeAlertDialog = overlay;
+    activeAlertCleanup = closeDialog;
+    document.addEventListener('keydown', handleKeydown);
+    overlay.querySelector('.mc-alert-dialog')?.focus();
+}
+
+export function installCustomAlertDialog() {
+    if (typeof window === 'undefined' || window.__mindconnectAlertInstalled) {
+        return;
+    }
+
+    window.__mindconnectAlertInstalled = true;
+    window.alert = (message) => {
+        showAlertDialog(String(message || ''), { title: 'Cảnh báo' });
+    };
+}
