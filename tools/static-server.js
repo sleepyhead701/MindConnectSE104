@@ -44,5 +44,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(port, () => {
-  console.log(`MindConnect frontend: http://localhost:${port}/index.html`);
+  console.log(`MindConnect frontend: http://localhost:${port}/`);
 });

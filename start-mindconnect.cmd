@@ -15,17 +15,20 @@ if not exist "%ROOT%backend\.env" (
 )
 
 echo Starting MindConnect backend on http://localhost:3000 ...
-start "MindConnect Backend" /D "%ROOT%backend" "%NODE_EXE%" "src\index.js"
+set "MINDCONNECT_NODE=%NODE_EXE%"
+set "MINDCONNECT_BACKEND=%ROOT%backend"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath $env:MINDCONNECT_NODE -ArgumentList 'src\index.js' -WorkingDirectory $env:MINDCONNECT_BACKEND -WindowStyle Hidden"
 
 timeout /t 2 /nobreak >nul
 
 echo Starting MindConnect frontend on http://localhost:5500 ...
-start "MindConnect Frontend" /D "%ROOT%" "%NODE_EXE%" "tools\static-server.js"
+set "MINDCONNECT_ROOT=%ROOT%"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath $env:MINDCONNECT_NODE -ArgumentList 'tools\static-server.js' -WorkingDirectory $env:MINDCONNECT_ROOT -WindowStyle Hidden"
 
 timeout /t 1 /nobreak >nul
-start "" "http://localhost:5500/index.html"
+start "" "http://localhost:5500/"
 
 echo.
 echo MindConnect is opening in your browser.
-echo Keep the Backend and Frontend windows open while using the app.
-pause
+echo Backend and frontend are running in the background.
+exit /b 0
