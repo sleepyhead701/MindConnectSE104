@@ -76,6 +76,22 @@ function escapeHtml(value) {
         .replace(/'/g, '&#039;');
 }
 
+function adminIcon(name, extraClass = '') {
+    const icons = {
+        dashboard: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 15.5h7M14 20h7"/>',
+        heart: '<path d="M12 20s-7-4.3-7-10a4.2 4.2 0 0 1 7-3.1A4.2 4.2 0 0 1 19 10c0 5.7-7 10-7 10Z"/><path d="M8.5 12h2l1.2-2.4 1.8 4.8 1.1-2.4h1.9"/>',
+        inbox: '<path d="M4 5h16l-2 9H6L4 5Z"/><path d="M6 14v4h12v-4"/><path d="M8 10h8"/>',
+        apps: '<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>',
+        topics: '<path d="M5 7.5A4.5 4.5 0 0 1 9.5 3h5A4.5 4.5 0 0 1 19 7.5v3A4.5 4.5 0 0 1 14.5 15H11l-4.5 4v-4.4A4.5 4.5 0 0 1 5 11V7.5Z"/><path d="M9 8h6M9 11h4"/>',
+        tag: '<path d="M20 12.4 12.4 20a2 2 0 0 1-2.8 0L4 14.4V4h10.4L20 9.6a2 2 0 0 1 0 2.8Z"/><path d="M8.5 8.5h.01"/>',
+        cases: '<path d="M8 4h8l1 3H7l1-3Z"/><rect x="5" y="7" width="14" height="14" rx="2"/><path d="M9 12h6M9 16h4"/>',
+        summary: '<path d="M7 3h7l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M14 3v5h5M8.5 13h7M8.5 17h5"/>',
+        feedback: '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M8.5 14.5A6 6 0 1 1 15.5 14c-.8.7-1.5 1.7-1.5 3h-4c0-1.2-.6-1.9-1.5-2.5Z"/>'
+    };
+    const className = extraClass ? ` ${escapeHtml(extraClass)}` : '';
+    return `<span class="admin-card-icon${className}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${icons[name] || icons.dashboard}</svg></span>`;
+}
+
 function formatAlertTime(value) {
     return new Date(value).toLocaleString('vi-VN', {
         hour: '2-digit',
@@ -499,7 +515,7 @@ function renderTopTopics() {
             <span class="topic-num">${index + 1}</span>
             <span class="topic-name">${escapeHtml(topic.tag)}</span>
             <span class="topic-pct">${Number(topic.share || 0)}%</span>
-            <span class="topic-trend ${Number(topic.share || 0) >= 30 ? 'trend-bad' : 'neutral'}">${Number(topic.share || 0) >= 30 ? '▲' : '▬'}</span>
+            <span class="topic-trend ${Number(topic.share || 0) >= 30 ? 'trend-bad' : 'neutral'}">${Number(topic.share || 0) >= 30 ? 'Tăng' : 'Ổn'}</span>
         </li>
     `).join('');
 
@@ -537,7 +553,7 @@ function renderEngagementBreakdown() {
 
     card.innerHTML = `
         <div class="card-header">
-            <h3 class="card-title"><span class="card-icon">▦</span> Gắn kết App</h3>
+            <h3 class="card-title">${adminIcon('apps')} Gắn kết App</h3>
             <span class="data-badge">Live</span>
         </div>
         <div class="card-body">
@@ -765,7 +781,7 @@ function renderInterventionsView() {
         </div>
 
         <div class="dash-card" style="margin-top:16px;">
-            <div class="card-header"><h3 class="card-title">📋 Ca tư vấn cần xử lý</h3><span class="data-badge">Ranked</span></div>
+            <div class="card-header"><h3 class="card-title">${adminIcon('cases')} Ca tư vấn cần xử lý</h3><span class="data-badge">Ranked</span></div>
             <div class="card-body">
                 <p id="intervention-note" class="chart-note"></p>
                 <table id="consultation-case-table" class="data-table">
@@ -776,7 +792,7 @@ function renderInterventionsView() {
         </div>
 
         <div class="dash-card" style="margin-top:16px;">
-            <div class="card-header"><h3 class="card-title">🧾 Tóm tắt can thiệp theo sinh viên</h3><span class="data-badge">Summary</span></div>
+            <div class="card-header"><h3 class="card-title">${adminIcon('summary')} Tóm tắt can thiệp theo sinh viên</h3><span class="data-badge">Summary</span></div>
             <div class="card-body">
                 <div id="intervention-history-list"></div>
             </div>
@@ -817,7 +833,7 @@ function renderFeedbackView() {
         </div>
 
         <div class="dash-card" style="margin-top:16px;">
-            <div class="card-header"><h3 class="card-title">💡 Feedback nổi bật</h3><span class="data-badge">Live</span></div>
+            <div class="card-header"><h3 class="card-title">${adminIcon('feedback')} Feedback nổi bật</h3><span class="data-badge">Live</span></div>
             <div class="card-body">
                 <div id="feedback-live-list" class="feedback-list"></div>
             </div>
