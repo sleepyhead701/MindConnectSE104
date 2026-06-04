@@ -1,4 +1,4 @@
-import { getSupportLocations } from '../../state.js';
+import { getSupportLocations } from '../../shared/state.js';
 
 function getDefaultSupportLocation() {
     return getSupportLocations()[0] || 'Phòng tham vấn 102 - Khu B';

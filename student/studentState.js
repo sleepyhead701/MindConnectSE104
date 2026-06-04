@@ -1,6 +1,6 @@
-import { loadJson, saveJson } from "../state.js";
-import { userSession } from "../state.js";
-import { getResourcesDB, getUsersDB } from "../state.js";
+import { loadJson, saveJson } from "../shared/state.js";
+import { userSession } from "../shared/state.js";
+import { getResourcesDB, getUsersDB } from "../shared/state.js";
 import { normalizeStudentBooking } from "./utils/normalizeStudentBooking.js"
 
 
@@ -66,7 +66,7 @@ export function getStudentProfile() {
     return {
         name: savedProfile.name || session?.user?.name || session?.name || fallbackName || 'Người dùng ẩn danh',
         email: session?.user?.email || session?.email || currentUser.email,
-        avatarUrl: savedProfile.avatarUrl || 'logo.png',
+        avatarUrl: savedProfile.avatarUrl || 'assets/images/logo.png',
         bio: savedProfile.bio || '',
         displayName: savedProfile.name || session?.user?.name || session?.name || fallbackName
     };
@@ -216,7 +216,7 @@ export function savePrivateDiaryEntries() {
 export function saveStudentProfile(profile) {
     saveJson(getStudentStorageKey(getStudentProfileKey()), {
         name: String(profile.name || '').trim() || 'Người dùng ẩn danh',
-        avatarUrl: profile.avatarUrl || 'logo.png',
+        avatarUrl: profile.avatarUrl || 'assets/images/logo.png',
         bio: profile.bio || ''
     });
 }

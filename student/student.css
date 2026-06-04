@@ -645,3 +645,296 @@ body {
         justify-content: flex-start;
     }
 }
+
+/* ============================================================
+   PREMIUM CREATOR CARD - NEWS FEED CREATOR BOX (THÊM VIỀN ĐẸP MẮT)
+   ============================================================ */
+.mc-panel.mc-feed-creator {
+    background: #ffffff !important;
+    border: 1.5px solid rgba(212, 46, 112, 0.16) !important;
+    border-radius: 20px !important;
+    padding: 24px !important;
+    box-shadow: 0 10px 30px -15px rgba(212, 46, 112, 0.08) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    margin-bottom: 24px !important;
+}
+
+.mc-panel.mc-feed-creator:hover {
+    border-color: rgba(212, 46, 112, 0.32) !important;
+    box-shadow: 0 16px 36px -18px rgba(212, 46, 112, 0.12) !important;
+}
+
+.mc-panel.mc-feed-creator .mc-field-label {
+    font-family: var(--font-body);
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: var(--mc-ink) !important;
+    margin-bottom: 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.mc-panel.mc-feed-creator .mc-field-label::before {
+    content: '✍️';
+    font-size: 16px;
+}
+
+/* Custom Textarea for Feed Post (Thêm viền rõ nét, tránh tràn viền) */
+.mc-panel.mc-feed-creator .mc-textarea {
+    background: #fdfcfc !important;
+    border: 1.5px solid rgba(100, 59, 77, 0.16) !important;
+    border-radius: 14px !important;
+    padding: 16px 18px !important;
+    font-size: 15px !important;
+    color: var(--mc-ink) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    margin-bottom: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    font-family: var(--font-body) !important;
+    outline: none !important;
+    resize: vertical !important;
+}
+
+.mc-panel.mc-feed-creator .mc-textarea:focus {
+    background: #ffffff !important;
+    border-color: var(--mc-primary) !important;
+    box-shadow: 0 0 0 4px rgba(212, 46, 112, 0.12) !important;
+}
+
+/* Custom Input Tag Box (Thêm viền rõ nét, tránh tràn viền) */
+.mc-panel.mc-feed-creator .mc-input {
+    background: #fdfcfc !important;
+    border: 1.5px solid rgba(100, 59, 77, 0.16) !important;
+    border-radius: 14px !important;
+    padding: 12px 18px !important;
+    font-size: 14px !important;
+    color: var(--mc-ink) !important;
+    font-weight: 500 !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    margin-bottom: 0 !important; /* Align perfectly with buttons */
+    box-sizing: border-box !important;
+    height: 46px !important;
+    outline: none !important;
+}
+
+.mc-panel.mc-feed-creator .mc-input:focus {
+    background: #ffffff !important;
+    border-color: var(--mc-primary) !important;
+    box-shadow: 0 0 0 4px rgba(212, 46, 112, 0.12) !important;
+}
+
+/* Align buttons and inputs */
+.mc-panel.mc-feed-creator .mc-btn {
+    border-radius: 14px !important; /* Matching corners for perfect grid */
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    height: 46px !important; /* Perfect height matching the tag input */
+    min-height: 46px !important;
+    box-sizing: border-box !important;
+    padding: 10px 22px !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.mc-panel.mc-feed-creator .mc-btn-outline {
+    border: 1.5px solid rgba(212, 46, 112, 0.35) !important;
+    color: var(--mc-primary) !important;
+    background: white !important;
+}
+
+.mc-panel.mc-feed-creator .mc-btn-outline:hover {
+    background: var(--mc-blush) !important;
+    border-color: var(--mc-primary) !important;
+    transform: translateY(-1px) !important;
+}
+
+.mc-panel.mc-feed-creator .mc-btn-primary {
+    background: var(--mc-gradient-rose) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 10px 24px -10px rgba(212, 46, 112, 0.4) !important;
+}
+
+.mc-panel.mc-feed-creator .mc-btn-primary:hover {
+    box-shadow: var(--mc-shadow-soft) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Beautiful Tag Chip Styling inside the creator box */
+.mc-panel.mc-feed-creator .tag-chip {
+    border-radius: 999px !important;
+    padding: 6px 14px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    border: 1px solid rgba(212, 46, 112, 0.2) !important;
+    background: var(--mc-blush) !important;
+    color: var(--mc-primary) !important;
+    box-shadow: 0 2px 6px rgba(212, 46, 112, 0.05) !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.mc-panel.mc-feed-creator .tag-chip.selected {
+    background: var(--mc-gradient-rose) !important;
+    color: white !important;
+    border-color: transparent !important;
+}
+
+.mc-panel.mc-feed-creator .tag-chip button {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+    border: none !important;
+    background: transparent !important;
+    color: inherit !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.mc-panel.mc-feed-creator .tag-chip button:hover {
+    transform: scale(1.2) !important;
+}
+
+/* Adjust tag row under the input block */
+.mc-panel.mc-feed-creator .mc-tag-row {
+    margin-top: 14px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+}
+
+/* ============================================================
+   PREMIUM NESTED COMMENT CARD - NEWS FEED REPLIES (CĂN BẰNG & SỬA LỖI AVATAR LỆCH)
+   ============================================================ */
+.mc-reply-card {
+    display: flex !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+    background: #ffffff !important;
+    border: 1.5px solid rgba(212, 46, 112, 0.12) !important;
+    border-radius: 14px !important;
+    padding: 14px 18px !important;
+    box-shadow: 0 4px 14px -4px rgba(57, 40, 51, 0.05) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    margin-bottom: 8px !important;
+    box-sizing: border-box !important;
+}
+
+.mc-reply-card:hover {
+    border-color: rgba(212, 46, 112, 0.26) !important;
+    box-shadow: 0 8px 20px -8px rgba(212, 46, 112, 0.08) !important;
+    transform: translateY(-0.5px) !important;
+}
+
+/* Sửa lỗi kích thước avatar bình luận và loại bỏ tình trạng đẩy lệch tên */
+.mc-reply-card .mc-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 8px rgba(212, 46, 112, 0.08) !important;
+    overflow: hidden !important;
+}
+
+.mc-reply-card .mc-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+}
+
+/* Cân đối phần nội dung bình luận bên phải */
+.mc-reply-content-box {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+}
+
+.mc-reply-meta {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 12px !important;
+    margin-bottom: 2px !important;
+}
+
+.mc-reply-meta strong {
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    color: var(--mc-primary) !important;
+}
+
+.mc-reply-card p {
+    margin: 2px 0 6px 0 !important;
+    font-size: 13.5px !important;
+    color: var(--mc-ink) !important;
+    line-height: 1.55 !important;
+    word-break: break-word !important;
+}
+
+/* Dòng chứa thời gian và nút xóa bên phải */
+.mc-reply-tools {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.mc-reply-tools span {
+    font-size: 11.5px !important;
+    color: var(--mc-ink-soft) !important;
+    font-weight: 500 !important;
+}
+
+/* Căn chỉnh nút thả tim dưới bình luận gọn gàng */
+.mc-reply-card .mc-reaction-wrapper {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin-top: 2px !important;
+}
+
+.mc-reply-card button[data-action="toggle-like"] {
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 4px 8px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    color: var(--mc-ink-soft) !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid rgba(100, 59, 77, 0.08) !important;
+}
+
+.mc-reply-card button[data-action="toggle-like"]:hover {
+    background: var(--mc-blush) !important;
+    color: var(--mc-primary) !important;
+    border-color: rgba(212, 46, 112, 0.18) !important;
+}
+
+/* Phân tách danh sách các bình luận có viền thụt lề sang trọng */
+.mc-reply-list {
+    display: grid !important;
+    gap: 12px !important;
+    padding: 16px 20px 18px 72px !important; /* Căn lề thụt đầu dòng cân đối */
+    border-top: 1px solid var(--mc-border) !important;
+    background: linear-gradient(180deg, rgba(255, 253, 247, 0.5) 0%, rgba(255, 240, 243, 0.4) 100%) !important;
+}
+
+@media (max-width: 768px) {
+    .mc-reply-list {
+        padding: 12px 14px 14px 44px !important; /* Tránh lệch quá đà trên điện thoại */
+    }
+}

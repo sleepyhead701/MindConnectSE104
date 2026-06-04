@@ -558,7 +558,15 @@
     async function markHistoryBooking(bookingId, status) {
         if (!bookingId || !status) return;
         const label = getStatusLabel(status);
-        const confirmed = confirm(`Cập nhật ca này sang trạng thái "${label}"?`);
+        const confirmed = context.showConfirmDialog
+            ? await context.showConfirmDialog({
+                title: 'Cập nhật trạng thái ca hỗ trợ?',
+                message: `Chuyển ca này sang trạng thái "${label}".`,
+                detail: 'Thao tác sẽ được ghi nhận vào dữ liệu quản trị.',
+                confirmLabel: 'Xác nhận',
+                cancelLabel: 'Hủy'
+            })
+            : false;
         if (!confirmed) return;
 
         const result = await context.markBooking?.(bookingId, status, {
@@ -689,7 +697,7 @@
                 <meta charset="utf-8">
                 <title>Báo cáo MindConnect</title>
                 <style>
-                    body { font-family: Arial, sans-serif; color:#222; padding:28px; }
+                    body { font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif; color:#222; padding:28px; }
                     h1 { color:#9f2454; margin-bottom:4px; }
                     h2 { margin-top:28px; color:#9f2454; }
                     table { width:100%; border-collapse:collapse; margin-top:10px; font-size:12px; }

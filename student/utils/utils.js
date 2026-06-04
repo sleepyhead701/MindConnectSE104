@@ -1,4 +1,4 @@
-import { getAPIBaseUrl } from '../../state.js';
+import { getAPIBaseUrl } from '../../shared/state.js';
 
 import { getAuthHeaders } from '../API/getAuthHeaders.js';
 
@@ -72,14 +72,43 @@ export async function apiRequest(path, options = {}) {
     return result.data;
 }
 
-export function showNotification(text) {
+export function showNotification(text, options = {}) {
+    const config = typeof text === 'object' && text !== null ? text : { message: text };
+    const variant = config.variant || options.variant || '';
+    const duration = Number(config.duration || options.duration || 4000);
     const notif = document.createElement('div');
-    notif.className = 'notification-toast';
-    notif.innerText = text;
+    notif.className = `notification-toast${variant ? ` notification-${variant}` : ''}`;
+
+    if (variant === 'mood-reminder') {
+        notif.innerHTML = `
+            <div class="notification-reminder-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                    <path d="M12 21s7-4.4 7-10.2A4.7 4.7 0 0 0 14.3 6 5 5 0 0 0 12 6.6 5 5 0 0 0 9.7 6 4.7 4.7 0 0 0 5 10.8C5 16.6 12 21 12 21Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                    <path d="M9 11.2h.01M15 11.2h.01M9.5 14.8c1.5 1.1 3.5 1.1 5 0" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="notification-reminder-body">
+                <strong>${escapeHtml(config.title || 'Quick Test cảm xúc')}</strong>
+                <span>${escapeHtml(config.message || 'Dành 30 giây để ghi nhận cảm xúc hôm nay.')}</span>
+            </div>
+            <button class="notification-reminder-action" type="button">${escapeHtml(config.actionLabel || 'Làm ngay')}</button>
+        `;
+
+        notif.querySelector('.notification-reminder-action')?.addEventListener('click', () => {
+            if (typeof config.onAction === 'function') {
+                config.onAction();
+            } else if (config.actionSelector) {
+                document.querySelector(config.actionSelector)?.click();
+            }
+            notif.remove();
+        });
+    } else {
+        notif.innerText = config.message || '';
+    }
     // Tìm mobile-frame để gắn vào, tránh lỗi nếu chưa load DOM
     const frame = document.querySelector('.mobile-frame');
     if(frame) {
         frame.appendChild(notif);
-        setTimeout(() => notif.remove(), 4000);
+        setTimeout(() => notif.remove(), duration);
     }
 }

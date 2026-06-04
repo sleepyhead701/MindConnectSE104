@@ -8,7 +8,7 @@ import { getAuthSession } from '../studentState.js';
 import { getCurrentUserName, getCurrentUserEmail } from '../studentState.js';
 import { setCurrentUserName, setCurrentUserEmail } from '../studentState.js';
 import { syncAuthProfileName } from '../studentState.js';
-import { getUserFeed, savePublicFeed } from '../../state.js';
+import { getUserFeed, savePublicFeed } from '../../shared/state.js';
 import { updateStudentProfileBadge } from '../NewsFeed/NewsFeed.js';
 import { openFeedbackModal, openBookingModal } from '../Booking/Booking.js';
 import {
@@ -21,7 +21,7 @@ import {
     markStudentNotificationsRead,
     syncBookingNotifications
 } from '../Booking/BookingNotifications.js';
-import { getBackendReadyState } from '../../state.js';
+import { getBackendReadyState } from '../../shared/state.js';
 import { apiRequest} from '../utils/utils.js';
 import { getAuthHeaders } from '../API/getAuthHeaders.js';
 import { formatBookingDateTime, getBookingStatusLabel, getSupportLocation } from '../Booking/Booking.js';
@@ -151,7 +151,7 @@ function saveProfileSettings() {
     const updatedProfile = {
         name: nextName,
         email: previousProfile.email,
-        avatarUrl: avatarPreview?.dataset.avatarUrl || avatarPreview?.getAttribute('src') || previousProfile.avatarUrl || 'logo.png',
+        avatarUrl: avatarPreview?.dataset.avatarUrl || avatarPreview?.getAttribute('src') || previousProfile.avatarUrl || 'assets/images/logo.png',
         bio: bioInput?.value.trim() || ''
     };
 
@@ -207,7 +207,7 @@ export function renderProfile() {
     animateMainContentSwap();
 
     const profile = getStudentProfile();
-    const avatarUrl = profile.avatarUrl || 'logo.png';
+    const avatarUrl = profile.avatarUrl || 'assets/images/logo.png';
     const bookingsHtml = renderStudentBookingsHtml(getStudentBookings());
     const notificationsHtml = renderStudentNotificationsHtml(getStudentNotifications());
 

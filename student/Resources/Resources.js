@@ -1,11 +1,11 @@
-import { loadJson, saveJson } from '../../state.js';
+import { loadJson, saveJson } from '../../shared/state.js';
 import { updateNav } from '../utils/updateNav.js';
 import { animateMainContentSwap } from '../animations.js';
 import { escapeHtml, showNotification } from '../utils/utils.js';
 import { trackInteraction } from '../API/analytics.js';
 import { normalizeVietnamese } from '../utils/normalizeVietnamese.js';
 import { getCustomResourcesKey } from '../studentState.js';
-import { getResourcesDB} from '../../state.js';
+import { getResourcesDB} from '../../shared/state.js';
 import { addResources } from '../studentState.js';
 
 var currentResource = getResourcesDB();
@@ -75,7 +75,7 @@ function addCustomResource() {
         type: normalizeResourceType(parsedUrl.href, requestedType),
         title,
         duration: 'User import',
-        img: 'logo.png',
+        img: 'assets/images/logo.png',
         url: parsedUrl.href,
         isCustom: true
     };

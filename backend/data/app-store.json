@@ -1,6 +1,19 @@
 {
   "diaries": [
     {
+      "id": "diary-1780566743491-53a032",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "author_alias": "Tôi",
+      "title": "Interview Day",
+      "content": "Nay là 1 ngày tệ",
+      "tags": [
+        "Failed"
+      ],
+      "mood_score": 1,
+      "is_anonymous": true,
+      "created_at": "2026-06-04T09:52:23.491Z"
+    },
+    {
       "id": "school-admin-heavy-diary-0237",
       "seed_batch": "school-admin-heavy-seed-20260602-v1",
       "user_id": "seed-school-user-0013",
@@ -3880,6 +3893,24 @@
   ],
   "riskAlerts": [
     {
+      "id": "RA-1780566711465",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "source": "Quick Test",
+      "severity": "high",
+      "label": "Cảnh báo cảm xúc rất thấp",
+      "matched_keyword": "manual-trigger",
+      "status": "new",
+      "student_alias": "SV ẩn danh",
+      "student_id_hash": "SV-47986DEC",
+      "class_name": "CNTT_K48",
+      "department": "CNTT",
+      "location": "Phòng tham vấn 102 - Khu B",
+      "risk_score": 80,
+      "excerpt": "Quick Test ghi nhận mức cảm xúc 1/5.",
+      "created_at": "2026-06-04T09:51:51.465Z",
+      "updated_at": null
+    },
+    {
       "id": "school-admin-heavy-risk-0045",
       "seed_batch": "school-admin-heavy-seed-20260602-v1",
       "user_id": "seed-school-user-0049",
@@ -5808,7 +5839,7 @@
       "urgency_score": 57,
       "before_mood_score": 3,
       "after_mood_score": null,
-      "status": "new",
+      "status": "completed",
       "internal_notes": [
         {
           "id": "school-admin-heavy-booking-followup-0038-internal-1",
@@ -5829,6 +5860,18 @@
           "requested_time": "2026-06-07T03:00:00.000Z",
           "location": "Phong tham van 204 - Khu A",
           "created_at": "2026-06-02T10:49:00.000Z"
+        },
+        {
+          "id": "booking-event-1780567495595-574fee",
+          "action": "status_completed",
+          "actor_role": "school",
+          "actor_label": "thangdonganhngu@gmail.com",
+          "status": "completed",
+          "message": "Nhà trường cập nhật trạng thái: Đã hoàn thành.",
+          "note": "",
+          "requested_time": "2026-06-07T03:00:00.000Z",
+          "location": "Phong tham van 204 - Khu A",
+          "created_at": "2026-06-04T10:04:55.595Z"
         }
       ],
       "public_updates": [
@@ -5842,10 +5885,21 @@
           "location": "Phong tham van 204 - Khu A",
           "read": false,
           "created_at": "2026-06-02T10:49:00.000Z"
+        },
+        {
+          "id": "booking-update-1780567495596-24102c",
+          "action": "status_completed",
+          "status": "completed",
+          "label": "Đã hoàn thành",
+          "message": "Ca hỗ trợ của bạn đã được đánh dấu hoàn thành. Bạn có thể gửi feedback sau buổi hỗ trợ.",
+          "requested_time": "2026-06-07T03:00:00.000Z",
+          "location": "Phong tham van 204 - Khu A",
+          "read": false,
+          "created_at": "2026-06-04T10:04:55.596Z"
         }
       ],
       "created_at": "2026-06-02T10:49:00.000Z",
-      "updated_at": null
+      "updated_at": "2026-06-04T10:04:55.595Z"
     },
     {
       "id": "school-admin-heavy-booking-followup-0144",
@@ -7067,7 +7121,7 @@
       "urgency_score": 98,
       "before_mood_score": 2,
       "after_mood_score": null,
-      "status": "new",
+      "status": "completed",
       "internal_notes": [],
       "timeline": [
         {
@@ -7081,6 +7135,18 @@
           "requested_time": "2026-06-02T04:30:00.000Z",
           "location": "Online qua Google Meet",
           "created_at": "2026-06-02T02:53:00.000Z"
+        },
+        {
+          "id": "booking-event-1780567825602-5eb395",
+          "action": "status_completed",
+          "actor_role": "school",
+          "actor_label": "thangdonganhngu@gmail.com",
+          "status": "completed",
+          "message": "Nhà trường cập nhật trạng thái: Đã hoàn thành.",
+          "note": "",
+          "requested_time": "2026-06-02T04:30:00.000Z",
+          "location": "Online qua Google Meet",
+          "created_at": "2026-06-04T10:10:25.602Z"
         }
       ],
       "public_updates": [
@@ -7094,10 +7160,21 @@
           "location": "Online qua Google Meet",
           "read": false,
           "created_at": "2026-06-02T02:53:00.000Z"
+        },
+        {
+          "id": "booking-update-1780567825604-f5875f",
+          "action": "status_completed",
+          "status": "completed",
+          "label": "Đã hoàn thành",
+          "message": "Ca hỗ trợ của bạn đã được đánh dấu hoàn thành. Bạn có thể gửi feedback sau buổi hỗ trợ.",
+          "requested_time": "2026-06-02T04:30:00.000Z",
+          "location": "Online qua Google Meet",
+          "read": false,
+          "created_at": "2026-06-04T10:10:25.604Z"
         }
       ],
       "created_at": "2026-06-02T02:53:00.000Z",
-      "updated_at": null
+      "updated_at": "2026-06-04T10:10:25.600Z"
     },
     {
       "id": "school-admin-heavy-booking-followup-0005",
@@ -22304,6 +22381,216 @@
     }
   ],
   "interactions": [
+    {
+      "id": "interaction-1780566743513-68c4eb",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "post",
+      "target_id": "diary-1780566743491-53a032",
+      "metadata": {
+        "source": "diary",
+        "tag_count": 1
+      },
+      "created_at": "2026-06-04T09:52:23.513Z"
+    },
+    {
+      "id": "interaction-1780566711513-de6c8e",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "chat",
+      "target_id": "RA-1780566711465",
+      "metadata": {
+        "source": "Quick Test",
+        "severity": "high",
+        "risk_score": 80
+      },
+      "created_at": "2026-06-04T09:51:51.513Z"
+    },
+    {
+      "id": "interaction-1780565783356-81816b",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "2",
+      "metadata": {
+        "source": "public-feed",
+        "target_type": "comment",
+        "post_id": 1,
+        "reaction": "❤️",
+        "action": "add"
+      },
+      "created_at": "2026-06-04T09:36:23.356Z"
+    },
+    {
+      "id": "interaction-1780565748679-4aaa1f",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "feed-1780494716929",
+      "metadata": {
+        "source": "public-feed",
+        "target_type": "post",
+        "post_id": "feed-1780494716929",
+        "reaction": "❤️",
+        "action": "add"
+      },
+      "created_at": "2026-06-04T09:35:48.679Z"
+    },
+    {
+      "id": "interaction-1780494894410-c15af7",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "comment-1780393667464",
+      "metadata": {
+        "source": "public-feed",
+        "reaction": "❤️",
+        "action": "change"
+      },
+      "created_at": "2026-06-03T13:54:54.410Z"
+    },
+    {
+      "id": "interaction-1780494893737-0446cb",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "comment-1780393667464",
+      "metadata": {
+        "source": "public-feed",
+        "reaction": "👍",
+        "action": "change"
+      },
+      "created_at": "2026-06-03T13:54:53.737Z"
+    },
+    {
+      "id": "interaction-1780494892798-13af1e",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "comment-1780393667464",
+      "metadata": {
+        "source": "public-feed",
+        "reaction": "❤️",
+        "action": "change"
+      },
+      "created_at": "2026-06-03T13:54:52.798Z"
+    },
+    {
+      "id": "interaction-1780494890660-db647a",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "comment-1780393667464",
+      "metadata": {
+        "source": "public-feed",
+        "target_type": "comment",
+        "post_id": 2,
+        "reaction": "❤️",
+        "action": "add"
+      },
+      "created_at": "2026-06-03T13:54:50.660Z"
+    },
+    {
+      "id": "interaction-1780494716936-fe880d",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "post",
+      "target_id": "feed-1780494716929",
+      "metadata": {
+        "source": "public-feed",
+        "tags": [
+          "Stress"
+        ],
+        "content_length": 35
+      },
+      "created_at": "2026-06-03T13:51:56.936Z"
+    },
+    {
+      "id": "interaction-1780494700983-06494a",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "post",
+      "target_id": "feed-1780318282921",
+      "metadata": {
+        "source": "public-feed",
+        "action": "delete",
+        "tag_count": 1,
+        "comment_count": 1
+      },
+      "created_at": "2026-06-03T13:51:40.983Z"
+    },
+    {
+      "id": "interaction-1780394861981-55a9ae",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "1",
+      "metadata": {
+        "source": "public-feed",
+        "target_type": "post",
+        "post_id": 1,
+        "reaction": "❤️",
+        "action": "add"
+      },
+      "created_at": "2026-06-02T10:07:41.981Z"
+    },
+    {
+      "id": "interaction-1780394854776-13ed5a",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "comment",
+      "target_id": "reply-1780394854761",
+      "metadata": {
+        "source": "public-feed",
+        "action": "create_nested",
+        "post_id": "feed-1780318282921",
+        "content_length": 3
+      },
+      "created_at": "2026-06-02T10:07:34.776Z"
+    },
+    {
+      "id": "interaction-1780393947201-3d3ab0",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "1",
+      "metadata": {
+        "source": "public-feed",
+        "target_type": "comment",
+        "post_id": 1,
+        "reaction": "😂",
+        "action": "add"
+      },
+      "created_at": "2026-06-02T09:52:27.201Z"
+    },
+    {
+      "id": "interaction-1780393667467-3a9934",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "comment",
+      "target_id": "comment-1780393667464",
+      "metadata": {
+        "source": "public-feed",
+        "post_id": 2,
+        "content_length": 6
+      },
+      "created_at": "2026-06-02T09:47:47.467Z"
+    },
+    {
+      "id": "interaction-1780393664345-49802e",
+      "user_id": "4183f78c-7b6e-4d36-b7ef-8e1ec4d31828",
+      "student_id_hash": "SV-47986DEC",
+      "type": "reaction",
+      "target_id": "2",
+      "metadata": {
+        "source": "public-feed",
+        "target_type": "post",
+        "post_id": 2,
+        "reaction": "❤️",
+        "action": "add"
+      },
+      "created_at": "2026-06-02T09:47:44.344Z"
+    },
     {
       "seed_batch": "school-admin-heavy-seed-20260602-v1",
       "id": "school-admin-heavy-interaction-public-post-0118",
@@ -41453,6 +41740,853 @@
         "tag_count": 2
       },
       "created_at": "2026-05-21T08:36:13.698Z"
+    }
+  ],
+  "publicFeed": [
+    {
+      "id": "feed-1780494716929",
+      "author": "YBY1",
+      "author_avatar": "data:image/jpeg;base64,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",
+      "owner_email": "24521374@gm.uit.edu.vn",
+      "date": "2026-06-03T13:51:56.929Z",
+      "content": "Tôi áp lực vì là tuyển thủ số 1 TFT",
+      "tags": [
+        "Stress"
+      ],
+      "likes": 1,
+      "comments": 0,
+      "isLiked": false,
+      "isUser": true,
+      "commentObjects": [],
+      "sort_index": 0,
+      "created_at": "2026-06-03T13:51:56.929Z",
+      "updated_at": "2026-06-04T10:05:14.615Z"
+    },
+    {
+      "id": "1",
+      "author": "Sleepyhead",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2024-11-01T14:30:00.000Z",
+      "content": "Cảm thấy áp lực deadline quá... Có ai biết cách quản lý thời gian hiệu quả không?",
+      "tags": [
+        "Áp lực học tập",
+        "Cần lời khuyên"
+      ],
+      "likes": 14,
+      "comments": 2,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "1",
+          "author": "Corn Candy",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2024-11-01T15:00:00.000Z",
+          "content": "Mình cũng đang gặp vấn đề tương tự. Mình thường chia nhỏ công việc ra và đặt deadline ảo cho từng phần.",
+          "likes": 3,
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "2",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2024-11-01T15:05:00.000Z",
+          "content": "Bạn có thể thử phương pháp Pomodoro: làm việc 25 phút, nghỉ 5 phút. Sau 4 lần, nghỉ dài hơn. Mình cũng có thể gợi ý một số công cụ quản lý thời gian nếu bạn muốn!",
+          "likes": 4,
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 1,
+      "created_at": "2024-11-01T14:30:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.615Z"
+    },
+    {
+      "id": "2",
+      "author": "Luriam",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2025-12-22T09:15:00.000Z",
+      "content": "Hôm nay mình đã thử bài tập thở mà AI gợi ý, cảm giác khá ổn đấy! Ai muốn thử cùng mình không?",
+      "tags": [
+        "Thở",
+        "Giảm stress"
+      ],
+      "likes": 5,
+      "comments": 2,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "3",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2025-12-22T09:30:00.000Z",
+          "content": "Chúc bạn có một ngày tốt lành!",
+          "likes": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "comment-1780393667464",
+          "author": "YBY1",
+          "author_avatar": "data:image/jpeg;base64,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",
+          "owner_email": "24521374@gm.uit.edu.vn",
+          "date": "2026-06-02T09:47:47.464Z",
+          "content": "ok tốt",
+          "likes": 1,
+          "isLiked": false,
+          "isUser": true,
+          "replies": []
+        }
+      ],
+      "sort_index": 2,
+      "created_at": "2025-12-22T09:15:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.615Z"
+    },
+    {
+      "id": "seed-post-exam-week-01",
+      "author": "Blue Lemon",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2026-02-03T08:20:00.000Z",
+      "content": "Tuần thi tới gần mà mình cứ bị mất tập trung. Đọc tài liệu được vài trang là lại mở điện thoại. Có ai có cách học nào dễ bắt đầu hơn không?",
+      "tags": [
+        "Áp lực học tập",
+        "Thi cử",
+        "Cần lời khuyên"
+      ],
+      "likes": [
+        8,
+        4,
+        2,
+        1,
+        0
+      ],
+      "comments": 3,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "seed-comment-exam-week-01-a",
+          "author": "Mint Tea",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-03T08:45:00.000Z",
+          "content": "Mình hay đặt mục tiêu rất nhỏ, ví dụ chỉ đọc 2 trang trước. Khi bắt đầu được rồi thì mình mới tăng dần.",
+          "likes": [
+            4,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-exam-week-01-b",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-03T08:52:00.000Z",
+          "content": "Bạn có thể thử học theo phiên 20 phút, sau mỗi phiên ghi lại một ý chính. Nếu khó tập trung, hãy đặt điện thoại xa bàn học và bắt đầu bằng phần dễ nhất để giảm cảm giác bị quá tải.",
+          "likes": [
+            5,
+            1,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-exam-week-01-c",
+          "author": "Quiet Star",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-03T09:05:00.000Z",
+          "content": "Mình dùng checklist theo môn, nhìn thấy từng việc được gạch đi thì đỡ hoang mang hơn nhiều.",
+          "likes": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 3,
+      "created_at": "2026-02-03T08:20:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.615Z"
+    },
+    {
+      "id": "seed-post-sleep-01",
+      "author": "Night Owl",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2026-02-04T23:10:00.000Z",
+      "content": "Mấy hôm nay mình ngủ rất trễ dù rất mệt. Nằm xuống là nghĩ tới bài tập, deadline và cả chuyện nhóm. Có ai từng bị vậy không?",
+      "tags": [
+        "Mất ngủ",
+        "Stress",
+        "Deadline"
+      ],
+      "likes": [
+        6,
+        5,
+        1,
+        0,
+        0
+      ],
+      "comments": 2,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "seed-comment-sleep-01-a",
+          "author": "Paper Moon",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-04T23:22:00.000Z",
+          "content": "Mình từng vậy. Trước khi ngủ mình viết hết việc cần làm ngày mai ra giấy, giống như gửi nó ra khỏi đầu một chút.",
+          "likes": [
+            3,
+            1,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-sleep-01-b",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-04T23:30:00.000Z",
+          "content": "Bạn có thể thử tạo một nghi thức ngủ ngắn: tắt màn hình trước 20-30 phút, viết ra 3 việc ưu tiên cho ngày mai và thở chậm trong vài phút. Nếu mất ngủ kéo dài nhiều ngày, bạn nên cân nhắc trao đổi với chuyên viên hỗ trợ.",
+          "likes": [
+            5,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 4,
+      "created_at": "2026-02-04T23:10:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.615Z"
+    },
+    {
+      "id": "seed-post-group-work-01",
+      "author": "Matcha Latte",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2026-02-05T10:05:00.000Z",
+      "content": "Làm đồ án nhóm mà mình thấy khó góp ý vì sợ mọi người nghĩ mình khó tính. Nhưng nếu không nói thì tiến độ cứ trễ mãi.",
+      "tags": [
+        "Làm việc nhóm",
+        "Giao tiếp",
+        "Cần lời khuyên"
+      ],
+      "likes": [
+        7,
+        2,
+        2,
+        0,
+        0
+      ],
+      "comments": 3,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "seed-comment-group-work-01-a",
+          "author": "Deadline Buddy",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-05T10:18:00.000Z",
+          "content": "Bạn có thể nói theo kiểu “mình lo phần này ảnh hưởng deadline, tụi mình thử chia lại task được không?” nghe đỡ căng hơn.",
+          "likes": [
+            4,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-group-work-01-b",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-05T10:25:00.000Z",
+          "content": "Một cách an toàn là góp ý dựa trên mục tiêu chung thay vì phán xét cá nhân. Bạn có thể đề xuất checklist, mốc kiểm tra ngắn và hỏi nhóm cần hỗ trợ phần nào để cuộc nói chuyện cụ thể hơn.",
+          "likes": [
+            4,
+            1,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-group-work-01-c",
+          "author": "Corn Candy",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-05T11:00:00.000Z",
+          "content": "Mình thấy họp 15 phút mỗi tối trước deadline giúp giảm hiểu lầm khá nhiều.",
+          "likes": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 5,
+      "created_at": "2026-02-05T10:05:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.615Z"
+    },
+    {
+      "id": "seed-post-lonely-01",
+      "author": "Tiny Cloud",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2026-02-06T17:40:00.000Z",
+      "content": "Lên đại học rồi mình vẫn thấy khó kết bạn. Đi học về là về phòng, đôi lúc thấy hơi lạc lõng dù xung quanh rất đông người.",
+      "tags": [
+        "Bạn bè",
+        "Cô đơn",
+        "Tâm sự"
+      ],
+      "likes": [
+        10,
+        4,
+        3,
+        1,
+        0
+      ],
+      "comments": 3,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "seed-comment-lonely-01-a",
+          "author": "Sunny Side",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-06T17:55:00.000Z",
+          "content": "Bạn không một mình đâu. Mình bắt đầu bằng việc rủ một bạn cùng lớp đi ăn trưa sau giờ học, nhỏ thôi nhưng có tác dụng.",
+          "likes": [
+            5,
+            1,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-lonely-01-b",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-06T18:02:00.000Z",
+          "content": "Cảm giác lạc lõng khi chuyển môi trường là điều nhiều sinh viên gặp. Bạn có thể chọn một hoạt động nhỏ có lịch cố định như câu lạc bộ, nhóm học hoặc workshop để tạo cơ hội gặp lại cùng một nhóm người nhiều lần.",
+          "likes": [
+            6,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-lonely-01-c",
+          "author": "Blue Lemon",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-06T18:30:00.000Z",
+          "content": "Nếu bạn muốn, có thể thử tìm nhóm học chung theo môn trước, dễ bắt chuyện hơn nói chuyện ngẫu nhiên.",
+          "likes": [
+            3,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 6,
+      "created_at": "2026-02-06T17:40:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.616Z"
+    },
+    {
+      "id": "seed-post-finance-01",
+      "author": "Coffee Bean",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2026-02-07T12:15:00.000Z",
+      "content": "Tháng này mình hơi áp lực tiền sinh hoạt. Vừa học vừa làm thêm nên đôi khi kiệt sức. Có ai biết cách cân bằng hơn không?",
+      "tags": [
+        "Tài chính",
+        "Làm thêm",
+        "Stress"
+      ],
+      "likes": [
+        5,
+        3,
+        1,
+        1,
+        0
+      ],
+      "comments": 2,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "seed-comment-finance-01-a",
+          "author": "Quiet Star",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-07T12:35:00.000Z",
+          "content": "Mình chia chi phí theo tuần thay vì theo tháng, dễ kiểm soát hơn. Nếu làm thêm quá nhiều thì nên giữ lại ít nhất một buổi nghỉ cố định.",
+          "likes": [
+            3,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-finance-01-b",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-07T12:42:00.000Z",
+          "content": "Bạn có thể thử lập danh sách chi phí bắt buộc, chi phí có thể giảm và số giờ làm thêm tối đa mỗi tuần. Nếu trường có học bổng, quỹ hỗ trợ hoặc tư vấn tài chính sinh viên, đó cũng là nguồn nên kiểm tra.",
+          "likes": [
+            4,
+            1,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 7,
+      "created_at": "2026-02-07T12:15:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.616Z"
+    },
+    {
+      "id": "seed-post-career-01",
+      "author": "Pixel Rain",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2026-02-08T15:25:00.000Z",
+      "content": "Nhìn bạn bè có internship hết rồi mình thấy lo. Mình vẫn chưa biết nên theo hướng frontend, backend hay data nữa.",
+      "tags": [
+        "Định hướng",
+        "Thực tập",
+        "Lo âu"
+      ],
+      "likes": [
+        9,
+        2,
+        1,
+        0,
+        0
+      ],
+      "comments": 3,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "seed-comment-career-01-a",
+          "author": "Deadline Buddy",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-08T15:40:00.000Z",
+          "content": "Bạn thử làm 1 project nhỏ cho mỗi hướng xem mình thấy thích kiểu công việc nào nhất. Đọc mô tả job thôi đôi khi chưa đủ.",
+          "likes": [
+            4,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-career-01-b",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-08T15:48:00.000Z",
+          "content": "Bạn có thể ra quyết định theo 3 tiêu chí: mức độ hứng thú, kỹ năng hiện có và cơ hội học trong 4-6 tuần tới. Chọn một hướng để thử ngắn hạn không có nghĩa là phải gắn bó mãi với hướng đó.",
+          "likes": [
+            5,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-career-01-c",
+          "author": "Sleepyhead",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-08T16:10:00.000Z",
+          "content": "Mình từng đổi hướng sau một project nhỏ, nên cứ thử trước rồi điều chỉnh sau cũng ổn.",
+          "likes": [
+            2,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 8,
+      "created_at": "2026-02-08T15:25:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.616Z"
+    },
+    {
+      "id": "seed-post-family-01",
+      "author": "Green Apple",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2026-02-09T20:00:00.000Z",
+      "content": "Gia đình kỳ vọng điểm cao nên mỗi lần điểm không như ý mình thấy rất nặng nề. Mình muốn nói chuyện nhưng không biết bắt đầu sao.",
+      "tags": [
+        "Gia đình",
+        "Áp lực học tập",
+        "Tâm sự"
+      ],
+      "likes": [
+        8,
+        3,
+        2,
+        1,
+        0
+      ],
+      "comments": 2,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "seed-comment-family-01-a",
+          "author": "Paper Moon",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-09T20:16:00.000Z",
+          "content": "Mình từng viết trước những điều muốn nói rồi mới gọi về. Viết ra giúp mình không bị rối khi nói chuyện.",
+          "likes": [
+            3,
+            1,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-family-01-b",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-09T20:25:00.000Z",
+          "content": "Bạn có thể bắt đầu bằng cảm xúc và nhu cầu cụ thể: “Con đang áp lực và cần được nghe góp ý theo cách bình tĩnh hơn”. Nếu cuộc nói chuyện dễ căng, hãy chọn thời điểm cả hai bên không vội.",
+          "likes": [
+            5,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 9,
+      "created_at": "2026-02-09T20:00:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.616Z"
+    },
+    {
+      "id": "seed-post-motivation-01",
+      "author": "Soft Reset",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2026-02-10T09:35:00.000Z",
+      "content": "Có ngày mình không muốn làm gì cả, kể cả những môn trước đây mình rất thích. Không biết đây là lười hay do mình đang quá tải.",
+      "tags": [
+        "Động lực",
+        "Quá tải",
+        "Tâm sự"
+      ],
+      "likes": [
+        11,
+        4,
+        2,
+        0,
+        0
+      ],
+      "comments": 3,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "seed-comment-motivation-01-a",
+          "author": "Mint Tea",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-10T09:52:00.000Z",
+          "content": "Mình nghĩ nếu nghỉ vẫn thấy mệt thì có thể là quá tải. Bạn thử giảm kỳ vọng trong 1-2 ngày xem sao.",
+          "likes": [
+            4,
+            1,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-motivation-01-b",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-10T10:00:00.000Z",
+          "content": "Bạn có thể quan sát thêm: tình trạng này kéo dài bao lâu, có ảnh hưởng giấc ngủ, ăn uống hoặc việc học không. Trước mắt hãy chọn một việc rất nhỏ để hoàn thành, rồi cho mình thời gian hồi phục.",
+          "likes": [
+            6,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-motivation-01-c",
+          "author": "Tiny Cloud",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-10T10:20:00.000Z",
+          "content": "Mình hay đặt “minimum day”: chỉ làm phần tối thiểu để không bị đứt mạch, còn lại cho phép nghỉ.",
+          "likes": [
+            3,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 10,
+      "created_at": "2026-02-10T09:35:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.616Z"
+    },
+    {
+      "id": "seed-post-presentation-01",
+      "author": "Slide Panic",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2026-02-11T13:10:00.000Z",
+      "content": "Ngày mai thuyết trình mà mình cứ run, sợ quên ý và nói lắp. Có mẹo nào để bình tĩnh trước khi lên nói không?",
+      "tags": [
+        "Thuyết trình",
+        "Lo âu",
+        "Cần lời khuyên"
+      ],
+      "likes": [
+        6,
+        4,
+        1,
+        0,
+        0
+      ],
+      "comments": 2,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "seed-comment-presentation-01-a",
+          "author": "Corn Candy",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-11T13:25:00.000Z",
+          "content": "Mình thường tập mở đầu thật kỹ. Khi 30 giây đầu ổn thì phần sau dễ hơn.",
+          "likes": [
+            4,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-presentation-01-b",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-11T13:34:00.000Z",
+          "content": "Bạn có thể chuẩn bị 3 ý chính thay vì học thuộc toàn bộ. Trước khi nói, thử thở chậm 4 nhịp vào và 6 nhịp ra trong vài vòng để giảm nhịp căng thẳng.",
+          "likes": [
+            5,
+            1,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 11,
+      "created_at": "2026-02-11T13:10:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.616Z"
+    },
+    {
+      "id": "seed-post-positive-01",
+      "author": "Morning Note",
+      "author_avatar": "",
+      "owner_email": "",
+      "date": "2026-02-12T07:50:00.000Z",
+      "content": "Hôm nay mình thử đi bộ 15 phút trước giờ học và thấy đầu óc nhẹ hơn hẳn. Có lẽ mình sẽ giữ thói quen này trong tuần này.",
+      "tags": [
+        "Tích cực",
+        "Tự chăm sóc",
+        "Thói quen"
+      ],
+      "likes": [
+        12,
+        3,
+        1,
+        1,
+        0
+      ],
+      "comments": 2,
+      "isLiked": false,
+      "isUser": false,
+      "commentObjects": [
+        {
+          "id": "seed-comment-positive-01-a",
+          "author": "Luriam",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-12T08:02:00.000Z",
+          "content": "Nghe hay đó. Mình sẽ thử đi bộ sau giờ học xem có dễ ngủ hơn không.",
+          "likes": [
+            3,
+            0,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        },
+        {
+          "id": "seed-comment-positive-01-b",
+          "author": "MindConnect AI",
+          "author_avatar": "",
+          "owner_email": "",
+          "date": "2026-02-12T08:08:00.000Z",
+          "content": "Đây là một thói quen nhỏ nhưng có thể hỗ trợ tâm trạng khá tốt. Bạn có thể ghi lại cảm xúc trước và sau khi đi bộ để xem thói quen này tác động thế nào với mình.",
+          "likes": [
+            4,
+            1,
+            0,
+            0,
+            0
+          ],
+          "isLiked": false,
+          "isUser": false,
+          "replies": []
+        }
+      ],
+      "sort_index": 12,
+      "created_at": "2026-02-12T07:50:00.000Z",
+      "updated_at": "2026-06-04T10:05:14.616Z"
     }
   ]
 }

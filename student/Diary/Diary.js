@@ -110,7 +110,7 @@ document.addEventListener("click", (event) => {
         case 'student-stats':
             renderStudentStats();
             break;
-        case 'resources':
+        case 'resources-podcast':
             renderResourcesLibrary("Podcast");
             break;
     }
@@ -132,7 +132,7 @@ function selectMood(score, elem) {
             excerpt: 'Quick Test ghi nhận mức cảm xúc 1/5.'
         });
     } else if(score <= 2) {
-        msg.innerHTML = `Bạn ổn không? <u data-action="student-stats" style="cursor:pointer; font-weight:bold;">Xem thống kê</u> hoặc <u data-action="resources" style="cursor:pointer; font-weight:bold;">nghe nhạc</u> nhé.`;
+        msg.innerHTML = `Bạn ổn không? <u data-action="student-stats" style="cursor:pointer; font-weight:bold;">Xem thống kê</u> hoặc <u data-action="resources-podcast" style="cursor:pointer; font-weight:bold;">nghe nhạc</u> nhé.`;
     } else {
         msg.innerHTML = "Đã ghi nhận! Cảm xúc chủ đạo: " + (score==5?"Rất tốt":(score==4?"Tốt":"Bình thường"));
     }

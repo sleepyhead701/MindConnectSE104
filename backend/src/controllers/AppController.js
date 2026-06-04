@@ -7,6 +7,7 @@ const RiskAlert = require('../models/RiskAlert');
 const Booking = require('../models/Booking');
 const Feedback = require('../models/Feedback');
 const Interaction = require('../models/Interaction');
+const PublicFeedPost = require('../models/PublicFeedPost');
 const aiChatService = require('../services/OpenAIChatService');
 const riskDetectionService = require('../services/RiskDetectionService');
 
@@ -27,7 +28,8 @@ const defaultMemoryStore = {
   riskAlerts: [],
   bookings: [],
   feedbacks: [],
-  interactions: []
+  interactions: [],
+  publicFeed: []
 };
 const loadMemoryStore = () => {
   try {
@@ -152,6 +154,74 @@ const normalizeDocument = (doc) => {
   return {
     ...raw,
     id: String(raw._id || raw.id)
+  };
+};
+
+const normalizePublicFeedReaction = (likes) => {
+  if (Array.isArray(likes)) {
+    return likes.slice(0, 5).map(value => Math.max(0, Number(value) || 0));
+  }
+  return Math.max(0, Number(likes) || 0);
+};
+
+const normalizePublicFeedReply = (reply = {}) => ({
+  id: String(reply.id || makeMemoryId('feed-reply')),
+  author: String(reply.author || 'Sinh viên').trim().slice(0, 80),
+  author_avatar: String(reply.author_avatar || '').slice(0, 900000),
+  owner_email: String(reply.owner_email || '').trim().toLowerCase().slice(0, 160),
+  date: reply.date ? new Date(reply.date) : new Date(),
+  content: String(reply.content || '').trim().slice(0, 2000),
+  likes: normalizePublicFeedReaction(reply.likes),
+  isLiked: Boolean(reply.isLiked),
+  isUser: Boolean(reply.isUser)
+});
+
+const normalizePublicFeedComment = (comment = {}) => {
+  const replies = Array.isArray(comment.replies)
+    ? comment.replies.map(normalizePublicFeedReply).filter(reply => reply.content)
+    : [];
+
+  return {
+    id: String(comment.id || makeMemoryId('feed-comment')),
+    author: String(comment.author || 'Sinh viên').trim().slice(0, 80),
+    author_avatar: String(comment.author_avatar || '').slice(0, 900000),
+    owner_email: String(comment.owner_email || '').trim().toLowerCase().slice(0, 160),
+    date: comment.date ? new Date(comment.date) : new Date(),
+    content: String(comment.content || '').trim().slice(0, 2000),
+    likes: normalizePublicFeedReaction(comment.likes),
+    isLiked: Boolean(comment.isLiked),
+    isUser: Boolean(comment.isUser),
+    replies
+  };
+};
+
+const normalizePublicFeedPost = (post = {}, sortIndex = 0) => {
+  const commentObjects = Array.isArray(post.commentObjects)
+    ? post.commentObjects.map(normalizePublicFeedComment).filter(comment => comment.content)
+    : [];
+
+  const rawDate = post.date || post.created_at || new Date();
+  const parsedDate = new Date(rawDate);
+  const date = Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+
+  return {
+    id: String(post.id || makeMemoryId('feed-post')),
+    author: String(post.author || 'Sinh viên').trim().slice(0, 80),
+    author_avatar: String(post.author_avatar || '').slice(0, 900000),
+    owner_email: String(post.owner_email || '').trim().toLowerCase().slice(0, 160),
+    date,
+    content: String(post.content || '').trim().slice(0, 5000),
+    tags: Array.isArray(post.tags)
+      ? post.tags.map(tag => String(tag || '').trim()).filter(Boolean).slice(0, 12)
+      : [],
+    likes: normalizePublicFeedReaction(post.likes),
+    comments: commentObjects.reduce((sum, comment) => sum + 1 + (Array.isArray(comment.replies) ? comment.replies.length : 0), 0),
+    isLiked: Boolean(post.isLiked),
+    isUser: Boolean(post.isUser),
+    commentObjects,
+    sort_index: Number.isFinite(Number(post.sort_index)) ? Number(post.sort_index) : sortIndex,
+    created_at: post.created_at ? new Date(post.created_at) : date,
+    updated_at: new Date()
   };
 };
 
@@ -409,6 +479,52 @@ const getFeed = async (req, res, next) => {
     res.json({
       success: true,
       data: diaries.map(normalizeDocument)
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const listPublicFeed = async (req, res, next) => {
+  try {
+    const feed = isDbConnected()
+      ? await PublicFeedPost.find().sort({ sort_index: 1, date: -1 }).limit(200)
+      : memoryStore.publicFeed.slice(0, 200);
+
+    res.json({
+      success: true,
+      data: feed.map((item, index) => normalizePublicFeedPost(item, index))
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const replacePublicFeed = async (req, res, next) => {
+  try {
+    if (!Array.isArray(req.body?.items)) {
+      return res.status(400).json({ success: false, error: 'Public feed items must be an array' });
+    }
+
+    const items = req.body.items;
+    const publicFeed = items
+      .slice(0, 200)
+      .map((item, index) => normalizePublicFeedPost(item, index))
+      .filter(item => item.content);
+
+    if (isDbConnected()) {
+      await PublicFeedPost.deleteMany({});
+      if (publicFeed.length) {
+        await PublicFeedPost.insertMany(publicFeed);
+      }
+    } else {
+      memoryStore.publicFeed = publicFeed;
+      persistMemoryStore();
+    }
+
+    res.json({
+      success: true,
+      data: publicFeed
     });
   } catch (error) {
     next(error);
@@ -1441,6 +1557,8 @@ const getDashboardV2 = async (req, res, next) => {
 
 module.exports = {
   getFeed,
+  listPublicFeed,
+  replacePublicFeed,
   createDiary,
   suggestDiaryTags,
   listRiskAlerts,

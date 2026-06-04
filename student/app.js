@@ -1,23 +1,23 @@
 // student.js - FULL VERSION (MERGED)
 
 // --- 1. DỮ LIỆU & TRẠNG THÁI (STATE) ---
-import { loadJson, savePublicFeed,  saveJson } from './state.js';
-import { getAuthSession, getStudentSession, resetChatForNewWebVisit } from './student/studentState.js';
-import { getStudentProfileKey } from './student/studentState.js';
-import { getUserFeed, addUserFeed } from './state.js';
-import { getStudentProfile, getPrivateDiaryEntries } from './student/studentState.js';
-import { findUserBySession, findUserByName } from './student/studentState.js';
-import { getBackendReadyState, setBackendReadyState } from './state.js';
-import { escapeHtml, apiRequest } from './student/utils/utils.js';
-import { getAPIBaseUrl } from './state.js';
+import { loadJson, savePublicFeed,  saveJson } from '../shared/state.js';
+import { getAuthSession, getStudentSession, resetChatForNewWebVisit } from './studentState.js';
+import { getStudentProfileKey } from './studentState.js';
+import { getUserFeed, addUserFeed } from '../shared/state.js';
+import { getStudentProfile, getPrivateDiaryEntries } from './studentState.js';
+import { findUserBySession, findUserByName } from './studentState.js';
+import { getBackendReadyState, setBackendReadyState } from '../shared/state.js';
+import { escapeHtml, apiRequest } from './utils/utils.js';
+import { getAPIBaseUrl } from '../shared/state.js';
 
-import { saveStudentProfile } from './student/studentState.js';
+import { saveStudentProfile } from './studentState.js';
 
-import { addManualTag, getManualTags } from './student/utils/tags.js';
+import { addManualTag, getManualTags } from './utils/tags.js';
 
-import { trackInteraction } from './student/API/analytics.js';
+import { trackInteraction } from './API/analytics.js';
 
-import { normalizeVietnamese } from './student/utils/normalizeVietnamese.js';
+import { normalizeVietnamese } from './utils/normalizeVietnamese.js';
 
 
 // --- 2. KHỞI TẠO (INIT) ---
@@ -30,18 +30,25 @@ window.onload = async function() {
     hideLoadingScreen();
     renderStudentHome(); // Mặc định vào trang chủ
     setTimeout(() => {
-        showNotification("📅 Đừng quên làm Quick Test cảm xúc hôm nay nhé!");
+        showNotification({
+            variant: 'mood-reminder',
+            title: 'Quick Test cảm xúc',
+            message: 'Dành 30 giây để ghi nhận tâm trạng hôm nay.',
+            actionLabel: 'Làm ngay',
+            actionSelector: '.nav-icon[data-action="diary"]',
+            duration: 7000
+        });
     }, 1000);
 };
 
-import { showLoadingScreen, hideLoadingScreen } from './student/loadingScreen.js';
+import { showLoadingScreen, hideLoadingScreen } from './loadingScreen.js';
 
-import { showNotification } from './student/utils/utils.js';
+import { showNotification } from './utils/utils.js';
 
-import { updateNav } from './student/utils/updateNav.js';
-import { animateMainContentSwap } from './student/animations.js';
+import { updateNav } from './utils/updateNav.js';
+import { animateMainContentSwap } from './animations.js';
 
-import { formatFeedTime, getFeedGradient, getInitials } from './student/utils/utils.js';
+import { formatFeedTime, getFeedGradient, getInitials } from './utils/utils.js';
 
 export async function loadFeedFromBackend() {
     const controller = new AbortController();
@@ -83,12 +90,12 @@ function getFallbackResourceSuggestion(txt) {
     return 'Nếu bạn muốn, mình có thể gợi ý một video, podcast hoặc bài tập thở trong mục Resources.';
 }
 
-import { updateStudentProfileBadge, renderStudentHome } from './student/NewsFeed/NewsFeed.js';
+import { updateStudentProfileBadge, renderStudentHome } from './NewsFeed/NewsFeed.js';
 
-import { renderStudentDiary } from './student/Diary/Diary.js';
-import { getCurrentMoodScore, setCurrentMoodScore } from './student/studentState.js';
-import { callChatBotAPI } from './student/API/callChatBotAPI.js'
+import { renderStudentDiary } from './Diary/Diary.js';
+import { getCurrentMoodScore, setCurrentMoodScore } from './studentState.js';
+import { callChatBotAPI } from './API/callChatBotAPI.js'
 
-import { renderResourcesLibrary } from './student/Resources/Resources.js';
+import { renderResourcesLibrary } from './Resources/Resources.js';
 
-import { isOwnedFeedPost } from './student/studentState.js';
+import { isOwnedFeedPost } from './studentState.js';

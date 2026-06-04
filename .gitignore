@@ -1,3 +1,20 @@
 backend/.env
 backend/node_modules/
 node_modules/
+
+# Runtime logs and local build/cache output.
+*.log
+__pycache__/
+*.py[cod]
+
+# Local intermediate files generated during refactor/report work.
+*.extracted
+*.fixed
+template_report_extracted.txt
+reports/
+tools/generate_mindconnect_report.py
+tools/generate_mindconnect_latex_report.py
+
+# Ignore Markdown documents except the root GitHub README.
+*.md
+!/README.md

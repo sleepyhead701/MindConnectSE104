@@ -6,6 +6,8 @@ const requireRole = require('../middlewares/requireRole');
 const router = express.Router();
 
 router.get('/feed', optionalAuthenticate, appController.getFeed);
+router.get('/public-feed', optionalAuthenticate, appController.listPublicFeed);
+router.put('/public-feed', optionalAuthenticate, appController.replacePublicFeed);
 router.post('/diaries', optionalAuthenticate, appController.createDiary);
 router.post('/diaries/tags', optionalAuthenticate, appController.suggestDiaryTags);
 router.post('/interactions', optionalAuthenticate, appController.createInteraction);

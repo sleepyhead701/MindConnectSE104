@@ -87,6 +87,65 @@ function showNotification(message, type = 'info') {
     setTimeout(() => notification.remove(), 4000);
 }
 
+function showConfirmDialog({
+    title = 'Xác nhận thao tác',
+    message = '',
+    detail = '',
+    confirmLabel = 'Xác nhận',
+    cancelLabel = 'Hủy',
+    tone = 'primary'
+} = {}) {
+    document.getElementById('admin-confirm-dialog')?.remove();
+
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.id = 'admin-confirm-dialog';
+        overlay.className = 'admin-confirm-overlay';
+        overlay.innerHTML = `
+            <div class="admin-confirm-card admin-confirm-${escapeHtml(tone)}" role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title">
+                <div class="admin-confirm-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+                        <path d="M12 8v5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                        <path d="M12 16.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                        <path d="M10.3 4.1 2.9 17.2A2 2 0 0 0 4.6 20h14.8a2 2 0 0 0 1.7-2.8L13.7 4.1a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="admin-confirm-body">
+                    <span class="modal-eyebrow">Xác nhận</span>
+                    <h3 id="admin-confirm-title">${escapeHtml(title)}</h3>
+                    ${message ? `<p>${escapeHtml(message)}</p>` : ''}
+                    ${detail ? `<small>${escapeHtml(detail)}</small>` : ''}
+                    <div class="admin-confirm-actions">
+                        <button class="btn btn-secondary" type="button" data-confirm-action="cancel">${escapeHtml(cancelLabel)}</button>
+                        <button class="btn btn-primary" type="button" data-confirm-action="confirm">${escapeHtml(confirmLabel)}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const close = value => {
+            document.removeEventListener('keydown', onKeyDown);
+            overlay.remove();
+            resolve(value);
+        };
+
+        const onKeyDown = event => {
+            if (event.key === 'Escape') close(false);
+        };
+
+        overlay.addEventListener('click', event => {
+            if (event.target === overlay) close(false);
+            const action = event.target.closest('[data-confirm-action]')?.dataset.confirmAction;
+            if (action === 'confirm') close(true);
+            if (action === 'cancel') close(false);
+        });
+
+        document.addEventListener('keydown', onKeyDown);
+        document.body.appendChild(overlay);
+        overlay.querySelector('[data-confirm-action="confirm"]')?.focus();
+    });
+}
+
 function getEmptyDashboardState(errorMessage = '') {
     return {
         metrics: {
@@ -304,7 +363,13 @@ async function handleConsultation(status, rowId) {
     const bookingId = row.dataset.bookingId;
 
     if (status === 'success') {
-        const confirmSurvey = confirm("Xác nhận ca tư vấn THÀNH CÔNG?\nHệ thống sẽ tự động gửi Khảo sát đánh giá (Survey) cho sinh viên.");
+        const confirmSurvey = await showConfirmDialog({
+            title: 'Xác nhận hoàn thành ca tư vấn?',
+            message: 'Ca này sẽ được chuyển sang trạng thái đã hoàn thành.',
+            detail: 'Hệ thống sẽ tự động ghi nhận khảo sát đánh giá cho sinh viên.',
+            confirmLabel: 'Xác nhận',
+            cancelLabel: 'Hủy'
+        });
         if (confirmSurvey) {
             row.style.backgroundColor = "#e8f5e9";
             if (bookingId) {
@@ -315,7 +380,7 @@ async function handleConsultation(status, rowId) {
             }
 
             setTimeout(() => {
-                alert("✅ Hệ thống đã lên lịch nhắc nhở phản hồi tự động sau 24h và 48h.");
+                showNotification('Đã xác nhận hoàn thành và lên lịch nhắc phản hồi tự động.', 'success');
             }, 500);
         }
     } else {
@@ -678,17 +743,17 @@ function renderInterventionsView() {
         <div class="kpi-grid kpi-3">
             <div class="kpi-card kpi-success">
                 <div class="kpi-header"><span class="kpi-label">Routing thành công</span></div>
-                <div class="kpi-value" id="intervention-success-rate" style="color:var(--success);">0%</div>
+                <div class="kpi-value" id="intervention-success-rate" style="color:#2e7d32;font-weight:800;">0%</div>
                 <div class="kpi-sub">Ca hoàn tất / tổng booking</div>
             </div>
             <div class="kpi-card kpi-primary">
                 <div class="kpi-header"><span class="kpi-label">Mood trước → sau</span></div>
-                <div class="kpi-value" id="intervention-mood-change" style="color:var(--primary-pink);">-</div>
+                <div class="kpi-value" id="intervention-mood-change" style="color:var(--mc-primary);font-weight:800;">-</div>
                 <div class="kpi-sub">Từ feedback sau hỗ trợ</div>
             </div>
             <div class="kpi-card kpi-accent">
                 <div class="kpi-header"><span class="kpi-label">Feedback tích cực</span></div>
-                <div class="kpi-value" id="intervention-positive-feedback" style="color:var(--accent-pink);">0%</div>
+                <div class="kpi-value" id="intervention-positive-feedback" style="color:#c75f3d;font-weight:800;">0%</div>
                 <div class="kpi-sub">Sau booking/tư vấn</div>
             </div>
         </div>
@@ -840,7 +905,8 @@ function initializeAdminFeatures() {
         formatFullDateTime,
         formatDateTimeLocalValue,
         parseAdminDateTimeInput,
-        showNotification
+        showNotification,
+        showConfirmDialog
     });
 }
 

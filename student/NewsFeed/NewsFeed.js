@@ -1,6 +1,6 @@
 import { updateNav } from '../utils/updateNav.js';
 import { animateMainContentSwap } from '../animations.js';
-import { getUserFeed, getAuthorAvatar, addUserFeed, savePublicFeed } from '../../state.js';
+import { getUserFeed, getAuthorAvatar, addUserFeed, savePublicFeed, syncPublicFeedWithBackend, hasLoadedPublicFeedFromBackend } from '../../shared/state.js';
 import { getCurrentProfileNames, getStudentProfile, getUserProfile, isOwnedFeedPost } from '../studentState.js';
 import { escapeHtml, formatFeedTime, getInitials, renderAvatar } from '../utils/utils.js';
 import { addManualTag, getManualTags } from '../utils/tags.js';
@@ -172,47 +172,97 @@ function renderCommentDeleteButton(postIndex, commentIndex, comment) {
     return `<button type="button" class="mc-post-delete-btn mc-comment-delete-btn" data-action="delete-comment" data-post-index="${postIndex}" data-comment-index="${commentIndex}" aria-label="Xóa bình luận">Xóa</button>`;
 }
 
+function renderNestedReplyDeleteButton(postIndex, commentIndex, replyIndex, reply) {
+    if (!isOwnedFeedComment(reply)) return '';
+    return `<button type="button" class="mc-post-delete-btn mc-comment-delete-btn" data-action="delete-reply" data-post-index="${postIndex}" data-comment-index="${commentIndex}" data-reply-index="${replyIndex}" aria-label="Xóa phản hồi">Xóa</button>`;
+}
+
 export function renderStudentHome() {
     const container = document.getElementById('student-main-content');
     updateNav(0);
     animateMainContentSwap();
 
+    if (!hasLoadedPublicFeedFromBackend()) {
+        syncPublicFeedWithBackend().then(hasChanged => {
+            if (hasChanged && document.getElementById('student-main-content')) {
+                renderStudentHome();
+            }
+        });
+    }
+
     const feedItems = getUserFeed();
     const feedHtml = feedItems.map((post, index) => {
         const postDate = post.date || post.time;
         const comments = Array.isArray(post.commentObjects) ? post.commentObjects : [];
-        const commentCount = comments.length || post.comments || 0;
+        const commentCount = comments.reduce((sum, c) => sum + 1 + (Array.isArray(c.replies) ? c.replies.length : 0), 0);
         const postBody = escapeHtml(post.content);
         const canDeletePost = isOwnedFeedPost(post);
 
         const commentsHtml = comments.length > 0
             ? `
                 <div class="mc-reply-list">
-                    ${comments.map((c, commentIndex) => `
-                        <div class="mc-reply-card">
-                            ${renderAvatar(c.author, c.author_avatar || getUserProfile(c.author)?.avatarUrl, index)}
-                            <div class="mc-reply-content-box">
-                                <div class="mc-reply-meta">
-                                    <strong>${escapeHtml(c.author)}</strong>
-                                    <div class="mc-reply-tools">
-                                        <span>${formatFeedTime(c.date)}</span>
-                                        ${renderCommentDeleteButton(index, commentIndex, c)}
+                    ${comments.map((c, commentIndex) => {
+                        const repliesHtml = Array.isArray(c.replies) && c.replies.length > 0
+                            ? `
+                                <div class="mc-nested-replies-list" style="margin-top: 12px; padding-left: 20px; border-left: 2px solid rgba(212, 46, 112, 0.12); display: grid; gap: 8px;">
+                                    ${c.replies.map((r, replyIndex) => `
+                                        <div class="mc-reply-card mc-nested-reply-card" style="background: #fafaf9 !important; border: 1px solid rgba(0,0,0,0.06) !important; padding: 10px 12px !important; margin-bottom: 0 !important;">
+                                            ${renderAvatar(r.author, r.author_avatar || getUserProfile(r.author)?.avatarUrl, index)}
+                                            <div class="mc-reply-content-box">
+                                                <div class="mc-reply-meta">
+                                                    <strong>${escapeHtml(r.author)}</strong>
+                                                    <div class="mc-reply-tools">
+                                                        <span>${formatFeedTime(r.date)}</span>
+                                                        ${renderNestedReplyDeleteButton(index, commentIndex, replyIndex, r)}
+                                                    </div>
+                                                </div>
+                                                <p>${escapeHtml(r.content)}</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `
+                            : '';
+
+                        return `
+                            <div class="mc-reply-card">
+                                ${renderAvatar(c.author, c.author_avatar || getUserProfile(c.author)?.avatarUrl, index)}
+                                <div class="mc-reply-content-box">
+                                    <div class="mc-reply-meta">
+                                        <strong>${escapeHtml(c.author)}</strong>
+                                        <div class="mc-reply-tools">
+                                            <span>${formatFeedTime(c.date)}</span>
+                                            ${renderCommentDeleteButton(index, commentIndex, c)}
+                                        </div>
                                     </div>
-                            </div>
-                            <p>${escapeHtml(c.content)}</p>
-                            <div style="margin-top: 8px; position: relative; display: inline-block;" class="mc-reaction-wrapper" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
-                                <button type="button" aria-label="Thả tim" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 16px; color: #666; transition: transform 0.2s;" data-action="toggle-like" data-post-index="${index}" data-comment-index="${commentIndex}"><span class="mc-reaction-icon" style="filter: grayscale(100%);">❤️</span> <span class="mc-like-count">${getReactionCount(c.likes)}</span></button>
-                                <div class="mc-reaction-popup" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 5px 10px; gap: 10px; z-index: 10;">
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="👍">👍</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="❤️">❤️</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="😂">😂</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="😮">😮</span>
-                                    <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="😢">😢</span>
+                                    <p>${escapeHtml(c.content)}</p>
+                                    <div style="margin-top: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                        <div style="position: relative; display: inline-block;" class="mc-reaction-wrapper" onmouseenter="this.querySelector('.mc-reaction-popup').style.display='flex'" onmouseleave="this.querySelector('.mc-reaction-popup').style.display='none'">
+                                            <button type="button" aria-label="Thả tim" style="background: none; border: none; cursor: pointer; padding: 0; font-size: 13px; color: #666; transition: transform 0.2s;" data-action="toggle-like" data-post-index="${index}" data-comment-index="${commentIndex}"><span class="mc-reaction-icon" style="filter: grayscale(100%);">❤️</span> <span class="mc-like-count">${getReactionCount(c.likes)}</span></button>
+                                            <div class="mc-reaction-popup" style="display: none; position: absolute; bottom: 100%; left: 0; background: white; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 5px 10px; gap: 10px; z-index: 10;">
+                                                <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="👍">👍</span>
+                                                <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="❤️">❤️</span>
+                                                <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="😂">😂</span>
+                                                <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="😮">😮</span>
+                                                <span style="cursor: pointer; font-size: 20px; transition: transform 0.2s;" onmouseenter="this.style.transform='scale(1.3)'" onmouseleave="this.style.transform='scale(1)'" data-action="select-reaction" data-reaction="😢">😢</span>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="mc-reply-action-btn" data-action="show-reply-box" data-post-index="${index}" data-comment-index="${commentIndex}" style="background:none; border:none; color:var(--mc-ink-soft); font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; padding: 4px 8px; border-radius: 8px; border: 1px solid rgba(100, 59, 77, 0.08);">💬 Phản hồi</button>
+                                    </div>
+                                    
+                                    <div class="mc-nested-reply-input-box" id="reply-box-${index}-${commentIndex}" style="display: none; margin-top: 12px; background: #fffcfd; padding: 10px; border-radius: 10px; border: 1px solid rgba(212, 46, 112, 0.1);">
+                                        <input type="text" class="mc-input mc-nested-input" placeholder="Phản hồi ${escapeHtml(c.author)}..." style="margin-bottom: 8px; padding: 8px 12px; font-size: 13px; height: 38px; width: 100%; box-sizing: border-box; border: 1.5px solid rgba(100, 59, 77, 0.12) !important; border-radius: 10px;">
+                                        <div style="display:flex; gap:6px; justify-content: flex-end;">
+                                            <button type="button" class="mc-btn mc-btn-outline" style="min-height: 28px; height: 28px; padding: 4px 10px; font-size: 11px; border-radius: 8px !important;" onclick="document.getElementById('reply-box-${index}-${commentIndex}').style.display='none'">Hủy</button>
+                                            <button type="button" class="mc-btn mc-btn-primary" style="min-height: 28px; height: 28px; padding: 4px 10px; font-size: 11px; border-radius: 8px !important; border:none !important;" onclick="const val = this.parentElement.parentElement.firstElementChild.value; if(val.trim()) { window.submitNestedReply(${index}, ${commentIndex}, val); this.parentElement.parentElement.firstElementChild.value = ''; }">Gửi</button>
+                                        </div>
+                                    </div>
+
+                                    ${repliesHtml}
                                 </div>
                             </div>
-                        </div>
-                        </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             `
             : '';
@@ -273,7 +323,7 @@ export function renderStudentHome() {
                     <button class="mc-btn mc-btn-outline" type="button" data-action="diary">+ Viết Nhật ký</button>
                 </div>
             </div>
-            <div class="mc-panel" style="margin-bottom: 18px;">
+            <div class="mc-panel mc-feed-creator" style="margin-bottom: 18px;">
                 <label class="mc-field-label" for="feed-post-content">Đăng bài lên News feed</label>
                 <textarea id="feed-post-content" class="mc-textarea" style="min-height:90px;" placeholder="Chia sẻ với cộng đồng..."></textarea>
                 <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
@@ -309,7 +359,8 @@ window.submitComment = function submitComment(postIndex, rawContent) {
         date: new Date().toISOString(),
         content,
         likes: 0,
-        isUser: true
+        isUser: true,
+        replies: []
     };
 
     post.commentObjects.push(comment);
@@ -322,6 +373,68 @@ window.submitComment = function submitComment(postIndex, rawContent) {
     });
     renderStudentHome();
 };
+
+window.submitNestedReply = function submitNestedReply(postIndex, commentIndex, rawContent) {
+    const content = String(rawContent || '').trim();
+    const feed = getUserFeed();
+    const post = feed[postIndex];
+    const comment = Array.isArray(post?.commentObjects) ? post.commentObjects[commentIndex] : null;
+    if (!content || !comment) return;
+
+    const profile = getStudentProfile();
+    if (!Array.isArray(comment.replies)) {
+        comment.replies = [];
+    }
+
+    const reply = {
+        id: `reply-${Date.now()}`,
+        author: profile.displayName || profile.name,
+        author_avatar: profile.avatarUrl,
+        owner_email: profile.email,
+        date: new Date().toISOString(),
+        content,
+        likes: 0,
+        isUser: true
+    };
+
+    comment.replies.push(reply);
+    savePublicFeed();
+    trackInteraction('comment', reply.id, {
+        source: 'public-feed',
+        action: 'create_nested',
+        post_id: post.id || '',
+        content_length: content.length
+    });
+    renderStudentHome();
+};
+
+function deleteNestedReply(postIndex, commentIndex, replyIndex) {
+    const feed = getUserFeed();
+    const post = feed[postIndex];
+    const comments = Array.isArray(post?.commentObjects) ? post.commentObjects : [];
+    const comment = comments[commentIndex];
+    const replies = Array.isArray(comment?.replies) ? comment.replies : [];
+    const reply = replies[replyIndex];
+    if (!post || !comment || !reply) return;
+
+    if (!isOwnedFeedComment(reply)) {
+        alert('Bạn chỉ có thể xóa phản hồi của chính mình.');
+        return;
+    }
+
+    if (!confirm('Bạn có chắc muốn xóa phản hồi này không?')) {
+        return;
+    }
+
+    replies.splice(replyIndex, 1);
+    savePublicFeed();
+    trackInteraction('comment', reply?.id || `${post.id}-comment-${commentIndex}-reply-${replyIndex}`, {
+        source: 'public-feed',
+        action: 'delete_nested',
+        post_id: post.id || ''
+    });
+    renderStudentHome();
+}
 
 document.addEventListener("click", (event) => {
     if (event.target.closest("[data-action='addTag']")) {
@@ -337,6 +450,22 @@ document.addEventListener("click", (event) => {
     else if (event.target.closest("[data-action='delete-comment']")) {
         const btn = event.target.closest("[data-action='delete-comment']");
         deleteFeedComment(Number(btn?.dataset?.postIndex), Number(btn?.dataset?.commentIndex));
+    }
+    else if (event.target.closest("[data-action='show-reply-box']")) {
+        const btn = event.target.closest("[data-action='show-reply-box']");
+        const postIndex = btn.dataset.postIndex;
+        const commentIndex = btn.dataset.commentIndex;
+        const box = document.getElementById(`reply-box-${postIndex}-${commentIndex}`);
+        if (box) {
+            box.style.display = box.style.display === 'none' ? 'block' : 'none';
+            if (box.style.display === 'block') {
+                box.querySelector('input')?.focus();
+            }
+        }
+    }
+    else if (event.target.closest("[data-action='delete-reply']")) {
+        const btn = event.target.closest("[data-action='delete-reply']");
+        deleteNestedReply(Number(btn?.dataset?.postIndex), Number(btn?.dataset?.commentIndex), Number(btn?.dataset?.replyIndex));
     }
     else if (event.target.closest("[data-action='diary']")) {
         renderStudentDiary();

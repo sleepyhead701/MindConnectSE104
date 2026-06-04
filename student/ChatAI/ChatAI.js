@@ -13,7 +13,7 @@ import { callChatBotAPI } from '../API/callChatBotAPI.js';
 import { blockIfBackendNotReady } from '../API/blockIfBackendNotReady.js'
 import { trackInteraction } from "../API/analytics.js";
 import { createRiskAlert } from '../RiskAlert.js';
-import { getBackendReadyState } from '../../state.js';
+import { getBackendReadyState } from '../../shared/state.js';
 import { apiRequest } from '../utils/utils.js';
 
 let selectedChatSessionId = 'current';

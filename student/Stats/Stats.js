@@ -4,8 +4,8 @@ import { updateNav } from '../utils/updateNav.js';
 import { animateMainContentSwap } from '../animations.js';
 import { showNotification } from '../utils/utils.js';
 import { getPrivateDiaryEntries, isOwnedFeedPost } from '../studentState.js';
-import { getUserFeed } from '../../state.js';
-import { getBackendReadyState } from '../../state.js';
+import { getUserFeed } from '../../shared/state.js';
+import { getBackendReadyState } from '../../shared/state.js';
 import { openFeedbackModal, openBookingModal } from '../Booking/Booking.js';
 
 function normalizeEmotionText(text) {

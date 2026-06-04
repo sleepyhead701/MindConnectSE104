@@ -1,6 +1,6 @@
 import { normalizeVietnamese } from './utils/normalizeVietnamese.js';
 import { apiRequest } from './utils/utils.js';
-import { getRiskAlertsKey } from '../state.js';
+import { getRiskAlertsKey } from '../shared/state.js';
 
 const riskDetectionRules = [
     {

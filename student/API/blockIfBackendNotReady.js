@@ -1,4 +1,4 @@
-import { getBackendReadyState } from "../../state.js";
+import { getBackendReadyState } from "../../shared/state.js";
 import { showNotification } from "../utils/utils.js";
 
 export function blockIfBackendNotReady() {

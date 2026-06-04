@@ -4,12 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindConnect - School Admin Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
         /* ============================================================
            ADMIN DASHBOARD - MODERN UI SYSTEM
            ============================================================ */
+
+        /* === MATCH STUDENT TYPOGRAPHY SYSTEM === */
+        :root {
+            --font-heading: 'Fraunces', Georgia, serif;
+            --font-body: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+            --mc-cream: #fffdf7;
+            --mc-blush: #fdecef;
+            --mc-secondary: #fbf4f4;
+            --mc-ink: #392833;
+            --mc-ink-soft: #745f69;
+            --mc-border: rgba(100, 59, 77, 0.1);
+            --mc-primary: #d42e70;
+            --mc-coral: #f29a78;
+            --mc-gradient-rose: linear-gradient(135deg, #dc4779 0%, #f3a169 100%);
+            --mc-gradient-blush: linear-gradient(180deg, #fffdf7 0%, #fff0f3 100%);
+            --mc-shadow-card: 0 1px 2px rgba(57, 40, 51, 0.04), 0 12px 36px -16px rgba(57, 40, 51, 0.16);
+            --mc-shadow-soft: 0 28px 70px -34px rgba(212, 46, 112, 0.24);
+        }
+
+        body,
+        .dashboard-page,
+        .dash-content,
+        .sidebar,
+        button,
+        input,
+        select,
+        textarea,
+        table {
+            font-family: var(--font-body);
+        }
+
+        #view-school,
+        #view-school *:not(svg):not(path):not(polyline):not(line):not(circle),
+        .admin-modal-overlay,
+        .admin-modal-overlay *:not(svg):not(path):not(polyline):not(line):not(circle),
+        .notification {
+            font-family: var(--font-body) !important;
+        }
+
+        .page-title,
+        #view-school h1,
+        #view-school h2,
+        #view-school h3,
+        .sidebar-brand,
+        .sidebar > h2,
+        .card-title,
+        .admin-modal-head h3,
+        .intervention-history-head strong,
+        .donut-value,
+        .modal-eyebrow {
+            font-family: var(--font-heading) !important;
+            letter-spacing: 0;
+        }
 
         /* === PAGE STRUCTURE === */
         .dashboard-page { background: var(--bg-grey); }
@@ -282,6 +337,380 @@
         .student-detail-item.improvement { background: #fffef5; border-left: 3px solid var(--warning); }
         .student-detail-note { color: #777; font-size: 13px; margin: 6px 0 0; }
 
+        /* === ADMIN CONFIRM DIALOG === */
+        .admin-confirm-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 4200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: rgba(35, 25, 31, 0.42);
+            backdrop-filter: blur(10px) saturate(140%);
+            -webkit-backdrop-filter: blur(10px) saturate(140%);
+        }
+
+        .admin-confirm-card {
+            width: min(520px, 100%);
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 18px;
+            padding: 24px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid var(--mc-border);
+            box-shadow: 0 28px 80px rgba(57, 40, 51, 0.24);
+            animation: adminConfirmIn 0.18s ease-out;
+        }
+
+        .admin-confirm-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            color: var(--mc-primary);
+            background: linear-gradient(135deg, rgba(244, 214, 229, 0.86), rgba(255, 239, 232, 0.92));
+            border: 1px solid rgba(212, 46, 112, 0.16);
+        }
+
+        .admin-confirm-body h3 {
+            margin: 4px 0 8px;
+            color: var(--mc-ink);
+            font-family: var(--font-heading) !important;
+            font-size: 24px;
+            line-height: 1.15;
+            letter-spacing: 0;
+        }
+
+        .admin-confirm-body p {
+            margin: 0;
+            color: var(--mc-ink);
+            font-size: 15px;
+            line-height: 1.55;
+        }
+
+        .admin-confirm-body small {
+            display: block;
+            margin-top: 8px;
+            color: var(--mc-ink-soft);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .admin-confirm-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 22px;
+            flex-wrap: wrap;
+        }
+
+        .admin-confirm-actions .btn {
+            min-height: 42px;
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-weight: 800;
+        }
+
+        .admin-confirm-actions .btn-secondary {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid var(--mc-border);
+            color: var(--mc-ink-soft);
+        }
+
+        .admin-confirm-actions .btn-secondary:hover {
+            color: var(--mc-primary);
+            border-color: rgba(212, 46, 112, 0.28);
+            background: var(--mc-blush);
+        }
+
+        @keyframes adminConfirmIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* === STUDENT-LIKE VISUAL POLISH FOR SCHOOL PORTAL === */
+        body {
+            display: block;
+            min-height: 100vh;
+            height: auto;
+            align-items: initial;
+            justify-content: initial;
+            overflow-y: auto;
+            background: var(--mc-gradient-blush);
+            color: var(--mc-ink);
+        }
+
+        #presentation-frame {
+            width: 100%;
+            min-height: 100vh;
+            height: auto;
+            display: block;
+            overflow: visible;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .view-section.dashboard-page {
+            position: static;
+            width: 100%;
+            min-height: 100vh;
+            height: auto;
+            background:
+                radial-gradient(circle at 8% 4%, rgba(242, 200, 221, 0.36), transparent 28%),
+                radial-gradient(circle at 96% 0%, rgba(242, 154, 120, 0.20), transparent 24%),
+                var(--mc-gradient-blush);
+        }
+
+        .dashboard-layout {
+            min-height: 100vh;
+            height: auto;
+            background: transparent;
+        }
+
+        .dash-content {
+            padding: 36px clamp(18px, 4vw, 42px) 56px;
+            color: var(--mc-ink);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.78);
+            border-right: 1px solid var(--mc-border);
+            box-shadow: 22px 0 60px -48px rgba(57, 40, 51, 0.45);
+            backdrop-filter: blur(18px) saturate(160%);
+            -webkit-backdrop-filter: blur(18px) saturate(160%);
+        }
+
+        .sidebar > h2,
+        .sidebar-brand {
+            color: var(--mc-primary) !important;
+            letter-spacing: 0;
+        }
+
+        .dash-menu-item {
+            color: var(--mc-ink-soft);
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0;
+        }
+
+        .dash-menu-item:hover {
+            background: var(--mc-blush);
+            color: var(--mc-primary);
+            transform: none;
+        }
+
+        .dash-menu-item.active {
+            background: var(--mc-gradient-rose);
+            color: white;
+            box-shadow: 0 16px 36px -22px rgba(212, 46, 112, 0.65);
+        }
+
+        .page-title {
+            color: var(--mc-primary);
+            font-size: 30px;
+            line-height: 1.05;
+        }
+
+        .dash-header h2 {
+            font-family: var(--font-heading) !important;
+            color: var(--mc-primary) !important;
+            font-size: 30px;
+            line-height: 1.05;
+            margin: 0 0 6px;
+            letter-spacing: 0;
+        }
+
+        .dash-header span {
+            font-family: var(--font-body) !important;
+            color: var(--mc-ink-soft) !important;
+        }
+
+        .page-subtitle,
+        .kpi-label,
+        .kpi-sub,
+        .topic-pct,
+        .feedback-time,
+        .chart-note,
+        .step-count,
+        .rank-score,
+        .admin-modal-head p,
+        .student-detail-note {
+            color: var(--mc-ink-soft);
+        }
+
+        .kpi-card,
+        .dash-card,
+        .alert-panel,
+        .feedback-item,
+        .intervention-history-item,
+        .student-detail-item,
+        .admin-modal-card {
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px solid var(--mc-border);
+            box-shadow: var(--mc-shadow-card);
+            backdrop-filter: blur(10px) saturate(140%);
+            -webkit-backdrop-filter: blur(10px) saturate(140%);
+        }
+
+        .kpi-card:hover,
+        .dash-card:hover,
+        .feedback-item:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--mc-shadow-soft);
+        }
+
+        .card-header,
+        .admin-modal-head {
+            border-bottom-color: var(--mc-border);
+        }
+
+        .card-title,
+        .admin-modal-head h3,
+        .intervention-history-head strong,
+        .student-detail-grid strong,
+        .ring-label,
+        .donut-value,
+        .step-pct {
+            color: var(--mc-ink);
+        }
+
+        .kpi-value {
+            color: var(--mc-primary);
+        }
+
+        .kpi-primary::before,
+        .kpi-accent::before {
+            background: var(--mc-gradient-rose);
+        }
+
+        .data-badge,
+        .topic-num,
+        .tag-chip-static {
+            background: var(--mc-blush);
+            color: var(--mc-primary);
+        }
+
+        .time-filter,
+        .admin-filter-body input,
+        .admin-filter-body select,
+        .filter-tabs {
+            background: rgba(255, 255, 255, 0.74);
+            border: 1px solid var(--mc-border);
+            box-shadow: var(--mc-shadow-card);
+            color: var(--mc-ink);
+        }
+
+        .filter-tab {
+            border-radius: 999px;
+            color: var(--mc-ink-soft);
+        }
+
+        .filter-tab.active {
+            background: var(--mc-gradient-rose);
+            color: white;
+            box-shadow: 0 16px 36px -22px rgba(212, 46, 112, 0.65);
+        }
+
+        .btn,
+        .btn-link,
+        .btn-action-sm,
+        .admin-modal-close {
+            font-family: var(--font-body);
+            letter-spacing: 0;
+        }
+
+        .btn-primary {
+            background: var(--mc-gradient-rose);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 16px 36px -22px rgba(212, 46, 112, 0.72);
+        }
+
+        .btn-primary:hover {
+            background: var(--mc-gradient-rose);
+            border-color: transparent;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline,
+        .btn-link,
+        .btn-note {
+            border-color: rgba(212, 46, 112, 0.18);
+            background: rgba(255, 255, 255, 0.62);
+            color: var(--mc-primary);
+        }
+
+        .btn-outline:hover,
+        .btn-link:hover,
+        .btn-note:hover {
+            background: var(--mc-blush);
+            color: var(--mc-primary);
+            transform: none;
+        }
+
+        .analysis-table th,
+        .data-table th {
+            color: var(--mc-ink-soft);
+            border-bottom-color: var(--mc-border);
+        }
+
+        .analysis-table td,
+        .data-table td,
+        .topic-list li {
+            border-bottom-color: rgba(100, 59, 77, 0.08);
+        }
+
+        .chart-bar,
+        .mini-bar,
+        .step-bar {
+            background: rgba(100, 59, 77, 0.08);
+        }
+
+        .intervention-guide,
+        .internal-note,
+        .student-detail-grid div,
+        .intervention-summary-grid div,
+        .intervention-context-grid div {
+            background: rgba(255, 253, 247, 0.78);
+            border-color: var(--mc-border);
+        }
+
+        .sidebar .sidebar-logout {
+            font-size: 15px;
+            font-weight: 800;
+            padding: 12px 14px;
+            gap: 12px;
+            color: var(--mc-ink-soft);
+        }
+
+        .sidebar-logout-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--mc-primary);
+            background: rgba(212, 46, 112, 0.08);
+            border: 1px solid rgba(212, 46, 112, 0.16);
+            flex-shrink: 0;
+        }
+
+        .sidebar-logout-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.5;
+        }
+
+        .sidebar .sidebar-logout:hover .sidebar-logout-icon {
+            background: var(--mc-primary);
+            color: white;
+            border-color: transparent;
+        }
+
         /* === RESPONSIVE === */
         @media (max-width: 1200px) {
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
@@ -310,7 +739,16 @@
                     <div class="dash-menu-item" data-view="interventions">❤️ Hiệu quả Can thiệp</div>
                     <div class="dash-menu-item" data-view="feedback">📩 Báo cáo & Feedback</div>
                     <div style="margin-top: auto; border-top: 1px solid #eee; padding-top: 20px;">
-                        <div class="dash-menu-item" onclick="logout()">🚪 Đăng xuất</div>
+                        <div class="dash-menu-item sidebar-logout" onclick="logout()">
+                            <span class="sidebar-logout-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <path d="M16 17l5-5-5-5"></path>
+                                    <path d="M21 12H9"></path>
+                                </svg>
+                            </span>
+                            <span>Đăng xuất</span>
+                        </div>
                     </div>
                 </div>
 
@@ -706,7 +1144,7 @@
         </div>
     </div>
 
-    <script src="schoolAdminFeatures.js"></script>
-    <script src="school.js"></script>
+    <script src="school/schoolAdminFeatures.js"></script>
+    <script src="school/school.js"></script>
 </body>
 </html>

@@ -2,7 +2,7 @@ import { blockIfBackendNotReady } from '../API/blockIfBackendNotReady.js'
 import { getCurrentMoodScore, setCurrentMoodScore, getStudentBookings, setStudentBookings } from '../studentState.js';
 import { addStudentNotification } from './BookingNotifications.js';
 import { apiRequest } from '../utils/utils.js';
-import { getSupportLocations } from '../../state.js';
+import { getSupportLocations } from '../../shared/state.js';
 import { escapeHtml } from '../utils/utils.js';
 import { trackInteraction } from '../API/analytics.js';
 import { getRiskAlerts, saveRiskAlerts } from '../RiskAlert.js';
