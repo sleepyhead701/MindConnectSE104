@@ -344,12 +344,12 @@
             width: min(100%, 1280px);
             min-height: calc(100vh - 80px);
             margin: 0 auto;
-            padding: 48px clamp(20px, 5vw, 64px) 76px;
+            padding: 42px clamp(20px, 5vw, 64px) 72px;
             display: grid;
-            grid-template-columns: minmax(0, 1.1fr) minmax(340px, 430px);
+            grid-template-columns: minmax(0, 1fr) minmax(420px, 500px);
             align-items: center;
             justify-content: initial;
-            gap: clamp(36px, 7vw, 86px);
+            gap: clamp(44px, 7vw, 96px);
             box-sizing: border-box;
         }
 
@@ -425,12 +425,34 @@
 
         .login-card-glass {
             width: 100%;
-            padding: 32px;
+            max-width: 500px;
+            padding: 36px;
             border-radius: 28px;
             background: rgba(255, 255, 255, 0.88);
             border: 1px solid var(--mc-border);
             box-shadow: var(--mc-shadow-soft);
             justify-self: end;
+        }
+
+        .auth-card-header {
+            margin-bottom: 22px;
+        }
+
+        .auth-card-kicker {
+            margin: 0 0 8px;
+            color: var(--mc-primary);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .auth-card-title {
+            margin: 0;
+            color: var(--mc-ink);
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: 34px;
+            font-weight: 500;
+            line-height: 1.1;
         }
 
         .role-switch-container {
@@ -552,8 +574,20 @@
             max-width: 820px;
         }
 
+        .landing-section-kicker {
+            margin: 0 0 8px;
+            color: var(--mc-primary);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .landing-section-lede {
+            font-size: 16px;
+        }
+
         .landing-feature-grid {
-            margin-top: 18px;
+            margin-top: 22px;
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 12px;
@@ -570,6 +604,106 @@
             display: block;
             color: var(--mc-primary);
             margin-bottom: 6px;
+        }
+
+        .landing-feature span {
+            display: block;
+            color: var(--mc-ink-soft);
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .landing-process {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .landing-process-step {
+            border-radius: 16px;
+            background: rgba(253, 236, 239, 0.62);
+            border: 1px solid rgba(212, 46, 112, 0.12);
+            padding: 14px;
+        }
+
+        .landing-process-step small {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            margin-bottom: 10px;
+            border-radius: 999px;
+            background: white;
+            color: var(--mc-primary);
+            font-weight: 800;
+        }
+
+        .landing-process-step strong {
+            display: block;
+            color: var(--mc-ink);
+            margin-bottom: 5px;
+        }
+
+        .landing-process-step span,
+        .landing-value-list li,
+        .landing-contact-card span,
+        .landing-emergency-note span {
+            color: var(--mc-ink-soft);
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .landing-split-grid {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 14px;
+        }
+
+        .landing-detail-panel,
+        .landing-contact-card,
+        .landing-emergency-note {
+            border: 1px solid var(--mc-border);
+            border-radius: 16px;
+            background: white;
+            padding: 18px;
+        }
+
+        .landing-detail-panel h3,
+        .landing-contact-card strong,
+        .landing-emergency-note strong {
+            display: block;
+            margin: 0 0 8px;
+            color: var(--mc-ink);
+            font-size: 16px;
+        }
+
+        .landing-value-list {
+            margin: 12px 0 0;
+            padding-left: 18px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .landing-contact-grid {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .landing-contact-card a {
+            color: var(--mc-primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .landing-emergency-note {
+            margin-top: 14px;
+            background: rgba(253, 236, 239, 0.64);
+            border-color: rgba(212, 46, 112, 0.16);
         }
 
         @media (max-width: 900px) {
@@ -602,6 +736,12 @@
             .landing-feature-grid {
                 grid-template-columns: 1fr;
             }
+
+            .landing-process,
+            .landing-split-grid,
+            .landing-contact-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 520px) {
@@ -618,6 +758,11 @@
                 padding: 24px;
                 border-radius: 22px;
             }
+
+            .auth-card-title {
+                font-size: 28px;
+            }
+
         }
     </style>
 </head>
@@ -639,20 +784,19 @@
 
     <div class="main-container" id="home">
         <section class="login-hero-copy" aria-label="MindConnect introduction">
-            <!-- <div class="hero-badge"><span class="hero-badge-dot"></span>AI đồng hành sức khỏe tinh thần</div> -->
-            <h1>Lắng nghe cảm xúc. <span>Mỗi ngày.</span></h1>
+            <h1>Lắng nghe cảm xúc <span>Mỗi ngày.</span></h1>
             <p>
                 Một nơi an toàn để bạn ghi lại cảm xúc, được AI đồng hành và kết nối với
                 chuyên viên tư vấn khi cần, riêng tư và ẩn danh.
             </p>
-            <!-- <div class="hero-stats">x
-                <div><strong>10+</strong>trường thành viên</div>
-                <div><strong>8.3K</strong>sinh viên khảo sát</div>
-                <div><strong>100%</strong>ẩn danh</div>
-            </div> -->
         </section>
 
         <div class="login-card-glass" id="login-form">
+            <div class="auth-card-header">
+                <p class="auth-card-kicker">Cổng truy cập</p>
+                <h2 class="auth-card-title">Đăng nhập</h2>
+            </div>
+
             <div class="role-switch-container" id="role-switch">
                 <span class="role-switch-indicator" aria-hidden="true"></span>
                 <div class="role-btn active" id="tab-student" onclick="switchRole('student')">Sinh viên</div>
@@ -765,21 +909,71 @@
 
     <section class="landing-info" aria-label="Thông tin MindConnect">
         <article class="landing-section" id="services">
+            <p class="landing-section-kicker">MindConnect làm gì?</p>
             <h2>Dịch vụ</h2>
-            <p>MindConnect hỗ trợ sinh viên ghi Diary riêng tư, trò chuyện với AI, đặt lịch tham vấn, theo dõi cảm xúc và tìm tài nguyên sức khỏe tinh thần phù hợp.</p>
+            <p class="landing-section-lede">MindConnect hỗ trợ sinh viên từ những thao tác rất nhỏ mỗi ngày: ghi lại cảm xúc, nhận gợi ý tự chăm sóc, kết nối tư vấn và tìm tài nguyên sức khỏe tinh thần phù hợp.</p>
             <div class="landing-feature-grid">
-                <div class="landing-feature"><strong>Diary riêng tư</strong><span>Chỉ người dùng nhìn thấy, dùng cho thống kê cảm xúc cá nhân.</span></div>
-                <div class="landing-feature"><strong>AI hỗ trợ</strong><span>Lắng nghe, gợi ý bước nhỏ và đề xuất tài nguyên liên quan.</span></div>
-                <div class="landing-feature"><strong>Kết nối nhà trường</strong><span>Đặt lịch hỗ trợ và gửi feedback sau can thiệp.</span></div>
+                <div class="landing-feature"><strong>Diary riêng tư</strong><span>Ghi nhật ký cá nhân, chọn cảm xúc, thêm tag và theo dõi những chủ đề lặp lại theo thời gian.</span></div>
+                <div class="landing-feature"><strong>AI hỗ trợ</strong><span>Lắng nghe nội dung bạn chia sẻ, phản hồi nhẹ nhàng và gợi ý bước nhỏ để giảm quá tải.</span></div>
+                <div class="landing-feature"><strong>Đặt lịch tham vấn</strong><span>Gửi yêu cầu hỗ trợ, chọn hình thức gặp và theo dõi trạng thái lịch hẹn ngay trong tài khoản.</span></div>
+                <div class="landing-feature"><strong>Resources</strong><span>Tìm video, blog, podcast, sách và công cụ hỗ trợ theo nhu cầu học tập, stress, giấc ngủ hoặc định hướng.</span></div>
+                <div class="landing-feature"><strong>News feed ẩn danh</strong><span>Chia sẻ với cộng đồng sinh viên, phản hồi cho nhau và giữ trải nghiệm ở mức riêng tư, an toàn.</span></div>
+                <div class="landing-feature"><strong>Thống kê cảm xúc</strong><span>Xem xu hướng mood, tag nổi bật và tín hiệu cá nhân để hiểu mình rõ hơn sau mỗi tuần.</span></div>
+            </div>
+            <div class="landing-process" aria-label="Quy trình hỗ trợ">
+                <div class="landing-process-step"><small>1</small><strong>Ghi nhận</strong><span>Sinh viên check-in, viết diary hoặc chia sẻ nhu cầu đang gặp.</span></div>
+                <div class="landing-process-step"><small>2</small><strong>Gợi ý</strong><span>Hệ thống đề xuất tài nguyên, nhắc nhở và phản hồi phù hợp.</span></div>
+                <div class="landing-process-step"><small>3</small><strong>Kết nối</strong><span>Khi cần hỗ trợ sâu hơn, sinh viên có thể đặt lịch với bộ phận tư vấn.</span></div>
+                <div class="landing-process-step"><small>4</small><strong>Theo dõi</strong><span>Nhà trường xem dữ liệu tổng hợp và phản hồi ca hỗ trợ sau can thiệp.</span></div>
             </div>
         </article>
         <article class="landing-section" id="about">
+            <p class="landing-section-kicker">Vì sao có MindConnect?</p>
             <h2>Về chúng tôi</h2>
-            <p>MindConnect được xây dựng như một không gian an toàn cho sinh viên và một dashboard dữ liệu cho nhà trường, giúp phát hiện nhu cầu hỗ trợ sớm mà vẫn tôn trọng quyền riêng tư.</p>
+            <p class="landing-section-lede">MindConnect được xây dựng như một không gian an toàn cho sinh viên và một dashboard dữ liệu cho nhà trường, giúp phát hiện nhu cầu hỗ trợ sớm mà vẫn tôn trọng quyền riêng tư.</p>
+            <div class="landing-split-grid">
+                <div class="landing-detail-panel">
+                    <h3>Cách chúng tôi tiếp cận</h3>
+                    <p>Ứng dụng không thay thế chuyên viên tâm lý. MindConnect đóng vai trò là lớp hỗ trợ ban đầu: giúp sinh viên gọi tên cảm xúc, ghi nhận dấu hiệu căng thẳng và tìm đúng kênh hỗ trợ khi cần.</p>
+                    <ul class="landing-value-list">
+                        <li>Ưu tiên trải nghiệm riêng tư, không tạo áp lực phải công khai vấn đề cá nhân.</li>
+                        <li>Tập trung vào dữ liệu tổng hợp để nhà trường nhìn thấy xu hướng, không soi từng nhật ký riêng tư.</li>
+                        <li>Thiết kế cho môi trường đại học: học tập, deadline, gia đình, tài chính, giấc ngủ và định hướng nghề nghiệp.</li>
+                    </ul>
+                </div>
+                <div class="landing-detail-panel">
+                    <h3>Dành cho ai?</h3>
+                    <p><strong>Sinh viên:</strong> cần một nơi ghi lại cảm xúc, tìm tài nguyên và xin hỗ trợ mà không thấy bị phán xét.</p>
+                    <p><strong>Nhà trường:</strong> cần một công cụ theo dõi nhu cầu hỗ trợ ở mức tổng quan, quản lý lịch hẹn và cải thiện chất lượng chăm sóc sinh viên.</p>
+                </div>
+            </div>
         </article>
         <article class="landing-section" id="contact">
+            <p class="landing-section-kicker">Khi bạn cần hỗ trợ</p>
             <h2>Liên hệ</h2>
-            <p>Hotline hỗ trợ: 1900.1234. Email: support@mindconnect.local. Khi có nguy cơ khẩn cấp, sinh viên nên liên hệ người tin cậy hoặc dịch vụ hỗ trợ tại địa phương ngay.</p>
+            <p class="landing-section-lede">Bạn có thể liên hệ MindConnect để được hướng dẫn tài khoản, đặt lịch hỗ trợ hoặc trao đổi về quy trình chăm sóc sinh viên trong trường.</p>
+            <div class="landing-contact-grid">
+                <div class="landing-contact-card">
+                    <strong>Hotline hỗ trợ</strong>
+                    <span>1900.1234, tiếp nhận yêu cầu hỗ trợ trong giờ hành chính và hướng dẫn bước tiếp theo.</span>
+                </div>
+                <div class="landing-contact-card">
+                    <strong>Email</strong>
+                    <span><a href="mailto:support@mindconnect.local">support@mindconnect.local</a>, dành cho câu hỏi tài khoản, tài nguyên và lịch hẹn.</span>
+                </div>
+                <div class="landing-contact-card">
+                    <strong>Điểm tư vấn sinh viên</strong>
+                    <span>Trung tâm Hỗ trợ Sinh viên, Tầng 3. Sinh viên nên đặt lịch trước để được chuẩn bị ca hỗ trợ phù hợp.</span>
+                </div>
+                <div class="landing-contact-card">
+                    <strong>Nhà trường / quản lý</strong>
+                    <span>Liên hệ qua email nội bộ để được cấp tài khoản dashboard, phân quyền và hướng dẫn đọc báo cáo tổng hợp.</span>
+                </div>
+            </div>
+            <div class="landing-emergency-note">
+                <strong>Lưu ý an toàn</strong>
+                <span>Khi có nguy cơ khẩn cấp hoặc cảm giác không an toàn ngay lúc này, sinh viên nên liên hệ người tin cậy, bộ phận hỗ trợ tại địa phương hoặc dịch vụ khẩn cấp gần nhất trước khi dùng ứng dụng.</span>
+            </div>
         </article>
     </section>
 

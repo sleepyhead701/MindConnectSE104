@@ -1,12 +1,14 @@
 import { updateNav } from '../utils/updateNav.js';
 import { animateMainContentSwap } from '../animations.js';
-import { getUserFeed, getAuthorAvatar, addUserFeed, savePublicFeed, syncPublicFeedWithBackend, hasLoadedPublicFeedFromBackend } from '../../shared/state.js';
-import { getCurrentProfileNames, getStudentProfile, getUserProfile, isOwnedFeedPost } from '../studentState.js';
+import { getUserFeed, getAuthorAvatar, addUserFeed, savePublicFeed, syncPublicFeedWithBackend, hasLoadedPublicFeedFromBackend, getResourcesDB } from '../../shared/state.js';
+import { getCurrentProfileNames, getCurrentMoodScore, getStudentProfile, getUserProfile, isOwnedFeedPost } from '../studentState.js';
 import { escapeHtml, formatFeedTime, getInitials, renderAvatar } from '../utils/utils.js';
 import { addManualTag, getManualTags } from '../utils/tags.js';
 import { trackInteraction } from '../API/analytics.js';
 import { renderStudentDiary } from '../Diary/Diary.js';
 import { openBookingModal } from '../Booking/Booking.js';
+import { renderResourcesLibrary } from '../Resources/Resources.js';
+import { renderStudentStats } from '../Stats/Stats.js';
 
 function getReactionCount(likes) {
     if (Array.isArray(likes)) {
@@ -48,6 +50,184 @@ function persistReaction(button, reaction, active) {
         reaction,
         action: active ? 'add' : 'remove'
     });
+}
+
+function normalizeFeedTag(tag) {
+    return String(tag || '').replace(/^#/, '').trim();
+}
+
+function getFeedCommentCount(post) {
+    const comments = Array.isArray(post?.commentObjects) ? post.commentObjects : [];
+    if (comments.length) {
+        return comments.reduce((sum, comment) => sum + 1 + (Array.isArray(comment.replies) ? comment.replies.length : 0), 0);
+    }
+
+    return Number(post?.comments) || 0;
+}
+
+function getMoodLabel(score) {
+    if (score >= 5) return 'Rất ổn';
+    if (score >= 4) return 'Đang ổn';
+    if (score >= 3) return 'Bình thường';
+    if (score >= 2) return 'Cần nghỉ một chút';
+    return 'Cần được lắng nghe';
+}
+
+function getFeedOverview(feedItems) {
+    const tagCounts = new Map();
+    let commentCount = 0;
+    let reactionCount = 0;
+
+    feedItems.forEach(post => {
+        commentCount += getFeedCommentCount(post);
+        reactionCount += getReactionCount(post.likes);
+        (post.tags || []).forEach(tag => {
+            const cleanTag = normalizeFeedTag(tag);
+            if (cleanTag) {
+                tagCounts.set(cleanTag, (tagCounts.get(cleanTag) || 0) + 1);
+            }
+        });
+    });
+
+    const topTags = [...tagCounts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([name, count]) => ({ name, count }));
+
+    return {
+        postCount: feedItems.length,
+        commentCount,
+        reactionCount,
+        topTags
+    };
+}
+
+function getFeedResourceSuggestions() {
+    const preferredTypes = ['Video', 'Blog', 'Podcast', 'Tools', 'Tool', 'Công cụ', 'Book'];
+    return getResourcesDB()
+        .filter(resource => preferredTypes.includes(resource.type))
+        .slice(0, 3);
+}
+
+function renderMoodMeter(score) {
+    return Array.from({ length: 5 }, (_, index) => `
+        <span class="${index < score ? 'active' : ''}" aria-hidden="true"></span>
+    `).join('');
+}
+
+function renderFeedTopics(topTags) {
+    if (!topTags.length) {
+        return '<p class="mc-feed-side-empty">Chưa có đủ tag. Khi mọi người chia sẻ nhiều hơn, chủ đề nổi bật sẽ hiện ở đây.</p>';
+    }
+
+    const maxCount = Math.max(...topTags.map(tag => tag.count), 1);
+    return topTags.map(tag => {
+        const width = Math.max(18, Math.round((tag.count / maxCount) * 100));
+        return `
+            <div class="mc-feed-topic-item">
+                <div>
+                    <strong>#${escapeHtml(tag.name)}</strong>
+                    <span>${tag.count} bài</span>
+                </div>
+                <div class="mc-feed-topic-meter" style="--topic-width: ${width}%;">
+                    <span></span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function renderFeedResourceSuggestions(resources) {
+    if (!resources.length) {
+        return '<p class="mc-feed-side-empty">Chưa có tài nguyên gợi ý trong thư viện.</p>';
+    }
+
+    return resources.map(resource => `
+        <a class="mc-feed-resource-item" href="${escapeHtml(resource.url || '#')}" target="_blank" rel="noopener noreferrer">
+            <span>${escapeHtml(resource.type || 'Resource')}</span>
+            <strong>${escapeHtml(resource.title || 'Tài nguyên')}</strong>
+            <small>${escapeHtml(resource.duration || 'Xem thêm')}</small>
+        </a>
+    `).join('');
+}
+
+function renderFeedSidebars(feedItems) {
+    const overview = getFeedOverview(feedItems);
+    const moodScore = Math.max(1, Math.min(5, Number(getCurrentMoodScore()) || 3));
+    const resources = getFeedResourceSuggestions();
+
+    return {
+        left: `
+            <aside class="mc-feed-sidebar mc-feed-sidebar-left" aria-label="Tổng quan cộng đồng">
+                <section class="mc-feed-side-panel mc-feed-checkin-card">
+                    <p class="mc-feed-side-kicker">Check-in nhanh</p>
+                    <h2>${escapeHtml(getMoodLabel(moodScore))}</h2>
+                    <div class="mc-feed-mood-meter" aria-label="Điểm cảm xúc ${moodScore} trên 5">
+                        ${renderMoodMeter(moodScore)}
+                    </div>
+                    <p>Ghi thêm vài dòng để theo dõi nhịp cảm xúc của bạn trong ngày.</p>
+                    <button type="button" class="mc-feed-side-action" data-action="diary">Mở nhật ký</button>
+                </section>
+
+                <section class="mc-feed-side-panel">
+                    <div class="mc-feed-side-heading">
+                        <p class="mc-feed-side-kicker">Tổng quan</p>
+                        <button type="button" data-action="stats">Xem thống kê</button>
+                    </div>
+                    <div class="mc-feed-mini-stats">
+                        <div>
+                            <strong>${overview.postCount}</strong>
+                            <span>Bài viết</span>
+                        </div>
+                        <div>
+                            <strong>${overview.commentCount}</strong>
+                            <span>Bình luận</span>
+                        </div>
+                        <div>
+                            <strong>${overview.reactionCount}</strong>
+                            <span>Reaction</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="mc-feed-side-panel">
+                    <p class="mc-feed-side-kicker">Chủ đề nổi bật</p>
+                    <div class="mc-feed-topic-list">
+                        ${renderFeedTopics(overview.topTags)}
+                    </div>
+                </section>
+            </aside>
+        `,
+        right: `
+            <aside class="mc-feed-sidebar mc-feed-sidebar-right" aria-label="Gợi ý hỗ trợ">
+                <section class="mc-feed-side-panel mc-feed-support-card">
+                    <p class="mc-feed-side-kicker">Hỗ trợ an toàn</p>
+                    <h2>Cần người lắng nghe?</h2>
+                    <p>Bạn có thể đặt lịch tư vấn riêng tư khi một bài viết làm bạn thấy quá tải.</p>
+                    <button type="button" class="mc-feed-side-action" data-action="book-session">Đặt lịch hỗ trợ</button>
+                </section>
+
+                <section class="mc-feed-side-panel">
+                    <div class="mc-feed-side-heading">
+                        <p class="mc-feed-side-kicker">Gợi ý hôm nay</p>
+                        <button type="button" data-action="resources-library" data-filter="Tất cả">Xem tất cả</button>
+                    </div>
+                    <div class="mc-feed-resource-list">
+                        ${renderFeedResourceSuggestions(resources)}
+                    </div>
+                </section>
+
+                <section class="mc-feed-side-panel">
+                    <p class="mc-feed-side-kicker">Lối tắt</p>
+                    <div class="mc-feed-shortcut-list">
+                        <button type="button" data-action="resources-library" data-filter="Video">Video thư giãn</button>
+                        <button type="button" data-action="resources-library" data-filter="Podcast">Podcast</button>
+                        <button type="button" data-action="diary">Viết nhật ký</button>
+                    </div>
+                </section>
+            </aside>
+        `
+    };
 }
 
 
@@ -191,7 +371,8 @@ export function renderStudentHome() {
     }
 
     const feedItems = getUserFeed();
-    const feedHtml = feedItems.map((post, index) => {
+    const feedSidebars = renderFeedSidebars(feedItems);
+    const feedHtml = feedItems.length ? feedItems.map((post, index) => {
         const postDate = post.date || post.time;
         const comments = Array.isArray(post.commentObjects) ? post.commentObjects : [];
         const commentCount = comments.reduce((sum, c) => sum + 1 + (Array.isArray(c.replies) ? c.replies.length : 0), 0);
@@ -308,7 +489,12 @@ export function renderStudentHome() {
                 ${commentsHtml}
             </article>
         `;
-    }).join('');
+    }).join('') : `
+        <div class="mc-panel mc-feed-empty-state">
+            <strong>Chưa có bài chia sẻ nào.</strong>
+            <p>Hãy mở đầu bằng một câu chuyện ngắn hoặc một tag bạn đang quan tâm.</p>
+        </div>
+    `;
 
     container.innerHTML = `
         <section class="mc-page mc-home-page">
@@ -323,18 +509,27 @@ export function renderStudentHome() {
                     <button class="mc-btn mc-btn-outline" type="button" data-action="diary">+ Viết Nhật ký</button>
                 </div>
             </div>
-            <div class="mc-panel mc-feed-creator" style="margin-bottom: 18px;">
-                <label class="mc-field-label" for="feed-post-content">Đăng bài lên News feed</label>
-                <textarea id="feed-post-content" class="mc-textarea" style="min-height:90px;" placeholder="Chia sẻ với cộng đồng..."></textarea>
-                <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-                    <input id="feed-tag-input" class="mc-input" style="flex:1; min-width:180px;" placeholder="Thêm tag, ví dụ: Stress, Học tập">
-                    <button class="mc-btn mc-btn-outline" type="button" data-action="addTag">+ Tag</button>
-                    <button class="mc-btn mc-btn-primary" type="button" data-action="publishPost">Đăng lên Home</button>
-                </div>
-                <div id="feed-tag-container" class="mc-tag-row" style="margin-top:10px;"></div>
-            </div>
-            <div class="mc-feed-list">
-                ${feedHtml}
+            <div class="mc-feed-shell">
+                ${feedSidebars.left}
+
+                <main class="mc-feed-center" aria-label="Bài đăng cộng đồng">
+                    <div class="mc-panel mc-feed-creator">
+                        <label class="mc-field-label" for="feed-post-content">Đăng bài lên News feed</label>
+                        <textarea id="feed-post-content" class="mc-textarea" placeholder="Chia sẻ với cộng đồng..."></textarea>
+                        <div class="mc-feed-composer-row">
+                            <input id="feed-tag-input" class="mc-input" placeholder="Thêm tag, ví dụ: Stress, Học tập">
+                            <button class="mc-btn mc-btn-outline" type="button" data-action="addTag">+ Tag</button>
+                            <button class="mc-btn mc-btn-primary" type="button" data-action="publishPost">Đăng bài</button>
+                        </div>
+                        <div id="feed-tag-container" class="mc-tag-row"></div>
+                    </div>
+
+                    <div class="mc-feed-list">
+                        ${feedHtml}
+                    </div>
+                </main>
+
+                ${feedSidebars.right}
             </div>
         </section>
     `;
@@ -466,6 +661,13 @@ document.addEventListener("click", (event) => {
     else if (event.target.closest("[data-action='delete-reply']")) {
         const btn = event.target.closest("[data-action='delete-reply']");
         deleteNestedReply(Number(btn?.dataset?.postIndex), Number(btn?.dataset?.commentIndex), Number(btn?.dataset?.replyIndex));
+    }
+    else if (event.target.closest("[data-action='resources-library']")) {
+        const btn = event.target.closest("[data-action='resources-library']");
+        renderResourcesLibrary(btn?.dataset?.filter || 'Tất cả');
+    }
+    else if (event.target.closest("[data-action='stats']")) {
+        renderStudentStats();
     }
     else if (event.target.closest("[data-action='diary']")) {
         renderStudentDiary();
