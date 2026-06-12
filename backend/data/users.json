@@ -75,5 +75,12 @@
     "password": "$2b$10$LeZDgw5FGbeZqeZR7C4pP.Fq4cGLInGnR937tXZbwuuwG8exnzwNq",
     "role": "student",
     "created_at": "2026-05-21T08:44:32.352Z"
+  },
+  {
+    "_id": "1a3476b8-92e0-4186-b8fa-cc1d8ad68a4a",
+    "email": "22233333@gm.uit.edu.vn",
+    "password": "$2b$10$uPUs7bxbgKEohFiVkqdxB.DJGB59eoEEqSKPQebJ8b5Y225tt0K36",
+    "role": "student",
+    "created_at": "2026-06-12T19:30:46.005Z"
   }
 ]

@@ -1760,10 +1760,36 @@ input {
     margin-bottom: 16px;
 }
 
+.mc-resource-toolbar > div {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 8px;
+    min-width: 0;
+}
+
 .mc-resource-search-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) 104px;
     gap: 8px;
+    align-items: stretch;
+}
+
+.mc-resource-search-row .mc-input,
+.mc-resource-search-row .mc-btn,
+.mc-resource-import-row .mc-input,
+.mc-resource-import-row .mc-btn {
+    width: 100%;
+    min-width: 0;
+    height: 48px;
+    min-height: 48px;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.mc-resource-search-row .mc-btn,
+.mc-resource-import-row .mc-btn {
+    padding-inline: 14px;
+    white-space: nowrap;
 }
 
 .filter-btn {
@@ -1851,8 +1877,9 @@ input {
 
 .mc-resource-import-row {
     display: grid;
-    grid-template-columns: minmax(180px, 1fr) minmax(160px, 0.8fr) 140px auto;
+    grid-template-columns: minmax(180px, 1fr) minmax(160px, 0.8fr) 140px 104px;
     gap: 8px;
+    align-items: stretch;
 }
 
 .mc-breathing-panel {

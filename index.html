@@ -981,6 +981,59 @@
         const API_BASE_URL = 'http://localhost:3000';
         let currentRole = 'student';
 
+        function getStoredAuthSession() {
+            try {
+                return JSON.parse(localStorage.getItem('mindconnect:auth')) || null;
+            } catch (error) {
+                localStorage.removeItem('mindconnect:auth');
+                localStorage.removeItem('mindconnect:role');
+                return null;
+            }
+        }
+
+        function getStoredAuthRole(session) {
+            const storedRole = localStorage.getItem('mindconnect:role');
+            const sessionRole = session?.user?.role;
+
+            if (storedRole === 'student' || storedRole === 'school' || storedRole === 'admin') {
+                return storedRole;
+            }
+
+            if (sessionRole === 'student' || sessionRole === 'school' || sessionRole === 'admin') {
+                return sessionRole;
+            }
+
+            return null;
+        }
+
+        function getSessionRedirectTarget(session) {
+            if (!session?.token) {
+                return '';
+            }
+
+            const role = getStoredAuthRole(session);
+            if (role === 'student') {
+                localStorage.setItem('mindconnect:role', 'student');
+                return 'student.html';
+            }
+
+            if (role === 'school' || role === 'admin') {
+                localStorage.setItem('mindconnect:role', role === 'admin' ? 'admin' : 'school');
+                return 'school.html';
+            }
+
+            return '';
+        }
+
+        function redirectIfAuthenticated() {
+            const target = getSessionRedirectTarget(getStoredAuthSession());
+            if (target) {
+                window.location.replace(target);
+            }
+        }
+
+        redirectIfAuthenticated();
+
         function switchRole(role) {
             currentRole = role;
             document.getElementById('tab-student').classList.remove('active');
