@@ -13,6 +13,7 @@ const API_BASE_URL = 'http://localhost:3000';
 const DEFAULT_CONSULTATION_ROWS_ID = 'consultation-case-body';
 let dashboardState = null;
 let currentView = 'dashboard';
+let isRedirectingToLogin = false;
 
 // ============================================
 // 2. AUTHENTICATION HELPERS
@@ -37,9 +38,22 @@ function getAuthHeaders() {
     return headers;
 }
 
-function logout() {
+function clearAuthSession() {
     localStorage.removeItem('mindconnect:auth');
     localStorage.removeItem('mindconnect:role');
+    localStorage.removeItem('authSession');
+}
+
+function redirectToLogin(message = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.') {
+    if (isRedirectingToLogin) return;
+    isRedirectingToLogin = true;
+    clearAuthSession();
+    showNotification(message, 'error');
+    setTimeout(() => window.location.replace('index.html'), 700);
+}
+
+function logout() {
+    clearAuthSession();
     window.location.href = 'index.html';
 }
 
@@ -58,7 +72,15 @@ async function apiRequest(path, options = {}) {
     const result = await response.json().catch(() => ({}));
 
     if (!response.ok || result.success === false) {
-        throw new Error(result.error || 'API request failed');
+        const error = new Error(result.error || 'API request failed');
+        error.status = response.status;
+
+        if (response.status === 401) {
+            redirectToLogin();
+            error.message = 'Phiên đăng nhập đã hết hạn. Đang chuyển về trang đăng nhập.';
+        }
+
+        throw error;
     }
 
     return result.data;
