@@ -5,7 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "migrate:json": "node scripts/migrate-json-to-mongo.js",
+    "migrate:json:reset": "node scripts/migrate-json-to-mongo.js --reset"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

@@ -366,7 +366,7 @@ function getDefaultConsultationRows() {
 // ============================================
 async function fetchDashboardData() {
     const timeRange = document.getElementById('timeSelect')?.value || '7';
-    const apiRange = timeRange === '7' ? '30' : timeRange;
+    const apiRange = timeRange === '7' ? 'all' : timeRange;
     dashboardState = await apiRequest(`/api/dashboard?range=${encodeURIComponent(apiRange)}`);
     return dashboardState;
 }
